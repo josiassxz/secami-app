@@ -1,0 +1,167 @@
+[
+  {
+    "id": "ppl_6dias",
+    "nome": "Empurrar / Puxar / Pernas (6 dias)",
+    "descricao": "Empurrada / Puxada / Pernas, alternando 2x na semana.",
+    "rotinas": [
+      {
+        "nome": "Empurrar A (Peito-Ombro-Triceps)",
+        "dias_da_semana": [1],
+        "exercicios": [
+          { "slug": "supino_reto_barra", "series": 4, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "supino_inclinado_halter", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "desenvolvimento_militar_barra", "series": 4, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "elevacao_lateral_halter", "series": 3, "reps_min": 12, "reps_max": 15, "descanso_segundos": 60 },
+          { "slug": "triceps_polia_corda", "series": 3, "reps_min": 10, "reps_max": 15, "descanso_segundos": 60 }
+        ]
+      },
+      {
+        "nome": "Puxar A (Costas-Biceps)",
+        "dias_da_semana": [2],
+        "exercicios": [
+          { "slug": "puxada_frente_pegada_pronada", "series": 4, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "remada_curvada_barra", "series": 4, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "remada_baixa_cabo", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "rosca_direta_barra", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 60 },
+          { "slug": "rosca_martelo_halter", "series": 3, "reps_min": 10, "reps_max": 12, "descanso_segundos": 60 }
+        ]
+      },
+      {
+        "nome": "Pernas A",
+        "dias_da_semana": [3],
+        "exercicios": [
+          { "slug": "agachamento_livre_barra", "series": 4, "reps_min": 5, "reps_max": 8, "descanso_segundos": 180 },
+          { "slug": "leg_press_45", "series": 4, "reps_min": 10, "reps_max": 15, "descanso_segundos": 120 },
+          { "slug": "stiff_barra", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 120 },
+          { "slug": "cadeira_extensora", "series": 3, "reps_min": 12, "reps_max": 15, "descanso_segundos": 60 },
+          { "slug": "panturrilha_em_pe_maquina", "series": 4, "reps_min": 10, "reps_max": 15, "descanso_segundos": 60 }
+        ]
+      },
+      {
+        "nome": "Empurrar B (variação)",
+        "dias_da_semana": [4],
+        "exercicios": [
+          { "slug": "supino_reto_halter", "series": 4, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "desenvolvimento_halter", "series": 4, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "voador_peitoral", "series": 3, "reps_min": 12, "reps_max": 15, "descanso_segundos": 60 },
+          { "slug": "elevacao_lateral_cabo", "series": 3, "reps_min": 12, "reps_max": 15, "descanso_segundos": 60 },
+          { "slug": "triceps_testa_barra", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 60 }
+        ]
+      },
+      {
+        "nome": "Puxar B (variação)",
+        "dias_da_semana": [5],
+        "exercicios": [
+          { "slug": "barra_fixa_pronada", "series": 4, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "remada_serrote", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "face_pull_corda", "series": 3, "reps_min": 12, "reps_max": 15, "descanso_segundos": 60 },
+          { "slug": "rosca_scott_halter", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 60 }
+        ]
+      },
+      {
+        "nome": "Pernas B (foco posterior)",
+        "dias_da_semana": [6],
+        "exercicios": [
+          { "slug": "terra_romeno_barra", "series": 4, "reps_min": 6, "reps_max": 10, "descanso_segundos": 180 },
+          { "slug": "agachamento_bulgaro_halter", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "mesa_flexora", "series": 4, "reps_min": 10, "reps_max": 15, "descanso_segundos": 60 },
+          { "slug": "hip_thrust_barra", "series": 4, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "panturrilha_sentada", "series": 4, "reps_min": 12, "reps_max": 20, "descanso_segundos": 45 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "upper_lower",
+    "nome": "Superior / Inferior (4 dias)",
+    "descricao": "Treinos de superiores e inferiores alternados.",
+    "rotinas": [
+      {
+        "nome": "Superior A",
+        "dias_da_semana": [1],
+        "exercicios": [
+          { "slug": "supino_reto_barra", "series": 4, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "remada_curvada_barra", "series": 4, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "desenvolvimento_militar_barra", "series": 3, "reps_min": 8, "reps_max": 10, "descanso_segundos": 90 },
+          { "slug": "puxada_frente_pegada_neutra", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "rosca_direta_barra", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 60 },
+          { "slug": "triceps_polia_barra", "series": 3, "reps_min": 10, "reps_max": 12, "descanso_segundos": 60 }
+        ]
+      },
+      {
+        "nome": "Inferior A",
+        "dias_da_semana": [2],
+        "exercicios": [
+          { "slug": "agachamento_livre_barra", "series": 4, "reps_min": 5, "reps_max": 8, "descanso_segundos": 180 },
+          { "slug": "stiff_barra", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 120 },
+          { "slug": "leg_press_45", "series": 3, "reps_min": 10, "reps_max": 15, "descanso_segundos": 90 },
+          { "slug": "cadeira_extensora", "series": 3, "reps_min": 12, "reps_max": 15, "descanso_segundos": 60 },
+          { "slug": "panturrilha_em_pe_maquina", "series": 4, "reps_min": 10, "reps_max": 15, "descanso_segundos": 60 }
+        ]
+      },
+      {
+        "nome": "Superior B",
+        "dias_da_semana": [4],
+        "exercicios": [
+          { "slug": "supino_inclinado_halter", "series": 4, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "puxada_frente_pegada_pronada", "series": 4, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "desenvolvimento_halter", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "remada_baixa_cabo", "series": 3, "reps_min": 10, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "rosca_martelo_halter", "series": 3, "reps_min": 10, "reps_max": 12, "descanso_segundos": 60 },
+          { "slug": "triceps_polia_corda", "series": 3, "reps_min": 12, "reps_max": 15, "descanso_segundos": 60 }
+        ]
+      },
+      {
+        "nome": "Inferior B",
+        "dias_da_semana": [5],
+        "exercicios": [
+          { "slug": "terra_romeno_barra", "series": 4, "reps_min": 6, "reps_max": 10, "descanso_segundos": 180 },
+          { "slug": "afundo_halter", "series": 3, "reps_min": 10, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "mesa_flexora", "series": 4, "reps_min": 10, "reps_max": 15, "descanso_segundos": 60 },
+          { "slug": "hip_thrust_barra", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "panturrilha_sentada", "series": 4, "reps_min": 12, "reps_max": 20, "descanso_segundos": 45 }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "full_body",
+    "nome": "Corpo Inteiro (3 dias)",
+    "descricao": "Corpo inteiro em 3 sessões por semana. Ótimo para começar.",
+    "rotinas": [
+      {
+        "nome": "Corpo Inteiro A",
+        "dias_da_semana": [1],
+        "exercicios": [
+          { "slug": "agachamento_livre_barra", "series": 3, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "supino_reto_barra", "series": 3, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "remada_curvada_barra", "series": 3, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "desenvolvimento_militar_barra", "series": 3, "reps_min": 8, "reps_max": 10, "descanso_segundos": 90 },
+          { "slug": "prancha_frontal", "series": 3, "reps_min": 30, "reps_max": 60, "descanso_segundos": 45 }
+        ]
+      },
+      {
+        "nome": "Corpo Inteiro B",
+        "dias_da_semana": [3],
+        "exercicios": [
+          { "slug": "terra_romeno_barra", "series": 3, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "supino_inclinado_halter", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "puxada_frente_pegada_neutra", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "leg_press_45", "series": 3, "reps_min": 10, "reps_max": 15, "descanso_segundos": 90 },
+          { "slug": "rosca_alternada_halter", "series": 3, "reps_min": 10, "reps_max": 12, "descanso_segundos": 60 }
+        ]
+      },
+      {
+        "nome": "Corpo Inteiro C",
+        "dias_da_semana": [5],
+        "exercicios": [
+          { "slug": "agachamento_bulgaro_halter", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "supino_reto_halter", "series": 3, "reps_min": 8, "reps_max": 12, "descanso_segundos": 90 },
+          { "slug": "barra_fixa_pronada", "series": 3, "reps_min": 6, "reps_max": 10, "descanso_segundos": 120 },
+          { "slug": "elevacao_lateral_halter", "series": 3, "reps_min": 12, "reps_max": 15, "descanso_segundos": 60 },
+          { "slug": "triceps_polia_corda", "series": 3, "reps_min": 10, "reps_max": 15, "descanso_segundos": 60 }
+        ]
+      }
+    ]
+  }
+]

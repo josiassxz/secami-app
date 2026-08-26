@@ -1,0 +1,22 @@
+{
+  "name": "BlockedDate",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data"
+    },
+    "slot_start": {
+      "type": "string",
+      "title": "Hor\u00e1rio (HH:MM) \u2014 vazio = dia inteiro"
+    },
+    "reason": {
+      "type": "string",
+      "title": "Motivo"
+    }
+  },
+  "required": [
+    "date"
+  ]
+}

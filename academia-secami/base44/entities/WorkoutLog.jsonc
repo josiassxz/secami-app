@@ -1,0 +1,55 @@
+{
+  "name": "WorkoutLog",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "title": "Aluno ID"
+    },
+    "workout_plan_id": {
+      "type": "string",
+      "title": "Ficha ID"
+    },
+    "sheet_label": {
+      "type": "string",
+      "title": "Ficha"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data"
+    },
+    "completed_exercises": {
+      "type": "array",
+      "title": "Exerc\u00edcios Conclu\u00eddos",
+      "items": {
+        "type": "string"
+      }
+    },
+    "exercise_loads": {
+      "type": "array",
+      "title": "Cargas por Exerc\u00edcio",
+      "items": {
+        "type": "object",
+        "properties": {
+          "exercise_name": {
+            "type": "string"
+          },
+          "load": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "completed": {
+      "type": "boolean",
+      "title": "Treino Conclu\u00eddo",
+      "default": false
+    }
+  },
+  "required": [
+    "student_id",
+    "workout_plan_id",
+    "date"
+  ]
+}

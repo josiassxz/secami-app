@@ -1,0 +1,28 @@
+services:
+  postgres:
+    image: postgres:18   # uuidv7() nativo (schema depende disso)
+    container_name: secami-postgres
+    environment:
+      POSTGRES_DB: secami
+      POSTGRES_USER: secami
+      POSTGRES_PASSWORD: secami
+    ports:
+      - "5432:5432"
+    volumes:
+      - secami_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U secami -d secami"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # SMTP de desenvolvimento (captura e-mails de lembrete/broadcast)
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: secami-mailpit
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # UI web
+
+volumes:
+  secami_pgdata:

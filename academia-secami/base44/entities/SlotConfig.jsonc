@@ -1,0 +1,37 @@
+{
+  "name": "SlotConfig",
+  "type": "object",
+  "properties": {
+    "slot_start": {
+      "type": "string",
+      "title": "In\u00edcio (HH:MM)"
+    },
+    "slot_end": {
+      "type": "string",
+      "title": "Fim (HH:MM)"
+    },
+    "blocked": {
+      "type": "boolean",
+      "title": "Bloqueado",
+      "default": false
+    },
+    "block_reason": {
+      "type": "string",
+      "title": "Motivo do Bloqueio"
+    },
+    "civil_restricted": {
+      "type": "boolean",
+      "title": "Restrito para Civis",
+      "default": false
+    },
+    "max_capacity": {
+      "type": "number",
+      "title": "Capacidade M\u00e1xima",
+      "default": 20
+    }
+  },
+  "required": [
+    "slot_start",
+    "slot_end"
+  ]
+}

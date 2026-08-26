@@ -1,0 +1,79 @@
+{
+  "name": "WorkoutPlan",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "title": "Aluno ID"
+    },
+    "student_name": {
+      "type": "string",
+      "title": "Nome do Aluno"
+    },
+    "professor_id": {
+      "type": "string",
+      "title": "Professor ID"
+    },
+    "professor_name": {
+      "type": "string",
+      "title": "Nome do Professor"
+    },
+    "sheet_label": {
+      "type": "string",
+      "title": "Ficha",
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "default": "A"
+    },
+    "title": {
+      "type": "string",
+      "title": "T\u00edtulo da Ficha"
+    },
+    "exercises": {
+      "type": "array",
+      "title": "Exerc\u00edcios",
+      "items": {
+        "type": "object",
+        "properties": {
+          "exercise_id": {
+            "type": "string"
+          },
+          "exercise_name": {
+            "type": "string"
+          },
+          "sets": {
+            "type": "number"
+          },
+          "reps": {
+            "type": "string"
+          },
+          "rest_seconds": {
+            "type": "number"
+          },
+          "notes": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "active": {
+      "type": "boolean",
+      "title": "Ativa",
+      "default": true
+    },
+    "valid_until": {
+      "type": "string",
+      "format": "date",
+      "title": "V\u00e1lida at\u00e9"
+    }
+  },
+  "required": [
+    "student_id",
+    "sheet_label",
+    "title"
+  ]
+}

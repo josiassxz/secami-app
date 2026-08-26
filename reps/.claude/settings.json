@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"c:\\\\Users\\\\Mateus\\\\Documents\\\\Desenvolvimento\\\\Projetos\\\\reps\"; & \"C:\\\\src\\\\flutter\\\\bin\\\\dart.bat\" run build_runner build --delete-conflicting-outputs 2>&1 | Select-Object -Last 5)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"c:\\\\Users\\\\Mateus\\\\Documents\\\\Desenvolvimento\\\\Projetos\\\\reps\"; & \"C:\\\\src\\\\flutter\\\\bin\\\\dart.bat\" analyze lib/ 2>&1)",
+      "PowerShell($env:PATH = [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"Machine\"\\) + \";\" + [System.Environment]::GetEnvironmentVariable\\(\"PATH\",\"User\"\\); Set-Location \"c:\\\\Users\\\\Mateus\\\\Documents\\\\Desenvolvimento\\\\Projetos\\\\reps\"; & \"C:\\\\src\\\\flutter\\\\bin\\\\flutter.bat\" build web --no-tree-shake-icons 2>&1 | Select-Object -Last 15)",
+      "Bash(dart.bat analyze *)",
+      "Bash(/c/src/flutter/bin/dart analyze *)",
+      "Bash(npx skills add:*)"
+    ]
+  }
+}

@@ -1,0 +1,95 @@
+spring:
+  application:
+    name: secami-backend
+
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/secami}
+    username: ${DB_USER:josiassiqueira}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 10
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: America/Sao_Paulo
+        format_sql: false
+    show-sql: false
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: false
+    locations: classpath:db/migration
+
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USER:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: ${MAIL_AUTH:false}
+      mail.smtp.starttls.enable: ${MAIL_TLS:false}
+
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+
+# ---- Config específica da aplicação ----
+secami:
+  jwt:
+    # Segredo HS256 — em produção vem de env/secret manager (mín. 32 bytes).
+    secret: ${JWT_SECRET:troque-este-segredo-de-desenvolvimento-secami-0123456789}
+    access-token-minutes: ${JWT_ACCESS_MIN:15}
+    refresh-token-days: ${JWT_REFRESH_DAYS:7}
+    issuer: secami-backend
+
+  ldap:
+    enabled: ${LDAP_ENABLED:false}          # false em dev (sem rede AD); true em homolog/prod
+    host: ${LDAP_HOST:dc2-dcsrv05.goias.intra}
+    port: ${LDAP_PORT:636}
+    ssl: ${LDAP_SSL:true}
+    base-dn: ${LDAP_BASE_DN:OU=Usuarios,OU=SGG,OU=GOVERNADORIA (SGG),OU=ORGAOS,DC=goias,DC=intra}
+    bind-dn: ${LDAP_BIND_DN:sistemas.sgg@sistemas.goias.gov.br}
+    bind-password: ${LDAP_BIND_PASSWORD:}    # NUNCA versionar — via env/secret manager
+    login-attribute: ${LDAP_LOGIN_ATTR:samAccountName}
+    sync-attribute: ${LDAP_SYNC_ATTR:objectGUID}
+    user-filter: ${LDAP_USER_FILTER:(&(objectClass=user)(objectCategory=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))}
+
+  # Modo de desenvolvimento: quando ldap.enabled=false, autentica contra usuários
+  # locais semeados (ver DevAuthProvider) — permite rodar sem rede corporativa.
+  dev-auth:
+    enabled: ${DEV_AUTH_ENABLED:true}
+
+  timezone: America/Sao_Paulo
+
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  health:
+    ldap:
+      # Indicador autoconfigurado do Spring Boot testa um LdapTemplate genérico
+      # (localhost:389), não a config real (secami.ldap.*/LdapAuthProvider) —
+      # sempre acusaria DOWN em dev e não reflete a saúde real da autenticação.
+      enabled: false
+    mail:
+      # Idem: tenta abrir uma conexão SMTP real (localhost:1025/Mailpit) só pra
+      # health-check — em dev o Mailpit nem sempre está rodando, e o envio real
+      # (ReminderService) já trata falha de e-mail com try/catch próprio.
+      enabled: false

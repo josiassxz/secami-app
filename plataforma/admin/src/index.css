@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ===== Tokens Casa Militar (SPEC §7 + referência visual IPASGO) =====
+   Verde vivo + verde-limão + dourado: paleta de app institucional de
+   governo (Goiás) trazida como referência pelo usuário — substitui o
+   verde/dourado apagados da 1ª versão por tons mais vivos e energéticos,
+   mantendo contraste AA. */
+:root {
+  --brand-primary: #00783c;
+  --brand-primary-hover: #056330;
+  --brand-primary-container: #e0f3e7;
+  --brand-on-primary: #ffffff;
+
+  --brand-secondary: #e0b920;
+  --brand-secondary-container: #fbf1d0;
+  --brand-on-secondary: #3a2e08;
+
+  --accent-lime: #c3e436;
+  --accent-lime-container: #eefad4;
+  --accent-on-lime: #114023;
+
+  --accent-info: #3b7a9e;
+
+  --bg-base: #f7f8f7;
+  --bg-surface: #ffffff;
+  --bg-surface-alt: #eef1ee;
+
+  --line-outline: #dce3dd;
+  /* Borda verde dos inputs (referência: "borda fina verde escura"),
+     mais suave que o brand-primary puro pra não pesar em formulários. */
+  --line-input: #73b594;
+
+  --text-primary: #1a211c;
+  --text-secondary: #5a625c;
+  --text-disabled: #9aa39c;
+
+  --status-success: #2e7d5b;
+  --status-warning: #c9922b;
+  --status-error: #d6362d;
+}
+
+.dark {
+  --brand-primary: #4fcb8b;
+  --brand-primary-hover: #5fd79a;
+  --brand-primary-container: #1e3a2d;
+  --brand-on-primary: #06140d;
+
+  --brand-secondary: #e6c34c;
+  --brand-secondary-container: #3a3212;
+  --brand-on-secondary: #2a2004;
+
+  --accent-lime: #c3e436;
+  --accent-lime-container: #33421a;
+  --accent-on-lime: #114023;
+
+  --accent-info: #78b3cf;
+
+  --bg-base: #121714;
+  --bg-surface: #1a211d;
+  --bg-surface-alt: #232b26;
+
+  --line-outline: #2a322c;
+  --line-input: #3c9064;
+
+  --text-primary: #e6ece8;
+  --text-secondary: #a9b3ad;
+  --text-disabled: #6b746e;
+
+  --status-success: #5db98c;
+  --status-warning: #dcb45f;
+  --status-error: #e8483f;
+}
+
+* {
+  border-color: var(--line-outline);
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+::selection {
+  background: var(--brand-primary-container);
+  color: var(--text-primary);
+}
+
+/* Barra de rolagem discreta */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-outline) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--line-outline);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}

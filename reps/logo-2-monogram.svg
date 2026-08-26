@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Logo 2 - Monogram selo
+    Conceito: estampa de equipamento de academia. Fundo vermelho cheio,
+    R gigante mono branco, marker "/01" como numero de serie sugerindo
+    "este eh seu primeiro rep". Visual industrial, alto contraste.
+    Ideal pra app icon - reconhecivel em qualquer tamanho.
+  -->
+  <rect width="1024" height="1024" fill="#EF4444"/>
+
+  <!-- Frame interno discreto (1px line, brutalist) -->
+  <rect x="48" y="48" width="928" height="928" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-opacity="0.18"/>
+
+  <!-- R monogram dominante -->
+  <text x="512" y="700"
+        font-family="'JetBrains Mono', 'Courier New', monospace"
+        font-size="780"
+        font-weight="800"
+        text-anchor="middle"
+        fill="#FFFFFF">R</text>
+
+  <!-- Top-left meta: marcador de numero de serie -->
+  <text x="80" y="138"
+        font-family="'JetBrains Mono', 'Courier New', monospace"
+        font-size="36"
+        font-weight="700"
+        letter-spacing="2"
+        fill="#FFFFFF">REPS</text>
+
+  <!-- Bottom-right meta: numero de serie -->
+  <text x="944" y="950"
+        font-family="'JetBrains Mono', 'Courier New', monospace"
+        font-size="36"
+        font-weight="700"
+        letter-spacing="2"
+        text-anchor="end"
+        fill="#FFFFFF">/01</text>
+
+  <!-- Top-right tag: SR (serial) -->
+  <g transform="translate(944, 138)">
+    <rect x="-48" y="-30" width="48" height="40" fill="#0A0A0B"/>
+    <text x="-24" y="0"
+          font-family="'JetBrains Mono', 'Courier New', monospace"
+          font-size="22"
+          font-weight="800"
+          letter-spacing="1"
+          text-anchor="middle"
+          fill="#FFFFFF">SR</text>
+  </g>
+
+  <!-- Bottom-left meta: ano -->
+  <text x="80" y="950"
+        font-family="'JetBrains Mono', 'Courier New', monospace"
+        font-size="36"
+        font-weight="700"
+        letter-spacing="2"
+        fill="#FFFFFF">2026</text>
+</svg>

@@ -1,0 +1,29 @@
+name: rls
+
+# Testa o isolamento de Row-Level Security (professor <-> aluno) aplicando as
+# migrations num Postgres efemero. Job separado do Flutter para falhas serem
+# distinguiveis. Ver supabase/tests/README.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/rls.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/**'
+      - 'supabase/tests/**'
+      - '.github/workflows/rls.yml'
+
+jobs:
+  rls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Testes de RLS (Postgres efemero via Docker)
+        run: bash supabase/tests/run_rls_tests.sh

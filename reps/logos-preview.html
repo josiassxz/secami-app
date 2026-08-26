@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>reps · escolha o logo</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 32px 20px 64px;
+    background: #0a0a0b;
+    color: #e4e4e7;
+    font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header { max-width: 1200px; margin: 0 auto 32px; }
+  h1 { font-size: 28px; font-weight: 800; letter-spacing: -0.02em; margin: 0 0 4px; }
+  .meta {
+    font-size: 11px; letter-spacing: 0.08em; color: #71717a;
+    font-weight: 600; text-transform: uppercase;
+  }
+  .grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 24px;
+  }
+  .card {
+    background: #16171a;
+    border: 1px solid #262629;
+    border-radius: 6px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .preview {
+    aspect-ratio: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .preview svg, .preview img {
+    width: 100%; height: 100%; display: block;
+  }
+  .info { padding: 16px 18px; border-top: 1px solid #262629; }
+  .tag {
+    display: inline-block;
+    font-size: 10px; letter-spacing: 0.08em; font-weight: 600;
+    color: #ef4444; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .name { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+  .desc { font-size: 13px; color: #a1a1aa; line-height: 1.5; margin-top: 6px; }
+
+  /* App icon round preview, simulando como ficaria no launcher */
+  .row {
+    max-width: 1200px;
+    margin: 48px auto 0;
+    padding-top: 32px;
+    border-top: 1px solid #262629;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 24px;
+  }
+  .icon-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .icon-round, .icon-square {
+    width: 96px; height: 96px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-round { border-radius: 50%; }
+  .icon-square { border-radius: 22%; }
+  .icon-label {
+    font-size: 11px; letter-spacing: 0.08em; color: #71717a;
+    font-weight: 600; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>reps · escolha o logo</h1>
+  <div class="meta">3 OPÇÕES · CADA SVG 1024×1024 · ESCALÁVEL E EDITÁVEL</div>
+</header>
+
+<div class="grid">
+
+  <div class="card">
+    <div class="preview"><img src="logo-1-wordmark.svg" alt="Logo 1 wordmark"></div>
+    <div class="info">
+      <div class="tag">01 · WORDMARK DARK</div>
+      <div class="name">Editorial estampa</div>
+      <div class="desc">Tipografia gigante REPS sobre dark, marker vermelho lateral, label "SEM FIRULA" + metadata mono no rodapé. Vibe de revista técnica.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="preview"><img src="logo-2-monogram.svg" alt="Logo 2 monogram"></div>
+    <div class="info">
+      <div class="tag">02 · SELO MONOGRAM</div>
+      <div class="name">R industrial</div>
+      <div class="desc">Estampa de equipamento. Quadrado vermelho dominante, R mono gigante, metadados nas 4 quinas tipo placa de série. Forte como app icon.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="preview"><img src="logo-3-mark.svg" alt="Logo 3 mark"></div>
+    <div class="info">
+      <div class="tag">03 · MARK ABSTRATO</div>
+      <div class="name">3 reps fadeando</div>
+      <div class="desc">3 barras de halter horizontais, a primeira vermelha completa, as outras esmaecendo. Sugere séries + progressão. Símbolo puro, funciona sem texto.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Comparação como app icon (round e square 96px) -->
+<div class="row">
+  <div class="icon-wrap">
+    <div class="icon-round"><img src="logo-1-wordmark.svg"></div>
+    <div class="icon-label">01 · ROUND 96</div>
+  </div>
+  <div class="icon-wrap">
+    <div class="icon-square"><img src="logo-1-wordmark.svg"></div>
+    <div class="icon-label">01 · SQUARED 96</div>
+  </div>
+
+  <div class="icon-wrap">
+    <div class="icon-round"><img src="logo-2-monogram.svg"></div>
+    <div class="icon-label">02 · ROUND 96</div>
+  </div>
+  <div class="icon-wrap">
+    <div class="icon-square"><img src="logo-2-monogram.svg"></div>
+    <div class="icon-label">02 · SQUARED 96</div>
+  </div>
+
+  <div class="icon-wrap">
+    <div class="icon-round"><img src="logo-3-mark.svg"></div>
+    <div class="icon-label">03 · ROUND 96</div>
+  </div>
+  <div class="icon-wrap">
+    <div class="icon-square"><img src="logo-3-mark.svg"></div>
+    <div class="icon-label">03 · SQUARED 96</div>
+  </div>
+</div>
+
+</body>
+</html>

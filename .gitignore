@@ -1,0 +1,50 @@
+# === Segredos — nunca versionar ===
+ldap.md
+.env
+.env.local
+.env.*.local
+**/.env
+**/.env.local
+!**/.env.example
+
+# === macOS / IDE ===
+.DS_Store
+*.iml
+*.ipr
+*.iws
+.idea/
+.vscode/
+
+# === Flutter / Dart (reps/) ===
+**/.dart_tool/
+**/.flutter-plugins-dependencies
+**/.flutter-plugins
+**/.pub-cache/
+**/.pub/
+reps/build/
+reps/coverage/
+reps/android/build/
+reps/android/app/build/
+reps/**/.gradle/
+**/*.g.dart
+**/*.freezed.dart
+reps/ios/Pods/
+reps/ios/Flutter/Generated.xcconfig
+reps/ios/Flutter/ephemeral/
+reps/android/.gradle/
+reps/android/local.properties
+reps/android/app/debug
+reps/android/app/profile
+reps/android/app/release
+*.apk
+*.aab
+
+# === Node / Vite (plataforma/admin/) ===
+node_modules/
+dist/
+
+# === Maven (plataforma/backend/) ===
+target/
+
+# === Logs ===
+*.log

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <!--
+    Logo 3 - Mark abstrato
+    Conceito: 3 barras horizontais representando series/reps - a primeira
+    completa (vermelha), as outras esmaecendo. Sugere progressao, repeticao,
+    e barra de halter. Funciona perfeitamente como app icon - tem
+    "siluetagem" forte mesmo em 48x48. Versatil pra single mark sem texto.
+  -->
+  <rect width="1024" height="1024" fill="#0A0A0B"/>
+
+  <!-- 3 barras representando reps: a primeira batida com forca (vermelha
+       cheia), as outras com peso decrescente em opacidade.
+       Largura varia tambem - sugere fadiga progressiva. -->
+
+  <!-- Rep 1 - completa, vermelho dominante -->
+  <g>
+    <!-- pesos das pontas (anilhas) -->
+    <rect x="240" y="298" width="56" height="120" fill="#EF4444"/>
+    <rect x="728" y="298" width="56" height="120" fill="#EF4444"/>
+    <!-- barra -->
+    <rect x="296" y="346" width="432" height="24" fill="#EF4444"/>
+  </g>
+
+  <!-- Rep 2 - meia forca, branco fade -->
+  <g opacity="0.55">
+    <rect x="272" y="498" width="48" height="100" fill="#FFFFFF"/>
+    <rect x="704" y="498" width="48" height="100" fill="#FFFFFF"/>
+    <rect x="320" y="538" width="384" height="20" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Rep 3 - ultima, ainda mais leve -->
+  <g opacity="0.22">
+    <rect x="304" y="678" width="40" height="80" fill="#FFFFFF"/>
+    <rect x="680" y="678" width="40" height="80" fill="#FFFFFF"/>
+    <rect x="344" y="710" width="336" height="16" fill="#FFFFFF"/>
+  </g>
+
+  <!-- Wordmark inferior pequeno (opcional, da contexto se ver isolado) -->
+  <text x="512" y="888"
+        font-family="'Space Grotesk', 'Helvetica Neue', Arial, sans-serif"
+        font-size="48"
+        font-weight="900"
+        letter-spacing="8"
+        text-anchor="middle"
+        fill="#FFFFFF">REPS</text>
+
+  <!-- Marker top - chip vermelho referencia tema do app -->
+  <rect x="80" y="80" width="48" height="48" fill="#EF4444"/>
+</svg>

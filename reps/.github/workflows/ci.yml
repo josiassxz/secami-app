@@ -1,0 +1,53 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: '3.44.0'
+          cache: true
+
+      - name: Setup .env vazio para build de PR
+        run: |
+          if [ ! -f .env ]; then
+            cp .env.example .env || true
+            touch .env
+          fi
+
+      - name: Garantir placeholders de assets
+        run: |
+          mkdir -p assets/exercises assets/templates assets/sounds assets/legal
+          touch assets/exercises/.gitkeep
+          touch assets/templates/.gitkeep
+          touch assets/sounds/.gitkeep
+          touch assets/legal/.gitkeep
+
+      - name: pub get
+        run: flutter pub get
+
+      - name: format (somente verifica)
+        run: dart format --output=none --set-exit-if-changed .
+
+      - name: codegen (build_runner)
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: analyze
+        run: flutter analyze --no-fatal-infos
+
+      - name: test
+        run: flutter test --reporter expanded
+
+      - name: build apk debug (smoke)
+        run: flutter build apk --debug

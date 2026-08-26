@@ -1,0 +1,19 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "role": {
+      "type": "string",
+      "title": "Papel",
+      "enum": [
+        "admin",
+        "gerente",
+        "recepcao",
+        "professor",
+        "aluno"
+      ],
+      "default": "aluno"
+    }
+  },
+  "required": []
+}

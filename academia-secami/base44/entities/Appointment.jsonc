@@ -1,0 +1,62 @@
+{
+  "name": "Appointment",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "title": "Aluno ID"
+    },
+    "student_name": {
+      "type": "string",
+      "title": "Nome do Aluno"
+    },
+    "student_type": {
+      "type": "string",
+      "title": "Tipo de Aluno",
+      "enum": [
+        "Civil",
+        "Militar"
+      ],
+      "default": "Civil"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data"
+    },
+    "slot_start": {
+      "type": "string",
+      "title": "In\u00edcio da Janela (HH:MM)"
+    },
+    "slot_end": {
+      "type": "string",
+      "title": "Fim da Janela (HH:MM)"
+    },
+    "status": {
+      "type": "string",
+      "title": "Status",
+      "enum": [
+        "agendado",
+        "confirmado",
+        "cancelado",
+        "faltou"
+      ],
+      "default": "agendado"
+    },
+    "forced": {
+      "type": "boolean",
+      "title": "For\u00e7ado pelo Gerente",
+      "default": false
+    },
+    "notes": {
+      "type": "string",
+      "title": "Observa\u00e7\u00f5es"
+    }
+  },
+  "required": [
+    "student_id",
+    "date",
+    "slot_start",
+    "slot_end"
+  ]
+}

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ (API 31+). Bloqueia tanto backup em nuvem quanto a
+  transferencia device-to-device. Sem isto, a sessao do Supabase (guardada
+  em SharedPreferences) volta ao reinstalar/migrar, logando no usuario antigo.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="." />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="." />
+    </device-transfer>
+</data-extraction-rules>

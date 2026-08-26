@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>reps</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{ --bg:#0A0A0B; --primary:#EF4444; --on:#E4E4E7; --on-var:#A1A1AA; --radius:6px; }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);color:var(--on);
+  font-family:'Space Grotesk',-apple-system,BlinkMacSystemFont,sans-serif;
+  -webkit-font-smoothing:antialiased;position:relative;overflow:hidden;
+  display:flex;min-height:100vh;
+}
+.figure{
+  position:fixed;top:-6vh;right:-4vw;
+  font-family:'JetBrains Mono',monospace;font-weight:800;
+  font-size:46vw;line-height:.8;letter-spacing:-.04em;
+  color:rgba(239,68,68,.07);user-select:none;pointer-events:none;z-index:0;
+  animation:figIn 1s cubic-bezier(.2,.8,.2,1) both;
+}
+@media(min-width:560px){.figure{font-size:260px}}
+.wrap{
+  position:relative;z-index:1;width:100%;max-width:540px;margin:0 auto;
+  display:flex;flex-direction:column;padding:28px 24px;min-height:100vh;
+}
+header{display:flex;align-items:center;justify-content:space-between}
+.mark{display:flex;align-items:center;gap:8px}
+.mark .sq{width:8px;height:8px;background:var(--primary)}
+.mark .w{font-size:13px;font-weight:800;letter-spacing:.22em;color:var(--on)}
+.meta{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--on-var);letter-spacing:.04em}
+main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 0}
+.kicker{
+  font-size:12px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--primary);margin-bottom:18px;
+  animation:up .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:.05s;
+}
+h1{
+  font-size:clamp(46px,13vw,68px);font-weight:800;line-height:.95;
+  letter-spacing:-.025em;color:var(--on);
+  animation:up .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:.12s;
+}
+h1 .hl{color:var(--primary)}
+.lead{
+  display:flex;gap:14px;margin-top:26px;max-width:42ch;
+  animation:up .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:.2s;
+}
+.lead .bar{width:4px;background:var(--primary);flex:none;border-radius:1px}
+.lead p{font-size:16px;line-height:1.55;color:var(--on-var)}
+.cta{
+  display:block;width:100%;text-align:center;text-decoration:none;cursor:pointer;
+  background:var(--primary);color:#fff;border:none;
+  font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+  letter-spacing:.04em;text-transform:uppercase;
+  padding:17px 24px;border-radius:var(--radius);margin-top:28px;
+  transition:transform .12s ease,filter .12s ease;
+  animation:up .6s cubic-bezier(.2,.8,.2,1) both;animation-delay:.3s;
+}
+.cta[hidden]{display:none}
+.cta:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.cta:active{transform:translateY(0)}
+.note{
+  margin-top:14px;font-family:'JetBrains Mono',monospace;
+  font-size:12px;line-height:1.5;color:var(--on-var);
+}
+.note a{color:var(--primary);text-decoration:none;cursor:pointer}
+footer{
+  font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;
+  color:#52525B;text-transform:uppercase;padding-top:24px;
+}
+@keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes figIn{from{opacity:0;transform:translateY(-20px) scale(1.04)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="figure" id="figure" aria-hidden="true">&middot;&middot;&middot;</div>
+<div class="wrap">
+  <header>
+    <div class="mark"><span class="sq"></span><span class="w">REPS</span></div>
+    <span class="meta" id="meta">AUTH</span>
+  </header>
+  <main>
+    <p class="kicker" id="kicker">Confirmando</p>
+    <h1 id="title">S&oacute; um <span class="hl">instante.</span></h1>
+    <div class="lead"><span class="bar"></span><p id="body">Validando seu link&hellip;</p></div>
+    <a id="cta" class="cta" hidden></a>
+    <p class="note" id="note"></p>
+  </main>
+  <footer>REPS &middot; DI&Aacute;RIO DE TREINO T&Eacute;CNICO &middot; SEM FIRULA</footer>
+</div>
+<script>
+(function(){
+  var SUPA_URL = "https://shxphqrnlkhyjxkzrtpd.supabase.co";
+  var ANON = "sb_publishable_vMuFhJuQhwy6lDxrLRZRww_lPsd5ykJ";
+  var NATIVE = "reps://auth-callback";
+  var $ = function(id){ return document.getElementById(id); };
+
+  function set(figure, meta, kicker, titleHtml, bodyText){
+    $("figure").textContent = figure;
+    $("meta").innerHTML = "AUTH &middot; " + meta;
+    $("kicker").textContent = kicker;
+    $("title").innerHTML = titleHtml;
+    $("body").textContent = bodyText;
+  }
+  function linkButton(label, href){
+    var b = $("cta"); b.hidden = false; b.textContent = label; b.onclick = null; b.href = href;
+  }
+  function hideButton(){ $("cta").hidden = true; }
+  function note(html){ $("note").innerHTML = html; }
+
+  var qs = new URLSearchParams(location.search);
+  var hs = new URLSearchParams(location.hash.slice(1));
+  function p(k){ return qs.get(k) || hs.get(k); }
+
+  var isMobile = /android|iphone|ipad|ipod|mobile/i.test(navigator.userAgent);
+  var tokenHash = p("token_hash") || p("token");
+  var type = p("type") || "signup";
+  var errCode = p("error_code") || p("error");
+  var nativeQuery = (location.search ? location.search.slice(1) : "")
+    || (location.hash ? location.hash.slice(1) : "");
+  var nativeUrl = NATIVE + (nativeQuery ? "?" + nativeQuery : "");
+
+  function showOk(){
+    set("200","OK","Cadastro confirmado",'Tudo <span class="hl">certo.</span>',
+      "Seu e-mail está confirmado. Seu histórico de treino agora fica salvo na nuvem — e te acompanha em qualquer aparelho.");
+    linkButton("Abrir o app reps", nativeUrl);
+    note("No computador? Volte ao reps no celular — já pode treinar.");
+  }
+  function showError(msg){
+    set("410","ERR","Link inválido",'Não <span class="hl">rolou.</span>', msg);
+    linkButton("Abrir o app reps", nativeUrl);
+    note("Tente fazer login normal no app.");
+  }
+  function showVerifying(){
+    set("···","…","Confirmando",'Só um <span class="hl">instante.</span>',"Validando seu link…");
+    hideButton(); note("");
+  }
+
+  // Verifica o token via POST. Scanners de e-mail so fazem GET (prefetch) e
+  // nao rodam JS, entao nao consomem o token aqui — so o clique humano verifica.
+  function verify(){
+    showVerifying();
+    fetch(SUPA_URL + "/auth/v1/verify", {
+      method: "POST",
+      headers: { "apikey": ANON, "Content-Type": "application/json" },
+      body: JSON.stringify({ type: type, token_hash: tokenHash })
+    }).then(function(r){
+      if (r.ok) { showOk(); }
+      else { showError("Esse link expirou ou já foi usado. Peça um novo pelo app."); }
+    }).catch(function(){
+      showError("Não foi possível confirmar agora. Tente fazer login no app.");
+    });
+  }
+
+  if (errCode) {
+    var d = p("error_description");
+    showError(d ? decodeURIComponent(d.replace(/\+/g," ")) : "Esse link expirou ou já foi usado. Peça um novo pelo app.");
+  } else if (tokenHash) {
+    if (isMobile) {
+      set("200","OK","E-mail recebido",'Abrir no <span class="hl">app.</span>',
+        "Abrindo o reps… Se não abrir sozinho, toque abaixo.");
+      linkButton("Abrir no app reps", nativeUrl);
+      note('Não tem o app? <a id="webv">Continuar no navegador</a>');
+      var w = document.getElementById("webv"); if (w) w.onclick = verify;
+      setTimeout(function(){ location.href = nativeUrl; }, 500);
+    } else {
+      verify();
+    }
+  } else if (p("access_token") || p("code")) {
+    showOk();
+  } else {
+    showOk();
+  }
+})();
+</script>
+</body>
+</html>

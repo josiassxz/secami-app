@@ -1,0 +1,98 @@
+name: reps
+description: "Diario de treino tecnico, sem firula"
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.12.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+  # State management
+  flutter_riverpod: ^2.5.1
+  riverpod_annotation: ^2.3.5
+
+  # Local DB
+  drift: ^2.20.0
+  drift_flutter: ^0.2.0
+  sqlite3_flutter_libs: ^0.5.24
+  path_provider: ^2.1.4
+  path: ^1.9.0
+
+  # Backend
+  supabase_flutter: ^2.5.6
+  http: ^1.2.2
+
+  # Routing
+  go_router: ^14.2.7
+
+  # Charts
+  fl_chart: ^0.68.0
+
+  # UX
+  vibration: ^2.0.0
+  audioplayers: ^6.0.0
+  wakelock_plus: ^1.2.5
+  share_plus: ^12.0.2
+  shared_preferences: ^2.3.0
+
+  # Integracao Health Connect (Android) + HealthKit (iOS)
+  health: ^12.2.0
+
+  # Util
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+  intl: ^0.20.2
+  uuid: ^4.4.2
+  csv: ^6.0.0
+  diacritic: ^0.1.6
+  flutter_dotenv: ^5.1.0
+  collection: ^1.18.0
+  google_fonts: ^6.2.1
+  app_links: ^6.3.2
+
+  # Observabilidade (opcional - no-op se chaves vazias)
+  sentry_flutter: ^8.7.0
+  posthog_flutter: ^4.7.1
+  flutter_local_notifications: ^21.0.0
+  timezone: ^0.11.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+  # Code generation
+  build_runner: ^2.4.13
+  flutter_launcher_icons: ^0.14.1
+  drift_dev: ^2.20.0
+  riverpod_generator: ^2.4.3
+  freezed: ^2.5.7
+  json_serializable: ^6.8.0
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
+    - assets/branding/
+    - assets/exercises/
+    - assets/templates/
+    - assets/sounds/
+    - assets/legal/
+    - assets/exercises_extended.json
+
+# Ícones de app gerados a partir de logo-3-mark.svg (assets/icon_master.png).
+# Rodar: dart run flutter_launcher_icons
+flutter_launcher_icons:
+  image_path: "assets/icon_master.png"
+  ios: true
+  remove_alpha_ios: true
+  android: true
+  adaptive_icon_background: "#0A0A0B"
+  adaptive_icon_foreground: "assets/icon_foreground.png"

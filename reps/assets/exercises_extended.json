@@ -1,0 +1,2312 @@
+﻿[
+    {
+        "slug":  "exdb_2139",
+        "nome":  "Hands bike",
+        "descricao":  "Hands bike",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "2139",
+        "nome_original":  "hands bike"
+    },
+    {
+        "slug":  "exdb_0001",
+        "nome":  "3/4 abdominal sentado",
+        "descricao":  "3/4 abdominal sentado",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0001",
+        "nome_original":  "3/4 sit-up"
+    },
+    {
+        "slug":  "exdb_0400",
+        "nome":  "Com halteres sentado one leg panturrilha",
+        "descricao":  "Com halteres sentado one leg panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0400",
+        "nome_original":  "dumbbell seated one leg calf raise"
+    },
+    {
+        "slug":  "exdb_0182",
+        "nome":  "No cabo deitado fechado rosca",
+        "descricao":  "No cabo deitado fechado rosca",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "0182",
+        "nome_original":  "cable lying close-grip curl"
+    },
+    {
+        "slug":  "exdb_0990",
+        "nome":  "Com elastico unilateral twisting remada baixa",
+        "descricao":  "Com elastico unilateral twisting remada baixa",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "anilha",
+        "api_id":  "0990",
+        "nome_original":  "band one arm twisting seated row"
+    },
+    {
+        "slug":  "exdb_0402",
+        "nome":  "Com halteres sentado rosca scott",
+        "descricao":  "Com halteres sentado rosca scott",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0402",
+        "nome_original":  "dumbbell seated preacher curl"
+    },
+    {
+        "slug":  "exdb_2797",
+        "nome":  "Com barra agachamento jump step rear afundo",
+        "descricao":  "Com barra agachamento jump step rear afundo",
+        "grupo":  "quadriceps",
+        "padrao":  "agachamento",
+        "equipamento":  "barra",
+        "api_id":  "2797",
+        "nome_original":  "barbell squat jump step rear lunge"
+    },
+    {
+        "slug":  "exdb_3296",
+        "nome":  "Front lever",
+        "descricao":  "Front lever",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3296",
+        "nome_original":  "front lever"
+    },
+    {
+        "slug":  "exdb_0301",
+        "nome":  "Com halteres supino declinado",
+        "descricao":  "Com halteres supino declinado",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "halter",
+        "api_id":  "0301",
+        "nome_original":  "dumbbell decline bench press"
+    },
+    {
+        "slug":  "exdb_3655",
+        "nome":  "Walking high knees afundo",
+        "descricao":  "Walking high knees afundo",
+        "grupo":  "core",
+        "padrao":  "agachamento",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3655",
+        "nome_original":  "walking high knees lunge"
+    },
+    {
+        "slug":  "exdb_1429",
+        "nome":  "Aberto barra fixa pronada",
+        "descricao":  "Aberto barra fixa pronada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1429",
+        "nome_original":  "wide grip pull-up"
+    },
+    {
+        "slug":  "exdb_3303",
+        "nome":  "Flag",
+        "descricao":  "Flag",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3303",
+        "nome_original":  "flag"
+    },
+    {
+        "slug":  "exdb_1380",
+        "nome":  "Com halteres sentado one leg panturrilha - hammer grip",
+        "descricao":  "Com halteres sentado one leg panturrilha - hammer grip",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1380",
+        "nome_original":  "dumbbell seated one leg calf raise - hammer grip"
+    },
+    {
+        "slug":  "exdb_0763",
+        "nome":  "Smith reverso panturrilhas",
+        "descricao":  "Smith reverso panturrilhas",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0763",
+        "nome_original":  "smith reverse calf raises"
+    },
+    {
+        "slug":  "exdb_0988",
+        "nome":  "Com elastico unilateral em pe low remada",
+        "descricao":  "Com elastico unilateral em pe low remada",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "anilha",
+        "api_id":  "0988",
+        "nome_original":  "band one arm standing low row"
+    },
+    {
+        "slug":  "exdb_0757",
+        "nome":  "Smith supino inclinado",
+        "descricao":  "Smith supino inclinado",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "maquina",
+        "api_id":  "0757",
+        "nome_original":  "smith incline bench press"
+    },
+    {
+        "slug":  "exdb_0597",
+        "nome":  "Lever sentado abducao de quadril",
+        "descricao":  "Lever sentado abducao de quadril",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0597",
+        "nome_original":  "lever seated hip abduction"
+    },
+    {
+        "slug":  "exdb_0851",
+        "nome":  "Com peso sissy agachamento",
+        "descricao":  "Com peso sissy agachamento",
+        "grupo":  "quadriceps",
+        "padrao":  "agachamento",
+        "equipamento":  "anilha",
+        "api_id":  "0851",
+        "nome_original":  "weighted sissy squat"
+    },
+    {
+        "slug":  "exdb_0766",
+        "nome":  "Smith desenvolvimento",
+        "descricao":  "Smith desenvolvimento",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_vertical",
+        "equipamento":  "maquina",
+        "api_id":  "0766",
+        "nome_original":  "smith shoulder press"
+    },
+    {
+        "slug":  "exdb_0457",
+        "nome":  "Flexion leg abdominal sentado (straight arm)",
+        "descricao":  "Flexion leg abdominal sentado (straight arm)",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0457",
+        "nome_original":  "flexion leg sit up (straight arm)"
+    },
+    {
+        "slug":  "exdb_0455",
+        "nome":  "Finger roscas",
+        "descricao":  "Finger roscas",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0455",
+        "nome_original":  "finger curls"
+    },
+    {
+        "slug":  "exdb_1667",
+        "nome":  "Com halteres unilateral reverso spider rosca",
+        "descricao":  "Com halteres unilateral reverso spider rosca",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1667",
+        "nome_original":  "dumbbell one arm reverse spider curl"
+    },
+    {
+        "slug":  "exdb_0536",
+        "nome":  "Com kettlebell afundo pass through",
+        "descricao":  "Com kettlebell afundo pass through",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "kettlebell",
+        "api_id":  "0536",
+        "nome_original":  "kettlebell lunge pass through"
+    },
+    {
+        "slug":  "exdb_1661",
+        "nome":  "Com halteres deitado supine rosca direta",
+        "descricao":  "Com halteres deitado supine rosca direta",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1661",
+        "nome_original":  "dumbbell lying supine biceps curl"
+    },
+    {
+        "slug":  "exdb_0398",
+        "nome":  "Com halteres sentado unilateral coice",
+        "descricao":  "Com halteres sentado unilateral coice",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0398",
+        "nome_original":  "dumbbell seated one arm kickback"
+    },
+    {
+        "slug":  "exdb_0011",
+        "nome":  "Assisted hanging abdominal infra",
+        "descricao":  "Assisted hanging abdominal infra",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0011",
+        "nome_original":  "assisted hanging knee raise"
+    },
+    {
+        "slug":  "exdb_2138",
+        "nome":  "Stationary bike run v. 3",
+        "descricao":  "Stationary bike run v. 3",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "2138",
+        "nome_original":  "stationary bike run v. 3"
+    },
+    {
+        "slug":  "exdb_0406",
+        "nome":  "Com halteres encolhimento",
+        "descricao":  "Com halteres encolhimento",
+        "grupo":  "costas",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0406",
+        "nome_original":  "dumbbell shrug"
+    },
+    {
+        "slug":  "exdb_0302",
+        "nome":  "Com halteres declinado crucifixo",
+        "descricao":  "Com halteres declinado crucifixo",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "halter",
+        "api_id":  "0302",
+        "nome_original":  "dumbbell decline fly"
+    },
+    {
+        "slug":  "exdb_3298",
+        "nome":  "Straddle planche",
+        "descricao":  "Straddle planche",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3298",
+        "nome_original":  "straddle planche"
+    },
+    {
+        "slug":  "exdb_0352",
+        "nome":  "Com halteres neutro supino",
+        "descricao":  "Com halteres neutro supino",
+        "grupo":  "triceps",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "halter",
+        "api_id":  "0352",
+        "nome_original":  "dumbbell neutral grip bench press"
+    },
+    {
+        "slug":  "exdb_1320",
+        "nome":  "No cabo com corda crossover remada baixa",
+        "descricao":  "No cabo com corda crossover remada baixa",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "1320",
+        "nome_original":  "cable rope crossover seated row"
+    },
+    {
+        "slug":  "exdb_0230",
+        "nome":  "No cabo em pe lift",
+        "descricao":  "No cabo em pe lift",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "0230",
+        "nome_original":  "cable standing lift"
+    },
+    {
+        "slug":  "exdb_0233",
+        "nome":  "No cabo em pe face pull (with com corda)",
+        "descricao":  "No cabo em pe face pull (with com corda)",
+        "grupo":  "ombros",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "0233",
+        "nome_original":  "cable standing rear delt row (with rope)"
+    },
+    {
+        "slug":  "exdb_0530",
+        "nome":  "Com kettlebell double windmill",
+        "descricao":  "Com kettlebell double windmill",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "kettlebell",
+        "api_id":  "0530",
+        "nome_original":  "kettlebell double windmill"
+    },
+    {
+        "slug":  "exdb_3641",
+        "nome":  "Com peso kneeling step with swing",
+        "descricao":  "Com peso kneeling step with swing",
+        "grupo":  "ombros",
+        "padrao":  "dobradica_quadril",
+        "equipamento":  "anilha",
+        "api_id":  "3641",
+        "nome_original":  "weighted kneeling step with swing"
+    },
+    {
+        "slug":  "exdb_1326",
+        "nome":  "Barra fixa supinada",
+        "descricao":  "Barra fixa supinada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1326",
+        "nome_original":  "chin-up"
+    },
+    {
+        "slug":  "exdb_0108",
+        "nome":  "Com barra em pe leg panturrilha",
+        "descricao":  "Com barra em pe leg panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0108",
+        "nome_original":  "barbell standing leg calf raise"
+    },
+    {
+        "slug":  "exdb_3158",
+        "nome":  "Em pe fechado remada",
+        "descricao":  "Em pe fechado remada",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3158",
+        "nome_original":  "bodyweight standing close-grip row"
+    },
+    {
+        "slug":  "exdb_2187",
+        "nome":  "Com barra reverso supino fechado",
+        "descricao":  "Com barra reverso supino fechado",
+        "grupo":  "triceps",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "barra",
+        "api_id":  "2187",
+        "nome_original":  "barbell reverse close-grip bench press"
+    },
+    {
+        "slug":  "exdb_2761",
+        "nome":  "Ankle dorsal flexion",
+        "descricao":  "Ankle dorsal flexion",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "2761",
+        "nome_original":  "ankle dorsal flexion"
+    },
+    {
+        "slug":  "exdb_2321",
+        "nome":  "Com halteres em pe inner rosca direta v. 2",
+        "descricao":  "Com halteres em pe inner rosca direta v. 2",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "2321",
+        "nome_original":  "dumbbell standing inner biceps curl v. 2"
+    },
+    {
+        "slug":  "exdb_0989",
+        "nome":  "Com elastico unilateral twisting chest press",
+        "descricao":  "Com elastico unilateral twisting chest press",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "anilha",
+        "api_id":  "0989",
+        "nome_original":  "band one arm twisting chest press"
+    },
+    {
+        "slug":  "exdb_3193",
+        "nome":  "Glute-ham raise",
+        "descricao":  "Glute-ham raise",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3193",
+        "nome_original":  "glute-ham raise"
+    },
+    {
+        "slug":  "exdb_0403",
+        "nome":  "Com halteres sentado pegada supinada rosca concentrada",
+        "descricao":  "Com halteres sentado pegada supinada rosca concentrada",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0403",
+        "nome_original":  "dumbbell seated reverse grip concentration curl"
+    },
+    {
+        "slug":  "exdb_0533",
+        "nome":  "Com kettlebell agachamento frontal",
+        "descricao":  "Com kettlebell agachamento frontal",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "kettlebell",
+        "api_id":  "0533",
+        "nome_original":  "kettlebell front squat"
+    },
+    {
+        "slug":  "exdb_0459",
+        "nome":  "Flutter kicks",
+        "descricao":  "Flutter kicks",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0459",
+        "nome_original":  "flutter kicks"
+    },
+    {
+        "slug":  "exdb_0058",
+        "nome":  "Com barra deitado lifting (on hip)",
+        "descricao":  "Com barra deitado lifting (on hip)",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0058",
+        "nome_original":  "barbell lying lifting (on hip)"
+    },
+    {
+        "slug":  "exdb_0466",
+        "nome":  "Gironda sternum chin",
+        "descricao":  "Gironda sternum chin",
+        "grupo":  "costas",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0466",
+        "nome_original":  "gironda sternum chin"
+    },
+    {
+        "slug":  "exdb_0453",
+        "nome":  "Com barra sentado triceps frances",
+        "descricao":  "Com barra sentado triceps frances",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0453",
+        "nome_original":  "ez barbell seated triceps extension"
+    },
+    {
+        "slug":  "exdb_0678",
+        "nome":  "Rocky barra fixa pronada puxada",
+        "descricao":  "Rocky barra fixa pronada puxada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0678",
+        "nome_original":  "rocky pull-up pulldown"
+    },
+    {
+        "slug":  "exdb_0007",
+        "nome":  "Alternado lateral puxada",
+        "descricao":  "Alternado lateral puxada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "cabo",
+        "api_id":  "0007",
+        "nome_original":  "alternate lateral pulldown"
+    },
+    {
+        "slug":  "exdb_0532",
+        "nome":  "Com kettlebell figure 8",
+        "descricao":  "Com kettlebell figure 8",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "kettlebell",
+        "api_id":  "0532",
+        "nome_original":  "kettlebell figure 8"
+    },
+    {
+        "slug":  "exdb_1267",
+        "nome":  "No cabo unilateral press on exercise ball",
+        "descricao":  "No cabo unilateral press on exercise ball",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "1267",
+        "nome_original":  "cable one arm press on exercise ball"
+    },
+    {
+        "slug":  "exdb_0303",
+        "nome":  "Com halteres declinado hammer press",
+        "descricao":  "Com halteres declinado hammer press",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0303",
+        "nome_original":  "dumbbell decline hammer press"
+    },
+    {
+        "slug":  "exdb_1427",
+        "nome":  "Straight leg outer hip abductor",
+        "descricao":  "Straight leg outer hip abductor",
+        "grupo":  "quadriceps",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1427",
+        "nome_original":  "straight leg outer hip abductor"
+    },
+    {
+        "slug":  "exdb_1379",
+        "nome":  "Com halteres sentado panturrilha",
+        "descricao":  "Com halteres sentado panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1379",
+        "nome_original":  "dumbbell seated calf raise"
+    },
+    {
+        "slug":  "exdb_1375",
+        "nome":  "No cabo em pe panturrilha",
+        "descricao":  "No cabo em pe panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "1375",
+        "nome_original":  "cable standing calf raise"
+    },
+    {
+        "slug":  "exdb_0057",
+        "nome":  "Com barra deitado extension",
+        "descricao":  "Com barra deitado extension",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0057",
+        "nome_original":  "barbell lying extension"
+    },
+    {
+        "slug":  "exdb_0759",
+        "nome":  "Smith inclinado shoulder raises",
+        "descricao":  "Smith inclinado shoulder raises",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0759",
+        "nome_original":  "smith incline shoulder raises"
+    },
+    {
+        "slug":  "exdb_0464",
+        "nome":  "Front prancha with twist",
+        "descricao":  "Front prancha with twist",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0464",
+        "nome_original":  "front plank with twist"
+    },
+    {
+        "slug":  "exdb_2140",
+        "nome":  "Walk wave machine",
+        "descricao":  "Walk wave machine",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "2140",
+        "nome_original":  "walk wave machine"
+    },
+    {
+        "slug":  "exdb_0458",
+        "nome":  "No chao crucifixo (with com barra)",
+        "descricao":  "No chao crucifixo (with com barra)",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "barra",
+        "api_id":  "0458",
+        "nome_original":  "floor fly (with barbell)"
+    },
+    {
+        "slug":  "exdb_1269",
+        "nome":  "No cabo em pe up straight crossovers",
+        "descricao":  "No cabo em pe up straight crossovers",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "1269",
+        "nome_original":  "cable standing up straight crossovers"
+    },
+    {
+        "slug":  "exdb_0594",
+        "nome":  "Lever sentado panturrilha",
+        "descricao":  "Lever sentado panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0594",
+        "nome_original":  "lever seated calf raise"
+    },
+    {
+        "slug":  "exdb_0760",
+        "nome":  "Smith leg press",
+        "descricao":  "Smith leg press",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "maquina",
+        "api_id":  "0760",
+        "nome_original":  "smith leg press"
+    },
+    {
+        "slug":  "exdb_1371",
+        "nome":  "Com barra sentado panturrilha",
+        "descricao":  "Com barra sentado panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "1371",
+        "nome_original":  "barbell seated calf raise"
+    },
+    {
+        "slug":  "exdb_0849",
+        "nome":  "Com peso sentado twist (on stability ball)",
+        "descricao":  "Com peso sentado twist (on stability ball)",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "anilha",
+        "api_id":  "0849",
+        "nome_original":  "weighted seated twist (on stability ball)"
+    },
+    {
+        "slug":  "exdb_0304",
+        "nome":  "Com halteres declinado encolhimento v. 2",
+        "descricao":  "Com halteres declinado encolhimento v. 2",
+        "grupo":  "costas",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0304",
+        "nome_original":  "dumbbell decline shrug v. 2"
+    },
+    {
+        "slug":  "exdb_0002",
+        "nome":  "45â° side bend",
+        "descricao":  "45â° side bend",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0002",
+        "nome_original":  "45Â° side bend"
+    },
+    {
+        "slug":  "exdb_0762",
+        "nome":  "Smith face pull",
+        "descricao":  "Smith face pull",
+        "grupo":  "ombros",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "maquina",
+        "api_id":  "0762",
+        "nome_original":  "smith rear delt row"
+    },
+    {
+        "slug":  "exdb_1276",
+        "nome":  "Com halteres declinado unilateral crucifixo",
+        "descricao":  "Com halteres declinado unilateral crucifixo",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "halter",
+        "api_id":  "1276",
+        "nome_original":  "dumbbell decline one arm fly"
+    },
+    {
+        "slug":  "exdb_0599",
+        "nome":  "Lever sentado mesa flexora",
+        "descricao":  "Lever sentado mesa flexora",
+        "grupo":  "posterior",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0599",
+        "nome_original":  "lever seated leg curl"
+    },
+    {
+        "slug":  "exdb_0179",
+        "nome":  "No cabo low crucifixo",
+        "descricao":  "No cabo low crucifixo",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "0179",
+        "nome_original":  "cable low fly"
+    },
+    {
+        "slug":  "exdb_2331",
+        "nome":  "Cycle cross trainer",
+        "descricao":  "Cycle cross trainer",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "2331",
+        "nome_original":  "cycle cross trainer"
+    },
+    {
+        "slug":  "exdb_1321",
+        "nome":  "No cabo com corda elevated remada baixa",
+        "descricao":  "No cabo com corda elevated remada baixa",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "1321",
+        "nome_original":  "cable rope elevated seated row"
+    },
+    {
+        "slug":  "exdb_0347",
+        "nome":  "Com halteres deitado pronation",
+        "descricao":  "Com halteres deitado pronation",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0347",
+        "nome_original":  "dumbbell lying pronation"
+    },
+    {
+        "slug":  "exdb_1323",
+        "nome":  "No cabo com corda remada baixa",
+        "descricao":  "No cabo com corda remada baixa",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "1323",
+        "nome_original":  "cable rope seated row"
+    },
+    {
+        "slug":  "exdb_0991",
+        "nome":  "Com elastico pull through",
+        "descricao":  "Com elastico pull through",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "anilha",
+        "api_id":  "0991",
+        "nome_original":  "band pull through"
+    },
+    {
+        "slug":  "exdb_0844",
+        "nome":  "Com peso round arm",
+        "descricao":  "Com peso round arm",
+        "grupo":  "ombros",
+        "padrao":  "isolador",
+        "equipamento":  "anilha",
+        "api_id":  "0844",
+        "nome_original":  "weighted round arm"
+    },
+    {
+        "slug":  "exdb_0764",
+        "nome":  "Smith reverso-grip press",
+        "descricao":  "Smith reverso-grip press",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0764",
+        "nome_original":  "smith reverse-grip press"
+    },
+    {
+        "slug":  "exdb_1733",
+        "nome":  "Com halteres inclinado bilateral extension",
+        "descricao":  "Com halteres inclinado bilateral extension",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1733",
+        "nome_original":  "dumbbell incline two arm extension"
+    },
+    {
+        "slug":  "exdb_1327",
+        "nome":  "Fechado barra fixa supinada",
+        "descricao":  "Fechado barra fixa supinada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1327",
+        "nome_original":  "close grip chin-up"
+    },
+    {
+        "slug":  "exdb_0235",
+        "nome":  "No cabo em pe shoulder external rotation",
+        "descricao":  "No cabo em pe shoulder external rotation",
+        "grupo":  "ombros",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "0235",
+        "nome_original":  "cable standing shoulder external rotation"
+    },
+    {
+        "slug":  "exdb_0348",
+        "nome":  "Com halteres deitado rear elevacao lateral",
+        "descricao":  "Com halteres deitado rear elevacao lateral",
+        "grupo":  "ombros",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0348",
+        "nome_original":  "dumbbell lying rear lateral raise"
+    },
+    {
+        "slug":  "exdb_0234",
+        "nome":  "No cabo em pe remada (barra V)",
+        "descricao":  "No cabo em pe remada (barra V)",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "0234",
+        "nome_original":  "cable standing row (v-bar)"
+    },
+    {
+        "slug":  "exdb_0059",
+        "nome":  "Com barra deitado rosca scott",
+        "descricao":  "Com barra deitado rosca scott",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0059",
+        "nome_original":  "barbell lying preacher curl"
+    },
+    {
+        "slug":  "exdb_1666",
+        "nome":  "Com halteres unilateral prone rosca martelo",
+        "descricao":  "Com halteres unilateral prone rosca martelo",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1666",
+        "nome_original":  "dumbbell one arm prone hammer curl"
+    },
+    {
+        "slug":  "exdb_0175",
+        "nome":  "No cabo kneeling abdominal supra",
+        "descricao":  "No cabo kneeling abdominal supra",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "0175",
+        "nome_original":  "cable kneeling crunch"
+    },
+    {
+        "slug":  "exdb_3195",
+        "nome":  "Lever deitado two-one mesa flexora",
+        "descricao":  "Lever deitado two-one mesa flexora",
+        "grupo":  "posterior",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "3195",
+        "nome_original":  "lever lying two-one leg curl"
+    },
+    {
+        "slug":  "exdb_1731",
+        "nome":  "Com halteres fechado press",
+        "descricao":  "Com halteres fechado press",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1731",
+        "nome_original":  "dumbbell close grip press"
+    },
+    {
+        "slug":  "exdb_2141",
+        "nome":  "Walk elliptical cross trainer",
+        "descricao":  "Walk elliptical cross trainer",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "2141",
+        "nome_original":  "walk elliptical cross trainer"
+    },
+    {
+        "slug":  "exdb_1376",
+        "nome":  "No cabo em pe one leg panturrilha",
+        "descricao":  "No cabo em pe one leg panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "1376",
+        "nome_original":  "cable standing one leg calf raise"
+    },
+    {
+        "slug":  "exdb_0109",
+        "nome":  "Com barra em pe overhead triceps frances",
+        "descricao":  "Com barra em pe overhead triceps frances",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0109",
+        "nome_original":  "barbell standing overhead triceps extension"
+    },
+    {
+        "slug":  "exdb_0847",
+        "nome":  "Com peso sentado rosca direta (on stability ball)",
+        "descricao":  "Com peso sentado rosca direta (on stability ball)",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "anilha",
+        "api_id":  "0847",
+        "nome_original":  "weighted seated bicep curl (on stability ball)"
+    },
+    {
+        "slug":  "exdb_0064",
+        "nome":  "Com barra unilateral remada curvada",
+        "descricao":  "Com barra unilateral remada curvada",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "barra",
+        "api_id":  "0064",
+        "nome_original":  "barbell one arm bent over row"
+    },
+    {
+        "slug":  "exdb_0180",
+        "nome":  "No cabo low remada baixa",
+        "descricao":  "No cabo low remada baixa",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "0180",
+        "nome_original":  "cable low seated row"
+    },
+    {
+        "slug":  "exdb_1318",
+        "nome":  "No cabo inclinado no banco remada",
+        "descricao":  "No cabo inclinado no banco remada",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "1318",
+        "nome_original":  "cable incline bench row"
+    },
+    {
+        "slug":  "exdb_2143",
+        "nome":  "Com halteres em pe around world",
+        "descricao":  "Com halteres em pe around world",
+        "grupo":  "ombros",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "2143",
+        "nome_original":  "dumbbell standing around world"
+    },
+    {
+        "slug":  "exdb_0351",
+        "nome":  "Com halteres deitado triceps frances",
+        "descricao":  "Com halteres deitado triceps frances",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0351",
+        "nome_original":  "dumbbell lying triceps extension"
+    },
+    {
+        "slug":  "exdb_0112",
+        "nome":  "Com barra em pe twist",
+        "descricao":  "Com barra em pe twist",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0112",
+        "nome_original":  "barbell standing twist"
+    },
+    {
+        "slug":  "exdb_0009",
+        "nome":  "Assisted chest paralelas (kneeling)",
+        "descricao":  "Assisted chest paralelas (kneeling)",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "maquina",
+        "api_id":  "0009",
+        "nome_original":  "assisted chest dip (kneeling)"
+    },
+    {
+        "slug":  "exdb_0761",
+        "nome":  "Smith narremada remada",
+        "descricao":  "Smith narremada remada",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "maquina",
+        "api_id":  "0761",
+        "nome_original":  "smith narrow row"
+    },
+    {
+        "slug":  "exdb_0596",
+        "nome":  "Lever sentado crucifixo",
+        "descricao":  "Lever sentado crucifixo",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "maquina",
+        "api_id":  "0596",
+        "nome_original":  "lever seated fly"
+    },
+    {
+        "slug":  "exdb_1665",
+        "nome":  "Com halteres unilateral prone rosca",
+        "descricao":  "Com halteres unilateral prone rosca",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1665",
+        "nome_original":  "dumbbell one arm prone curl"
+    },
+    {
+        "slug":  "exdb_0003",
+        "nome":  "Air bike",
+        "descricao":  "Air bike",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0003",
+        "nome_original":  "air bike"
+    },
+    {
+        "slug":  "exdb_0116",
+        "nome":  "Com barra stiff",
+        "descricao":  "Com barra stiff",
+        "grupo":  "posterior",
+        "padrao":  "dobradica_quadril",
+        "equipamento":  "barra",
+        "api_id":  "0116",
+        "nome_original":  "barbell straight leg deadlift"
+    },
+    {
+        "slug":  "exdb_0227",
+        "nome":  "No cabo em pe crucifixo",
+        "descricao":  "No cabo em pe crucifixo",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "0227",
+        "nome_original":  "cable standing fly"
+    },
+    {
+        "slug":  "exdb_0405",
+        "nome":  "Com halteres sentado desenvolvimento",
+        "descricao":  "Com halteres sentado desenvolvimento",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_vertical",
+        "equipamento":  "halter",
+        "api_id":  "0405",
+        "nome_original":  "dumbbell seated shoulder press"
+    },
+    {
+        "slug":  "exdb_0349",
+        "nome":  "Com halteres deitado supination",
+        "descricao":  "Com halteres deitado supination",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0349",
+        "nome_original":  "dumbbell lying supination"
+    },
+    {
+        "slug":  "exdb_0012",
+        "nome":  "Assisted deitado abdominal infra with lateral thremada down",
+        "descricao":  "Assisted deitado abdominal infra with lateral thremada down",
+        "grupo":  "core",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0012",
+        "nome_original":  "assisted lying leg raise with lateral throw down"
+    },
+    {
+        "slug":  "exdb_0232",
+        "nome":  "No cabo em pe puxada (with com corda)",
+        "descricao":  "No cabo em pe puxada (with com corda)",
+        "grupo":  "biceps",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "cabo",
+        "api_id":  "0232",
+        "nome_original":  "cable standing pulldown (with rope)"
+    },
+    {
+        "slug":  "exdb_0305",
+        "nome":  "Com halteres declinado encolhimento",
+        "descricao":  "Com halteres declinado encolhimento",
+        "grupo":  "costas",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0305",
+        "nome_original":  "dumbbell decline shrug"
+    },
+    {
+        "slug":  "exdb_3194",
+        "nome":  "Frankenstein agachamento",
+        "descricao":  "Frankenstein agachamento",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "barra",
+        "api_id":  "3194",
+        "nome_original":  "frankenstein squat"
+    },
+    {
+        "slug":  "exdb_0174",
+        "nome":  "No cabo judo flip",
+        "descricao":  "No cabo judo flip",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "0174",
+        "nome_original":  "cable judo flip"
+    },
+    {
+        "slug":  "exdb_1268",
+        "nome":  "No cabo press on exercise ball",
+        "descricao":  "No cabo press on exercise ball",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "1268",
+        "nome_original":  "cable press on exercise ball"
+    },
+    {
+        "slug":  "exdb_1664",
+        "nome":  "Com halteres high rosca",
+        "descricao":  "Com halteres high rosca",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1664",
+        "nome_original":  "dumbbell high curl"
+    },
+    {
+        "slug":  "exdb_3168",
+        "nome":  "Agachamentoting remada",
+        "descricao":  "Agachamentoting remada",
+        "grupo":  "costas",
+        "padrao":  "agachamento",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3168",
+        "nome_original":  "bodyweight squatting row"
+    },
+    {
+        "slug":  "exdb_2801",
+        "nome":  "Twisted abdominal infra (female)",
+        "descricao":  "Twisted abdominal infra (female)",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "2801",
+        "nome_original":  "twisted leg raise (female)"
+    },
+    {
+        "slug":  "exdb_0178",
+        "nome":  "No cabo elevacao lateral",
+        "descricao":  "No cabo elevacao lateral",
+        "grupo":  "ombros",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "0178",
+        "nome_original":  "cable lateral raise"
+    },
+    {
+        "slug":  "exdb_3294",
+        "nome":  "Archer flexao",
+        "descricao":  "Archer flexao",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3294",
+        "nome_original":  "archer push up"
+    },
+    {
+        "slug":  "exdb_1587",
+        "nome":  "Sentado wide angle pose sequence",
+        "descricao":  "Sentado wide angle pose sequence",
+        "grupo":  "posterior",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1587",
+        "nome_original":  "seated wide angle pose sequence"
+    },
+    {
+        "slug":  "exdb_1617",
+        "nome":  "Com halteres declinado unilateral hammer press",
+        "descricao":  "Com halteres declinado unilateral hammer press",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1617",
+        "nome_original":  "dumbbell decline one arm hammer press"
+    },
+    {
+        "slug":  "exdb_0299",
+        "nome":  "Com halteres cuban press",
+        "descricao":  "Com halteres cuban press",
+        "grupo":  "ombros",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0299",
+        "nome_original":  "dumbbell cuban press"
+    },
+    {
+        "slug":  "exdb_1737",
+        "nome":  "Com halteres sentado bent over triceps frances",
+        "descricao":  "Com halteres sentado bent over triceps frances",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1737",
+        "nome_original":  "dumbbell seated bent over triceps extension"
+    },
+    {
+        "slug":  "exdb_0595",
+        "nome":  "Lever sentado abdominal supra (chest pad)",
+        "descricao":  "Lever sentado abdominal supra (chest pad)",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0595",
+        "nome_original":  "lever seated crunch (chest pad)"
+    },
+    {
+        "slug":  "exdb_0063",
+        "nome":  "Com barra narremada stance agachamento",
+        "descricao":  "Com barra narremada stance agachamento",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "barra",
+        "api_id":  "0063",
+        "nome_original":  "barbell narrow stance squat"
+    },
+    {
+        "slug":  "exdb_0298",
+        "nome":  "Com halteres cross body rosca martelo",
+        "descricao":  "Com halteres cross body rosca martelo",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0298",
+        "nome_original":  "dumbbell cross body hammer curl"
+    },
+    {
+        "slug":  "exdb_0840",
+        "nome":  "Com peso overhead abdominal supra (on stability ball)",
+        "descricao":  "Com peso overhead abdominal supra (on stability ball)",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "anilha",
+        "api_id":  "0840",
+        "nome_original":  "weighted overhead crunch (on stability ball)"
+    },
+    {
+        "slug":  "exdb_1670",
+        "nome":  "Com halteres unilateral em pe rosca",
+        "descricao":  "Com halteres unilateral em pe rosca",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1670",
+        "nome_original":  "dumbbell one arm standing curl"
+    },
+    {
+        "slug":  "exdb_0184",
+        "nome":  "No cabo deitado extension pullover (with com corda attachment)",
+        "descricao":  "No cabo deitado extension pullover (with com corda attachment)",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "cabo",
+        "api_id":  "0184",
+        "nome_original":  "cable lying extension pullover (with rope attachment)"
+    },
+    {
+        "slug":  "exdb_2144",
+        "nome":  "No cabo sentado chest press",
+        "descricao":  "No cabo sentado chest press",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "2144",
+        "nome_original":  "cable seated chest press"
+    },
+    {
+        "slug":  "exdb_0006",
+        "nome":  "Alternado heel touchers",
+        "descricao":  "Alternado heel touchers",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0006",
+        "nome_original":  "alternate heel touchers"
+    },
+    {
+        "slug":  "exdb_1616",
+        "nome":  "Lever pegada supinada rosca scott",
+        "descricao":  "Lever pegada supinada rosca scott",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "1616",
+        "nome_original":  "lever reverse grip preacher curl"
+    },
+    {
+        "slug":  "exdb_2188",
+        "nome":  "Com halteres sentado triceps frances",
+        "descricao":  "Com halteres sentado triceps frances",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "2188",
+        "nome_original":  "dumbbell seated triceps extension"
+    },
+    {
+        "slug":  "exdb_0231",
+        "nome":  "No cabo em pe unilateral triceps frances",
+        "descricao":  "No cabo em pe unilateral triceps frances",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "0231",
+        "nome_original":  "cable standing one arm triceps extension"
+    },
+    {
+        "slug":  "exdb_0841",
+        "nome":  "Com peso barra fixa pronada",
+        "descricao":  "Com peso barra fixa pronada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "anilha",
+        "api_id":  "0841",
+        "nome_original":  "weighted pull-up"
+    },
+    {
+        "slug":  "exdb_0538",
+        "nome":  "Com kettlebell unilateral jerk",
+        "descricao":  "Com kettlebell unilateral jerk",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_vertical",
+        "equipamento":  "kettlebell",
+        "api_id":  "0538",
+        "nome_original":  "kettlebell one arm jerk"
+    },
+    {
+        "slug":  "exdb_2800",
+        "nome":  "Com barra sitted alternado abdominal infra (female)",
+        "descricao":  "Com barra sitted alternado abdominal infra (female)",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "2800",
+        "nome_original":  "barbell sitted alternate leg raise (female)"
+    },
+    {
+        "slug":  "exdb_0177",
+        "nome":  "No cabo lateral puxada (with com corda attachment)",
+        "descricao":  "No cabo lateral puxada (with com corda attachment)",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "cabo",
+        "api_id":  "0177",
+        "nome_original":  "cable lateral pulldown (with rope attachment)"
+    },
+    {
+        "slug":  "exdb_0110",
+        "nome":  "Com barra em pe pegada supinada rosca",
+        "descricao":  "Com barra em pe pegada supinada rosca",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0110",
+        "nome_original":  "barbell standing reverse grip curl"
+    },
+    {
+        "slug":  "exdb_0399",
+        "nome":  "Com halteres sentado unilateral rotate",
+        "descricao":  "Com halteres sentado unilateral rotate",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0399",
+        "nome_original":  "dumbbell seated one arm rotate"
+    },
+    {
+        "slug":  "exdb_2330",
+        "nome":  "No cabo puxada frente full range of motion",
+        "descricao":  "No cabo puxada frente full range of motion",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "cabo",
+        "api_id":  "2330",
+        "nome_original":  "cable lat pulldown full range of motion"
+    },
+    {
+        "slug":  "exdb_0236",
+        "nome":  "No cabo em pe twist remada (barra V)",
+        "descricao":  "No cabo em pe twist remada (barra V)",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "0236",
+        "nome_original":  "cable standing twist row (v-bar)"
+    },
+    {
+        "slug":  "exdb_1736",
+        "nome":  "Com halteres unilateral french press on exercise ball",
+        "descricao":  "Com halteres unilateral french press on exercise ball",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1736",
+        "nome_original":  "dumbbell one arm french press on exercise ball"
+    },
+    {
+        "slug":  "exdb_2318",
+        "nome":  "Lever desenvolvimento v. 3",
+        "descricao":  "Lever desenvolvimento v. 3",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_vertical",
+        "equipamento":  "maquina",
+        "api_id":  "2318",
+        "nome_original":  "lever shoulder press v. 3"
+    },
+    {
+        "slug":  "exdb_0592",
+        "nome":  "Lever rosca scott",
+        "descricao":  "Lever rosca scott",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0592",
+        "nome_original":  "lever preacher curl"
+    },
+    {
+        "slug":  "exdb_1614",
+        "nome":  "Lever rosca scott v. 2",
+        "descricao":  "Lever rosca scott v. 2",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "1614",
+        "nome_original":  "lever preacher curl v. 2"
+    },
+    {
+        "slug":  "exdb_3302",
+        "nome":  "Handstand",
+        "descricao":  "Handstand",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3302",
+        "nome_original":  "handstand"
+    },
+    {
+        "slug":  "exdb_3295",
+        "nome":  "Front lever reps",
+        "descricao":  "Front lever reps",
+        "grupo":  "costas",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3295",
+        "nome_original":  "front lever reps"
+    },
+    {
+        "slug":  "exdb_1619",
+        "nome":  "Com halteres inclinado unilateral hammer press",
+        "descricao":  "Com halteres inclinado unilateral hammer press",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1619",
+        "nome_original":  "dumbbell incline one arm hammer press"
+    },
+    {
+        "slug":  "exdb_2333",
+        "nome":  "Arm slingers hanging straight legs",
+        "descricao":  "Arm slingers hanging straight legs",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "2333",
+        "nome_original":  "arm slingers hanging straight legs"
+    },
+    {
+        "slug":  "exdb_3161",
+        "nome":  "Em pe remada serrote (with towel)",
+        "descricao":  "Em pe remada serrote (with towel)",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3161",
+        "nome_original":  "bodyweight standing one arm row (with towel)"
+    },
+    {
+        "slug":  "exdb_0065",
+        "nome":  "Com barra unilateral no chao press",
+        "descricao":  "Com barra unilateral no chao press",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0065",
+        "nome_original":  "barbell one arm floor press"
+    },
+    {
+        "slug":  "exdb_0350",
+        "nome":  "Com halteres deitado supine rosca",
+        "descricao":  "Com halteres deitado supine rosca",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0350",
+        "nome_original":  "dumbbell lying supine curl"
+    },
+    {
+        "slug":  "exdb_0850",
+        "nome":  "Com peso side bend (on stability ball)",
+        "descricao":  "Com peso side bend (on stability ball)",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "anilha",
+        "api_id":  "0850",
+        "nome_original":  "weighted side bend (on stability ball)"
+    },
+    {
+        "slug":  "exdb_0229",
+        "nome":  "No cabo em pe inner rosca",
+        "descricao":  "No cabo em pe inner rosca",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "0229",
+        "nome_original":  "cable standing inner curl"
+    },
+    {
+        "slug":  "exdb_1273",
+        "nome":  "Clap flexao",
+        "descricao":  "Clap flexao",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1273",
+        "nome_original":  "clap push up"
+    },
+    {
+        "slug":  "exdb_0845",
+        "nome":  "Com peso russian twist (legs up)",
+        "descricao":  "Com peso russian twist (legs up)",
+        "grupo":  "core",
+        "padrao":  "isolador",
+        "equipamento":  "anilha",
+        "api_id":  "0845",
+        "nome_original":  "weighted russian twist (legs up)"
+    },
+    {
+        "slug":  "exdb_1730",
+        "nome":  "Com halteres sentado bent over alternado coice",
+        "descricao":  "Com halteres sentado bent over alternado coice",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1730",
+        "nome_original":  "dumbbell seated bent over alternate kickback"
+    },
+    {
+        "slug":  "exdb_1270",
+        "nome":  "No cabo upper chest crossovers",
+        "descricao":  "No cabo upper chest crossovers",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "1270",
+        "nome_original":  "cable upper chest crossovers"
+    },
+    {
+        "slug":  "exdb_3167",
+        "nome":  "Agachamentoting remada (with towel)",
+        "descricao":  "Agachamentoting remada (with towel)",
+        "grupo":  "costas",
+        "padrao":  "agachamento",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3167",
+        "nome_original":  "bodyweight squatting row (with towel)"
+    },
+    {
+        "slug":  "exdb_1322",
+        "nome":  "No cabo com corda extension inclinado no banco remada",
+        "descricao":  "No cabo com corda extension inclinado no banco remada",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "1322",
+        "nome_original":  "cable rope extension incline bench row"
+    },
+    {
+        "slug":  "exdb_0668",
+        "nome":  "Rear declinado bridge",
+        "descricao":  "Rear declinado bridge",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0668",
+        "nome_original":  "rear decline bridge"
+    },
+    {
+        "slug":  "exdb_2741",
+        "nome":  "Ez-com barra em pe aberto rosca direta",
+        "descricao":  "Ez-com barra em pe aberto rosca direta",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "2741",
+        "nome_original":  "ez-barbell standing wide grip biceps curl"
+    },
+    {
+        "slug":  "exdb_1620",
+        "nome":  "Com halteres inclinado unilateral hammer press on exercise ball",
+        "descricao":  "Com halteres inclinado unilateral hammer press on exercise ball",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1620",
+        "nome_original":  "dumbbell incline one arm hammer press on exercise ball"
+    },
+    {
+        "slug":  "exdb_1324",
+        "nome":  "No cabo upper remada",
+        "descricao":  "No cabo upper remada",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "1324",
+        "nome_original":  "cable upper row"
+    },
+    {
+        "slug":  "exdb_3162",
+        "nome":  "Em pe remada serrote",
+        "descricao":  "Em pe remada serrote",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3162",
+        "nome_original":  "bodyweight standing one arm row"
+    },
+    {
+        "slug":  "exdb_1734",
+        "nome":  "Com halteres coices on exercise ball",
+        "descricao":  "Com halteres coices on exercise ball",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1734",
+        "nome_original":  "dumbbell kickbacks on exercise ball"
+    },
+    {
+        "slug":  "exdb_0404",
+        "nome":  "Com halteres sentado desenvolvimento (parallel grip)",
+        "descricao":  "Com halteres sentado desenvolvimento (parallel grip)",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_vertical",
+        "equipamento":  "halter",
+        "api_id":  "0404",
+        "nome_original":  "dumbbell seated shoulder press (parallel grip)"
+    },
+    {
+        "slug":  "exdb_0672",
+        "nome":  "Reverso paralelas",
+        "descricao":  "Reverso paralelas",
+        "grupo":  "triceps",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0672",
+        "nome_original":  "reverse dip"
+    },
+    {
+        "slug":  "exdb_2315",
+        "nome":  "Lever rotary calf",
+        "descricao":  "Lever rotary calf",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "2315",
+        "nome_original":  "lever rotary calf"
+    },
+    {
+        "slug":  "exdb_1434",
+        "nome":  "Smith low bar agachamento",
+        "descricao":  "Smith low bar agachamento",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "maquina",
+        "api_id":  "1434",
+        "nome_original":  "smith low bar squat"
+    },
+    {
+        "slug":  "exdb_0765",
+        "nome":  "Smith sentado desenvolvimento",
+        "descricao":  "Smith sentado desenvolvimento",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_vertical",
+        "equipamento":  "maquina",
+        "api_id":  "0765",
+        "nome_original":  "smith seated shoulder press"
+    },
+    {
+        "slug":  "exdb_1728",
+        "nome":  "No cabo bilateral triceps coice",
+        "descricao":  "No cabo bilateral triceps coice",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "cabo",
+        "api_id":  "1728",
+        "nome_original":  "cable two arm tricep kickback"
+    },
+    {
+        "slug":  "exdb_1615",
+        "nome":  "Lever hammer grip rosca scott",
+        "descricao":  "Lever hammer grip rosca scott",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "1615",
+        "nome_original":  "lever hammer grip preacher curl"
+    },
+    {
+        "slug":  "exdb_0228",
+        "nome":  "No cabo em pe extensao de quadril",
+        "descricao":  "No cabo em pe extensao de quadril",
+        "grupo":  "gluteos",
+        "padrao":  "dobradica_quadril",
+        "equipamento":  "cabo",
+        "api_id":  "0228",
+        "nome_original":  "cable standing hip extension"
+    },
+    {
+        "slug":  "exdb_0055",
+        "nome":  "Com barra deitado fechado press",
+        "descricao":  "Com barra deitado fechado press",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0055",
+        "nome_original":  "barbell lying close-grip press"
+    },
+    {
+        "slug":  "exdb_1275",
+        "nome":  "Drop flexao",
+        "descricao":  "Drop flexao",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1275",
+        "nome_original":  "drop push up"
+    },
+    {
+        "slug":  "exdb_1735",
+        "nome":  "Com halteres deitado unilateral extension",
+        "descricao":  "Com halteres deitado unilateral extension",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1735",
+        "nome_original":  "dumbbell lying single extension"
+    },
+    {
+        "slug":  "exdb_0601",
+        "nome":  "Lever sentado crucifixo invertido (parallel grip)",
+        "descricao":  "Lever sentado crucifixo invertido (parallel grip)",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "maquina",
+        "api_id":  "0601",
+        "nome_original":  "lever seated reverse fly (parallel grip)"
+    },
+    {
+        "slug":  "exdb_0993",
+        "nome":  "Com elastico crucifixo invertido",
+        "descricao":  "Com elastico crucifixo invertido",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "anilha",
+        "api_id":  "0993",
+        "nome_original":  "band reverse fly"
+    },
+    {
+        "slug":  "exdb_1663",
+        "nome":  "Com halteres unilateral hammer rosca scott",
+        "descricao":  "Com halteres unilateral hammer rosca scott",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1663",
+        "nome_original":  "dumbbell one arm hammer preacher curl"
+    },
+    {
+        "slug":  "exdb_1373",
+        "nome":  "Em pe panturrilha",
+        "descricao":  "Em pe panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1373",
+        "nome_original":  "bodyweight standing calf raise"
+    },
+    {
+        "slug":  "exdb_0598",
+        "nome":  "Lever sentado aducao de quadril",
+        "descricao":  "Lever sentado aducao de quadril",
+        "grupo":  "quadriceps",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0598",
+        "nome_original":  "lever seated hip adduction"
+    },
+    {
+        "slug":  "exdb_1433",
+        "nome":  "Smith agachamento frontal (clean grip)",
+        "descricao":  "Smith agachamento frontal (clean grip)",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "maquina",
+        "api_id":  "1433",
+        "nome_original":  "smith front squat (clean grip)"
+    },
+    {
+        "slug":  "exdb_0673",
+        "nome":  "Pegada supinada machine puxada frente",
+        "descricao":  "Pegada supinada machine puxada frente",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "maquina",
+        "api_id":  "0673",
+        "nome_original":  "reverse grip machine lat pulldown"
+    },
+    {
+        "slug":  "exdb_0534",
+        "nome":  "Com kettlebell agachamento goblet",
+        "descricao":  "Com kettlebell agachamento goblet",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "kettlebell",
+        "api_id":  "0534",
+        "nome_original":  "kettlebell goblet squat"
+    },
+    {
+        "slug":  "exdb_2142",
+        "nome":  "Ski ergometer",
+        "descricao":  "Ski ergometer",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "2142",
+        "nome_original":  "ski ergometer"
+    },
+    {
+        "slug":  "exdb_0111",
+        "nome":  "Com barra em pe rocking leg panturrilha",
+        "descricao":  "Com barra em pe rocking leg panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0111",
+        "nome_original":  "barbell standing rocking leg calf raise"
+    },
+    {
+        "slug":  "exdb_0346",
+        "nome":  "Com halteres deitado unilateral supinated triceps frances",
+        "descricao":  "Com halteres deitado unilateral supinated triceps frances",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0346",
+        "nome_original":  "dumbbell lying one arm supinated triceps extension"
+    },
+    {
+        "slug":  "exdb_1431",
+        "nome":  "Assisted em pe barra fixa supinada",
+        "descricao":  "Assisted em pe barra fixa supinada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "maquina",
+        "api_id":  "1431",
+        "nome_original":  "assisted standing chin-up"
+    },
+    {
+        "slug":  "exdb_2795",
+        "nome":  "Com halteres step up afundo",
+        "descricao":  "Com halteres step up afundo",
+        "grupo":  "quadriceps",
+        "padrao":  "agachamento",
+        "equipamento":  "halter",
+        "api_id":  "2795",
+        "nome_original":  "dumbbell step up lunge"
+    },
+    {
+        "slug":  "exdb_1372",
+        "nome":  "Com barra em pe panturrilha",
+        "descricao":  "Com barra em pe panturrilha",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "1372",
+        "nome_original":  "barbell standing calf raise"
+    },
+    {
+        "slug":  "exdb_0060",
+        "nome":  "Com barra deitado triceps frances triceps testa",
+        "descricao":  "Com barra deitado triceps frances triceps testa",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0060",
+        "nome_original":  "barbell lying triceps extension skull crusher"
+    },
+    {
+        "slug":  "exdb_0537",
+        "nome":  "Com kettlebell unilateral clean and jerk",
+        "descricao":  "Com kettlebell unilateral clean and jerk",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_vertical",
+        "equipamento":  "kettlebell",
+        "api_id":  "0537",
+        "nome_original":  "kettlebell one arm clean and jerk"
+    },
+    {
+        "slug":  "exdb_2317",
+        "nome":  "Com halteres sentado bent arm elevacao lateral",
+        "descricao":  "Com halteres sentado bent arm elevacao lateral",
+        "grupo":  "ombros",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "2317",
+        "nome_original":  "dumbbell seated bent arm lateral raise"
+    },
+    {
+        "slug":  "exdb_0995",
+        "nome":  "Com elastico sentado hip external rotation",
+        "descricao":  "Com elastico sentado hip external rotation",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "anilha",
+        "api_id":  "0995",
+        "nome_original":  "band seated hip external rotation"
+    },
+    {
+        "slug":  "exdb_2186",
+        "nome":  "Com barra declinado triceps frances",
+        "descricao":  "Com barra declinado triceps frances",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "2186",
+        "nome_original":  "ez barbell decline triceps extension"
+    },
+    {
+        "slug":  "exdb_3297",
+        "nome":  "Back lever",
+        "descricao":  "Back lever",
+        "grupo":  "costas",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3297",
+        "nome_original":  "back lever"
+    },
+    {
+        "slug":  "exdb_0674",
+        "nome":  "Pegada supinada barra fixa pronada",
+        "descricao":  "Pegada supinada barra fixa pronada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0674",
+        "nome_original":  "reverse grip pull-up"
+    },
+    {
+        "slug":  "exdb_0997",
+        "nome":  "Com elastico desenvolvimento",
+        "descricao":  "Com elastico desenvolvimento",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_vertical",
+        "equipamento":  "anilha",
+        "api_id":  "0997",
+        "nome_original":  "band shoulder press"
+    },
+    {
+        "slug":  "exdb_1618",
+        "nome":  "Com halteres inclinado hammer press on exercise ball",
+        "descricao":  "Com halteres inclinado hammer press on exercise ball",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1618",
+        "nome_original":  "dumbbell incline hammer press on exercise ball"
+    },
+    {
+        "slug":  "exdb_0353",
+        "nome":  "Com halteres unilateral rosca concentrada (on stability ball)",
+        "descricao":  "Com halteres unilateral rosca concentrada (on stability ball)",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0353",
+        "nome_original":  "dumbbell one arm concentration curl (on stability ball)"
+    },
+    {
+        "slug":  "exdb_0454",
+        "nome":  "Com barra spider rosca",
+        "descricao":  "Com barra spider rosca",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0454",
+        "nome_original":  "ez barbell spider curl"
+    },
+    {
+        "slug":  "exdb_0675",
+        "nome":  "Reverso hyper extension (on stability ball)",
+        "descricao":  "Reverso hyper extension (on stability ball)",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0675",
+        "nome_original":  "reverse hyper extension (on stability ball)"
+    },
+    {
+        "slug":  "exdb_3644",
+        "nome":  "Com peso afundo with swing",
+        "descricao":  "Com peso afundo with swing",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "anilha",
+        "api_id":  "3644",
+        "nome_original":  "weighted lunge with swing"
+    },
+    {
+        "slug":  "exdb_1669",
+        "nome":  "Com halteres unilateral sentado rosca martelo",
+        "descricao":  "Com halteres unilateral sentado rosca martelo",
+        "grupo":  "biceps",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "1669",
+        "nome_original":  "dumbbell one arm seated hammer curl"
+    },
+    {
+        "slug":  "exdb_0300",
+        "nome":  "Com halteres terra",
+        "descricao":  "Com halteres terra",
+        "grupo":  "gluteos",
+        "padrao":  "dobradica_quadril",
+        "equipamento":  "halter",
+        "api_id":  "0300",
+        "nome_original":  "dumbbell deadlift"
+    },
+    {
+        "slug":  "exdb_0061",
+        "nome":  "Com barra deitado triceps frances",
+        "descricao":  "Com barra deitado triceps frances",
+        "grupo":  "triceps",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0061",
+        "nome_original":  "barbell lying triceps extension"
+    },
+    {
+        "slug":  "exdb_1319",
+        "nome":  "No cabo palm rotational remada",
+        "descricao":  "No cabo palm rotational remada",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "cabo",
+        "api_id":  "1319",
+        "nome_original":  "cable palm rotational row"
+    },
+    {
+        "slug":  "exdb_0593",
+        "nome":  "Lever reverso hyperextension",
+        "descricao":  "Lever reverso hyperextension",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0593",
+        "nome_original":  "lever reverse hyperextension"
+    },
+    {
+        "slug":  "exdb_2796",
+        "nome":  "Com halteres step-up afundo",
+        "descricao":  "Com halteres step-up afundo",
+        "grupo":  "quadriceps",
+        "padrao":  "agachamento",
+        "equipamento":  "halter",
+        "api_id":  "2796",
+        "nome_original":  "dumbbell step-up lunge"
+    },
+    {
+        "slug":  "exdb_0115",
+        "nome":  "Com barra stiff leg bom dia",
+        "descricao":  "Com barra stiff leg bom dia",
+        "grupo":  "gluteos",
+        "padrao":  "dobradica_quadril",
+        "equipamento":  "barra",
+        "api_id":  "0115",
+        "nome_original":  "barbell stiff leg good morning"
+    },
+    {
+        "slug":  "exdb_1374",
+        "nome":  "Box jump down with one leg stabilization",
+        "descricao":  "Box jump down with one leg stabilization",
+        "grupo":  "panturrilha",
+        "padrao":  "isolador",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1374",
+        "nome_original":  "box jump down with one leg stabilization"
+    },
+    {
+        "slug":  "exdb_0996",
+        "nome":  "Com elastico sentado hip internal rotation",
+        "descricao":  "Com elastico sentado hip internal rotation",
+        "grupo":  "gluteos",
+        "padrao":  "isolador",
+        "equipamento":  "anilha",
+        "api_id":  "0996",
+        "nome_original":  "band seated hip internal rotation"
+    },
+    {
+        "slug":  "exdb_1274",
+        "nome":  "Deep flexao",
+        "descricao":  "Deep flexao",
+        "grupo":  "peito",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "halter",
+        "api_id":  "1274",
+        "nome_original":  "deep push up"
+    },
+    {
+        "slug":  "exdb_0539",
+        "nome":  "Com kettlebell unilateral desenvolvimento militar to the side",
+        "descricao":  "Com kettlebell unilateral desenvolvimento militar to the side",
+        "grupo":  "ombros",
+        "padrao":  "empurrada_vertical",
+        "equipamento":  "kettlebell",
+        "api_id":  "0539",
+        "nome_original":  "kettlebell one arm military press to the side"
+    },
+    {
+        "slug":  "exdb_3662",
+        "nome":  "Pike-to-cobra flexao",
+        "descricao":  "Pike-to-cobra flexao",
+        "grupo":  "gluteos",
+        "padrao":  "empurrada_horizontal",
+        "equipamento":  "peso_corporal",
+        "api_id":  "3662",
+        "nome_original":  "pike-to-cobra push-up"
+    },
+    {
+        "slug":  "exdb_0107",
+        "nome":  "Com barra em pe elevacao frontal over head",
+        "descricao":  "Com barra em pe elevacao frontal over head",
+        "grupo":  "ombros",
+        "padrao":  "isolador",
+        "equipamento":  "barra",
+        "api_id":  "0107",
+        "nome_original":  "barbell standing front raise over head"
+    },
+    {
+        "slug":  "exdb_0670",
+        "nome":  "Rear barra fixa pronada",
+        "descricao":  "Rear barra fixa pronada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "peso_corporal",
+        "api_id":  "0670",
+        "nome_original":  "rear pull-up"
+    },
+    {
+        "slug":  "exdb_0758",
+        "nome":  "Smith inclinado reverso-grip press",
+        "descricao":  "Smith inclinado reverso-grip press",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "maquina",
+        "api_id":  "0758",
+        "nome_original":  "smith incline reverse-grip press"
+    },
+    {
+        "slug":  "exdb_1432",
+        "nome":  "Assisted em pe barra fixa pronada",
+        "descricao":  "Assisted em pe barra fixa pronada",
+        "grupo":  "costas",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "maquina",
+        "api_id":  "1432",
+        "nome_original":  "assisted standing pull-up"
+    },
+    {
+        "slug":  "exdb_1430",
+        "nome":  "Chest paralelas (on paralelas-barra fixa pronada cage)",
+        "descricao":  "Chest paralelas (on paralelas-barra fixa pronada cage)",
+        "grupo":  "peito",
+        "padrao":  "puxada_vertical",
+        "equipamento":  "peso_corporal",
+        "api_id":  "1430",
+        "nome_original":  "chest dip (on dip-pull-up cage)"
+    },
+    {
+        "slug":  "exdb_2327",
+        "nome":  "Com halteres pegada supinada remada (female)",
+        "descricao":  "Com halteres pegada supinada remada (female)",
+        "grupo":  "costas",
+        "padrao":  "puxada_horizontal",
+        "equipamento":  "halter",
+        "api_id":  "2327",
+        "nome_original":  "dumbbell reverse grip row (female)"
+    },
+    {
+        "slug":  "exdb_0535",
+        "nome":  "Com kettlebell hang clean",
+        "descricao":  "Com kettlebell hang clean",
+        "grupo":  "posterior",
+        "padrao":  "isolador",
+        "equipamento":  "kettlebell",
+        "api_id":  "0535",
+        "nome_original":  "kettlebell hang clean"
+    },
+    {
+        "slug":  "exdb_3643",
+        "nome":  "Com peso cossack agachamentos (male)",
+        "descricao":  "Com peso cossack agachamentos (male)",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "anilha",
+        "api_id":  "3643",
+        "nome_original":  "weighted cossack squats (male)"
+    },
+    {
+        "slug":  "exdb_0531",
+        "nome":  "Com kettlebell extended range unilateral press on no chao",
+        "descricao":  "Com kettlebell extended range unilateral press on no chao",
+        "grupo":  "peito",
+        "padrao":  "isolador",
+        "equipamento":  "kettlebell",
+        "api_id":  "0531",
+        "nome_original":  "kettlebell extended range one arm press on floor"
+    },
+    {
+        "slug":  "exdb_1425",
+        "nome":  "Sled 45 degrees one leg press",
+        "descricao":  "Sled 45 degrees one leg press",
+        "grupo":  "gluteos",
+        "padrao":  "agachamento",
+        "equipamento":  "maquina",
+        "api_id":  "1425",
+        "nome_original":  "sled 45 degrees one leg press"
+    },
+    {
+        "slug":  "exdb_2798",
+        "nome":  "Com barra agachamento jump step rear afundo",
+        "descricao":  "Com barra agachamento jump step rear afundo",
+        "grupo":  "quadriceps",
+        "padrao":  "agachamento",
+        "equipamento":  "barra",
+        "api_id":  "2798",
+        "nome_original":  "barbell squat jump step rear lunge"
+    },
+    {
+        "slug":  "exdb_0355",
+        "nome":  "Com halteres unilateral elevacao lateral",
+        "descricao":  "Com halteres unilateral elevacao lateral",
+        "grupo":  "ombros",
+        "padrao":  "isolador",
+        "equipamento":  "halter",
+        "api_id":  "0355",
+        "nome_original":  "dumbbell one arm lateral raise"
+    }
+]

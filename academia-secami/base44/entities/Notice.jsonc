@@ -1,0 +1,43 @@
+{
+  "name": "Notice",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "title": "T\u00edtulo"
+    },
+    "content": {
+      "type": "string",
+      "title": "Conte\u00fado"
+    },
+    "active": {
+      "type": "boolean",
+      "title": "Ativo",
+      "default": true
+    },
+    "type": {
+      "type": "string",
+      "title": "Tipo",
+      "enum": [
+        "info",
+        "warning",
+        "success"
+      ],
+      "default": "info"
+    },
+    "target_roles": {
+      "type": "array",
+      "title": "Perfis Destinat\u00e1rios",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "aluno"
+      ]
+    }
+  },
+  "required": [
+    "title",
+    "content"
+  ]
+}

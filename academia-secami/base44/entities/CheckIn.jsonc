@@ -1,0 +1,40 @@
+{
+  "name": "CheckIn",
+  "type": "object",
+  "properties": {
+    "student_id": {
+      "type": "string",
+      "title": "Aluno ID"
+    },
+    "student_name": {
+      "type": "string",
+      "title": "Nome do Aluno"
+    },
+    "appointment_id": {
+      "type": "string",
+      "title": "Agendamento ID"
+    },
+    "check_in_time": {
+      "type": "string",
+      "title": "Hora do Check-in"
+    },
+    "check_out_time": {
+      "type": "string",
+      "title": "Hora do Check-out"
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "title": "Data"
+    },
+    "notes": {
+      "type": "string",
+      "title": "Observa\u00e7\u00f5es"
+    }
+  },
+  "required": [
+    "student_id",
+    "date",
+    "check_in_time"
+  ]
+}
