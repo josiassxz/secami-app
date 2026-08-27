@@ -28,6 +28,8 @@ public class SecurityConfig {
 
     private static final String[] PUBLIC_PATHS = {
             "/auth/**",
+            "/cadastro",                // POST — auto-cadastro público (pendente de aprovação)
+            "/cadastro/departamentos",   // GET — combo do formulário de cadastro
             "/api/health",
             "/actuator/health",
             "/actuator/info",

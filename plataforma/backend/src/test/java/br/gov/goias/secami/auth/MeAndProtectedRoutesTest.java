@@ -91,7 +91,7 @@ class MeAndProtectedRoutesTest extends AbstractIntegrationTest {
         String loginResponse = mockMvc.perform(post("/auth/login")
                         .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username":"admin","password":"secami123"}"""))
+                                {"email":"admin@dev.secami","password":"secami123"}"""))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         String refreshToken = objectMapper.readTree(loginResponse).get("refreshToken").asText();

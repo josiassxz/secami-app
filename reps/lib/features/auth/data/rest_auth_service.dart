@@ -33,18 +33,19 @@ class SecamiUser {
       );
 }
 
-/// Autenticacao via LDAP → JWT (SPEC §12). Substitui o Supabase Auth do legado.
+/// Autenticacao local por e-mail/senha → JWT (SPEC §12, revisado — LDAP
+/// removido). Substitui o Supabase Auth do legado.
 class RestAuthService {
   RestAuthService(this._api);
 
   final ApiClient _api;
 
-  /// Login por usuario de rede (samAccountName) + senha. Guarda os tokens.
-  Future<SecamiUser> login(String username, String password) async {
+  /// Login por e-mail + senha. Guarda os tokens.
+  Future<SecamiUser> login(String email, String password) async {
     final data = await _api.post(
       '/auth/login',
       auth: false,
-      body: {'username': username.trim(), 'password': password},
+      body: {'email': email.trim(), 'password': password},
     ) as Map<String, dynamic>;
     await _api.saveTokens(
       data['accessToken'] as String,

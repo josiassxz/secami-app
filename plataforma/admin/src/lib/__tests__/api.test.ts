@@ -185,12 +185,12 @@ describe("login()", () => {
     vi.restoreAllMocks();
   });
 
-  it("em sucesso: chama /auth/login com usuário/senha e guarda os tokens retornados", async () => {
+  it("em sucesso: chama /auth/login com e-mail/senha e guarda os tokens retornados", async () => {
     const fetchSpy = vi
       .spyOn(globalThis, "fetch")
       .mockResolvedValueOnce(jsonResponse(200, { accessToken: "a1", refreshToken: "r1" }));
 
-    const data = await login("fulano", "senha123");
+    const data = await login("fulano@dev.secami", "senha123");
 
     expect(data).toEqual({ accessToken: "a1", refreshToken: "r1" });
     expect(getAccessToken()).toBe("a1");
@@ -199,7 +199,7 @@ describe("login()", () => {
       `${BASE}/auth/login`,
       expect.objectContaining({
         method: "POST",
-        body: JSON.stringify({ username: "fulano", password: "senha123" }),
+        body: JSON.stringify({ email: "fulano@dev.secami", password: "senha123" }),
       })
     );
   });
@@ -209,7 +209,7 @@ describe("login()", () => {
       jsonResponse(401, { message: "Usuário ou senha inválidos" })
     );
 
-    await expect(login("fulano", "errada")).rejects.toMatchObject({
+    await expect(login("fulano@dev.secami", "errada")).rejects.toMatchObject({
       status: 401,
       message: "Usuário ou senha inválidos",
     });

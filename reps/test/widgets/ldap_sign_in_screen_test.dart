@@ -10,12 +10,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:reps/features/auth/data/rest_auth_service.dart';
 import 'package:reps/features/auth/presentation/ldap_sign_in_screen.dart';
 
+/// Imita o `toString()` de ApiException (só a mensagem, sem prefixo
+/// "Exception:") — é o que o backend realmente lança, e é o que
+/// `_humanize()` da tela repassa direto pro usuário.
+class _FakeApiException implements Exception {
+  _FakeApiException(this.message);
+  final String message;
+  @override
+  String toString() => message;
+}
+
 /// Fake mínimo: só `login` tem comportamento customizado (falha). Os demais
 /// métodos não são exercitados pelo fluxo de erro testado aqui.
 class _FailingRestAuthService implements RestAuthService {
   @override
   Future<SecamiUser> login(String username, String password) =>
-      Future<SecamiUser>.error(Exception('usuário ou senha inválidos'));
+      Future<SecamiUser>.error(_FakeApiException('E-mail ou senha inválidos.'));
 
   @override
   Future<SecamiUser> me() => throw UnimplementedError();
@@ -71,7 +81,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'ENTRAR'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Informe o usuário'), findsOneWidget);
+    expect(find.text('Informe o e-mail'), findsOneWidget);
     expect(find.text('Informe a senha'), findsOneWidget);
   });
 
@@ -90,7 +100,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'ENTRAR'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Usuário ou senha inválidos.'), findsOneWidget);
+    expect(find.text('E-mail ou senha inválidos.'), findsOneWidget);
     // Sem navegação em caso de erro: o formulário continua na tela.
     expect(find.text('ENTRAR'), findsOneWidget);
   });

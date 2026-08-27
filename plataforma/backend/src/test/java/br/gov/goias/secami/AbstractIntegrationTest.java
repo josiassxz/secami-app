@@ -46,11 +46,15 @@ public abstract class AbstractIntegrationTest {
 
     /**
      * Faz login real via {@code POST /auth/login} contra um dos usuários dev
-     * semeados ("admin", "gerente", "recepcao", "professor", "aluno") e
-     * devolve o accessToken JWT pronto pra usar em {@link #authed}.
+     * semeados ("admin", "gerente", "recepcao", "professor", "aluno" —
+     * viram {@code <nome>@dev.secami}, ver DevDataSeeder) e devolve o
+     * accessToken JWT pronto pra usar em {@link #authed}.
      */
-    protected String loginAs(String samAccountName) throws Exception {
-        String body = objectMapper.writeValueAsString(new LoginBody(samAccountName, DEV_PASSWORD));
+    protected String loginAs(String devUserShortName) throws Exception {
+        String email = devUserShortName.contains("@")
+                ? devUserShortName
+                : devUserShortName + "@dev.secami";
+        String body = objectMapper.writeValueAsString(new LoginBody(email, DEV_PASSWORD));
         String response = mockMvc
                 .perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
                         .post("/auth/login")
@@ -69,5 +73,5 @@ public abstract class AbstractIntegrationTest {
         return builder.header("Authorization", "Bearer " + token);
     }
 
-    private record LoginBody(String username, String password) {}
+    private record LoginBody(String email, String password) {}
 }

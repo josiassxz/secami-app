@@ -12,6 +12,7 @@ import '../../features/auth/data/auth_providers.dart';
 import '../../features/auth/data/rest_auth_service.dart';
 import '../../features/auth/presentation/ldap_sign_in_screen.dart';
 import '../../features/auth/presentation/account_screen.dart';
+import '../../features/auth/presentation/cadastro_screen.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
 import '../../features/auth/presentation/sign_up_screen.dart';
@@ -103,9 +104,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         // redirect de volta assim que o token salvo resolver.
         final isAuthed = ref.read(currentUserProvider) != null;
         if (!isAuthed) {
-          return loc == '/sign-in' ? null : '/sign-in';
+          // /cadastro (auto-cadastro publico de aluno) tambem nao exige
+          // sessao, igual /sign-in.
+          const rotasPublicas = {'/sign-in', '/cadastro'};
+          return rotasPublicas.contains(loc) ? null : '/sign-in';
         }
-        const semSentidoLogado = {'/', '/sign-in', '/sign-up', '/forgot-password'};
+        const semSentidoLogado = {
+          '/',
+          '/sign-in',
+          '/sign-up',
+          '/forgot-password',
+          '/cadastro',
+        };
         if (semSentidoLogado.contains(loc)) {
           return '/routines';
         }
@@ -138,6 +148,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/forgot-password',
         builder: (_, _) => const ForgotPasswordScreen(),
       ),
+      // Auto-cadastro publico de aluno (civil/militar sem conta) — so existe
+      // no modo SECAMI (backend REST tem /cadastro/*; Supabase legado nao).
+      if (Env.hasRestApi)
+        GoRoute(path: '/cadastro', builder: (_, _) => const CadastroScreen()),
       ShellRoute(
         builder: (context, state, child) => HomeShell(child: child),
         routes: [

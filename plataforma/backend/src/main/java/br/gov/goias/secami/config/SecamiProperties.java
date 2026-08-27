@@ -13,9 +13,9 @@ import java.util.List;
 public class SecamiProperties {
 
     private Jwt jwt = new Jwt();
-    private Ldap ldap = new Ldap();
     private DevAuth devAuth = new DevAuth();
     private Cors cors = new Cors();
+    private Storage storage = new Storage();
     private String timezone = "America/Sao_Paulo";
 
     @Data
@@ -27,28 +27,16 @@ public class SecamiProperties {
     }
 
     @Data
-    public static class Ldap {
-        private boolean enabled = false;
-        private String host;
-        private int port = 636;
-        private boolean ssl = true;
-        private String baseDn;
-        private String bindDn;
-        private String bindPassword;
-        private String loginAttribute = "samAccountName";
-        private String syncAttribute = "objectGUID";
-        private String userFilter;
-
-        /** URL LDAPS/LDAP montada a partir de host/porta/ssl. */
-        public String url() {
-            return (ssl ? "ldaps://" : "ldap://") + host + ":" + port;
-        }
+    public static class DevAuth {
+        /** Quando true, semeia os usuários locais de desenvolvimento. */
+        private boolean enabled = true;
     }
 
     @Data
-    public static class DevAuth {
-        /** Quando true e LDAP desabilitado, autentica contra usuários locais semeados. */
-        private boolean enabled = true;
+    public static class Storage {
+        /** Diretório local onde ficam os arquivos enviados (atestados, fotos). */
+        private String basePath = "./uploads";
+        private long maxFileSizeMb = 10;
     }
 
     @Data

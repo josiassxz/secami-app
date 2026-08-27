@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/config/env.dart';
 import '../../../core/health/health_service.dart';
 import '../../../core/logging/observability.dart';
 import '../../../core/sync/sync_providers.dart';
@@ -12,6 +13,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/units/weight_unit.dart';
 import '../../auth/data/auth_providers.dart';
 import '../../auth/data/auth_service.dart';
+import '../../auth/data/rest_auth_service.dart';
 import '../data/export_service.dart';
 import '../data/settings_providers.dart';
 
@@ -312,6 +314,14 @@ class SettingsScreen extends ConsumerWidget {
               title: const Text('Sair'),
               onTap: () async {
                 await ref.read(authServiceProvider).signOut();
+                // secamiCurrentUserProvider e um FutureProvider com cache: sem
+                // este refresh, currentUserProvider (que le .valueOrNull dele)
+                // continua reportando o usuario antigo por um instante, e o
+                // redirect do GoRouter manda de volta pra dentro do app em vez
+                // de deixar cair em /sign-in. Mesmo bug/fix do fluxo de login.
+                if (Env.hasRestApi) {
+                  await ref.refresh(secamiCurrentUserProvider.future);
+                }
                 if (context.mounted) context.go('/');
               },
             ),

@@ -8,6 +8,8 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 import java.time.OffsetDateTime;
 import java.util.List;
@@ -49,6 +51,16 @@ public class GlobalExceptionHandler {
                 .map(this::toFieldError)
                 .toList();
         return build(HttpStatus.BAD_REQUEST, "Dados inválidos", req, fields);
+    }
+
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ApiError> missingPart(MissingServletRequestPartException ex, HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "Falta o arquivo/campo obrigatório: " + ex.getRequestPartName(), req, null);
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ApiError> uploadTooLarge(MaxUploadSizeExceededException ex, HttpServletRequest req) {
+        return build(HttpStatus.PAYLOAD_TOO_LARGE, "Arquivo enviado excede o tamanho máximo permitido.", req, null);
     }
 
     @ExceptionHandler(Exception.class)

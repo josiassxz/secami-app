@@ -38,7 +38,7 @@ describe("<Login />", () => {
   it("renderiza os campos de usuário e senha e o botão de entrar", () => {
     renderLogin(vi.fn());
 
-    expect(screen.getByLabelText("Usuário")).toBeInTheDocument();
+    expect(screen.getByLabelText("E-mail")).toBeInTheDocument();
     expect(screen.getByLabelText("Senha")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Entrar" })).toBeInTheDocument();
   });
@@ -47,11 +47,11 @@ describe("<Login />", () => {
     const signIn = vi.fn().mockResolvedValue(undefined);
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("Usuário"), "fulano");
+    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "senha123");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
-    await waitFor(() => expect(signIn).toHaveBeenCalledWith("fulano", "senha123"));
+    await waitFor(() => expect(signIn).toHaveBeenCalledWith("fulano@dev.secami", "senha123"));
     await waitFor(() => expect(screen.getByText("Página inicial")).toBeInTheDocument());
   });
 
@@ -59,7 +59,7 @@ describe("<Login />", () => {
     const signIn = vi.fn().mockRejectedValue(new Error("Usuário ou senha inválidos"));
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("Usuário"), "fulano");
+    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "senhaerrada");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
@@ -72,7 +72,7 @@ describe("<Login />", () => {
     const signIn = vi.fn().mockRejectedValue({});
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("Usuário"), "fulano");
+    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "x");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
@@ -90,7 +90,7 @@ describe("<Login />", () => {
     );
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("Usuário"), "fulano");
+    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "senha123");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
@@ -107,7 +107,7 @@ describe("<Login />", () => {
       .mockResolvedValueOnce(undefined);
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("Usuário"), "fulano");
+    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "errada");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
     await screen.findByRole("alert");

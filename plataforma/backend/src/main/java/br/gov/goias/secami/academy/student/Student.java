@@ -6,12 +6,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 /** Perfil do aluno (Civil ou Militar). SPEC §8.2. */
@@ -67,6 +70,47 @@ public class Student {
 
     @Column(name = "atestado_data")
     private LocalDate atestadoData;
+
+    /** Multi-select do formulário de cadastro (emagrecimento, hipertrofia...). */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(nullable = false, columnDefinition = "jsonb")
+    private List<String> objetivos = new java.util.ArrayList<>();
+
+    /** Respostas do questionário PAR-Q (10 perguntas sim/não), dado sensível de saúde. */
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "par_q", columnDefinition = "jsonb")
+    private java.util.Map<String, Boolean> parQ;
+
+    @Column(name = "termo_responsabilidade_aceito_em")
+    private OffsetDateTime termoResponsabilidadeAceitoEm;
+
+    @Column(name = "termo_ciencia_aceito_em")
+    private OffsetDateTime termoCienciaAceitoEm;
+
+    @Column(name = "medico_nome")
+    private String medicoNome;
+
+    @Column(name = "medico_crm")
+    private String medicoCrm;
+
+    @Column(name = "medico_crm_uf")
+    private String medicoCrmUf;
+
+    @Column(name = "atestado_emissao_data")
+    private LocalDate atestadoEmissaoData;
+
+    @Column(name = "atestado_arquivo_id")
+    private UUID atestadoArquivoId;
+
+    public static final String STATUS_PENDENTE = "pendente";
+    public static final String STATUS_APROVADO = "aprovado";
+    public static final String STATUS_REJEITADO = "rejeitado";
+
+    @Column(name = "status_cadastro", nullable = false)
+    private String statusCadastro = STATUS_APROVADO;
+
+    @Column(name = "motivo_rejeicao")
+    private String motivoRejeicao;
 
     @Column(nullable = false)
     private boolean active = true;

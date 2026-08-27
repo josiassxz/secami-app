@@ -6,8 +6,9 @@ import '../../../core/logging/observability.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/rest_auth_service.dart';
 
-/// Login via usuário de rede (LDAP/AD Goiás) — SPEC §12. Substitui o fluxo
-/// de e-mail/senha do Supabase quando `Env.hasRestApi` (ver app_router.dart).
+/// Login local por e-mail/senha (SPEC §12, revisado — LDAP removido).
+/// Substitui o fluxo de e-mail/senha do Supabase quando `Env.hasRestApi`
+/// (ver app_router.dart). Nome do arquivo é legado (era só LDAP antes).
 class LdapSignInScreen extends ConsumerStatefulWidget {
   const LdapSignInScreen({super.key});
 
@@ -105,7 +106,7 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
                               ),
                               const SizedBox(height: AppTheme.space32),
                               Text(
-                                'USUÁRIO DE REDE',
+                                'E-MAIL',
                                 style: AppTheme.label(
                                   11,
                                   color: scheme.onSurfaceVariant,
@@ -114,21 +115,22 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
                               const SizedBox(height: AppTheme.space8),
                               TextFormField(
                                 controller: _userCtrl,
-                                autofillHints: const [AutofillHints.username],
+                                keyboardType: TextInputType.emailAddress,
+                                autofillHints: const [AutofillHints.email],
                                 textInputAction: TextInputAction.next,
                                 onFieldSubmitted: (_) =>
                                     _passwordFocus.requestFocus(),
                                 decoration: InputDecoration(
-                                  hintText: 'usuario.sobrenome',
+                                  hintText: 'seu@email.com',
                                   prefixIcon: Icon(
-                                    Icons.badge_outlined,
+                                    Icons.alternate_email,
                                     size: 20,
                                     color: scheme.onSurfaceVariant,
                                   ),
                                 ),
                                 validator: (v) =>
                                     (v == null || v.trim().isEmpty)
-                                    ? 'Informe o usuário'
+                                    ? 'Informe o e-mail'
                                     : null,
                               ),
                               const SizedBox(height: AppTheme.space16),
@@ -208,9 +210,33 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
                                 ),
                               ),
                               const SizedBox(height: AppTheme.space16),
+                              Wrap(
+                                alignment: WrapAlignment.center,
+                                crossAxisAlignment: WrapCrossAlignment.center,
+                                children: [
+                                  Text(
+                                    'Ainda não é aluno? ',
+                                    style: AppTheme.label(
+                                      12,
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    style: TextButton.styleFrom(
+                                      padding: EdgeInsets.zero,
+                                      minimumSize: const Size(0, 32),
+                                      tapTargetSize:
+                                          MaterialTapTargetSize.shrinkWrap,
+                                    ),
+                                    onPressed: () => context.push('/cadastro'),
+                                    child: const Text('Cadastre-se'),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: AppTheme.space8),
                               Text(
-                                'Acesso via Active Directory do Governo de Goiás.\n'
-                                'Problemas com a senha? Procure a TI/infraestrutura.',
+                                'Servidor(a) público(a)? Fale com a administração\n'
+                                'da academia para receber seu acesso.',
                                 style: AppTheme.label(
                                   11,
                                   color: scheme.onSurfaceVariant,
@@ -294,12 +320,13 @@ class _ErrorBanner extends StatelessWidget {
 }
 
 String _humanize(Object e) {
-  final msg = e.toString();
-  if (msg.contains('inválidos') || msg.contains('invalido')) {
-    return 'Usuário ou senha inválidos.';
+  final msg = e.toString().trim();
+  // O backend já devolve mensagens finais em pt-BR pra login/cadastro
+  // (inválido, cadastro em análise, cadastro recusado + motivo, inativo) —
+  // repassa direto em vez de genericizar. Só cai no fallback se vier algo
+  // que não pareça mensagem de negócio (erro técnico/rede sem tradução).
+  if (msg.isEmpty || msg.length > 200) {
+    return 'Não foi possível entrar agora. Tente de novo em instantes.';
   }
-  if (msg.contains('inativo')) {
-    return 'Usuário inativo. Procure a gestão da academia.';
-  }
-  return 'Não foi possível entrar agora. Tente de novo em instantes.';
+  return msg;
 }

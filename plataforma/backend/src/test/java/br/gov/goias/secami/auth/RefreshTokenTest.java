@@ -34,7 +34,7 @@ class RefreshTokenTest extends AbstractIntegrationTest {
         String loginResponse = mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username":"admin","password":"secami123"}"""))
+                                {"email":"admin@dev.secami","password":"secami123"}"""))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         JsonNode node = objectMapper.readTree(loginResponse);

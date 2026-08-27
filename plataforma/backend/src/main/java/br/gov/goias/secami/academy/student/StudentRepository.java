@@ -38,4 +38,7 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
     long countByDeletedAtIsNullAndActiveTrue();
 
     long countByDeletedAtIsNullAndStudentType(String studentType);
+
+    @EntityGraph(attributePaths = "department")
+    java.util.List<Student> findByStatusCadastroAndDeletedAtIsNullOrderByCreatedAtAsc(String statusCadastro);
 }

@@ -7,7 +7,7 @@ import { AlertCircle } from "lucide-react";
 export default function Login() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -17,7 +17,7 @@ export default function Login() {
     setError(null);
     setLoading(true);
     try {
-      await signIn(username, password);
+      await signIn(email, password);
       navigate("/");
     } catch (err: any) {
       setError(err?.message || "Não foi possível entrar.");
@@ -50,14 +50,15 @@ export default function Login() {
           className="space-y-5 rounded-lg border border-line bg-surface p-6 shadow-1"
         >
           <div>
-            <Label htmlFor="user">Usuário</Label>
+            <Label htmlFor="user">E-mail</Label>
             <Input
               id="user"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="usuário de rede (LDAP)"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu.email@exemplo.com"
               autoFocus
-              autoComplete="username"
+              autoComplete="email"
             />
           </div>
           <div>
@@ -88,7 +89,7 @@ export default function Login() {
         </form>
 
         <p className="mt-6 text-center text-xs leading-relaxed text-content-faint">
-          Acesso via Active Directory do Governo de Goiás
+          Acesso por e-mail e senha. Problemas de acesso? Fale com a TI/infraestrutura.
         </p>
       </div>
     </div>

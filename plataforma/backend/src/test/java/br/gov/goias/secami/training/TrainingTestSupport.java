@@ -68,7 +68,7 @@ public abstract class TrainingTestSupport extends AbstractIntegrationTest {
         AppUser u = new AppUser();
         u.setSamAccountName(sam);
         u.setNome("Usuário Teste " + sam);
-        u.setEmail(sam + "@dev.secami.test");
+        u.setEmail(sam + "@dev.secami");
         u.setTipoIdentidade("local");
         u.setAtivo(true);
         u.setPasswordHash(passwordEncoder.encode(DEV_PASSWORD));

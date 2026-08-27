@@ -15,6 +15,7 @@ import BlockedDates from "@/pages/BlockedDates";
 import Departments from "@/pages/Departments";
 import Notices from "@/pages/Notices";
 import Reports from "@/pages/Reports";
+import PendingRegistrations from "@/pages/PendingRegistrations";
 
 export default function App() {
   const { user, loading } = useAuth();
@@ -34,6 +35,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/alunos" element={<Students />} />
+          <Route path="/cadastros-pendentes" element={<PendingRegistrations />} />
           <Route path="/agenda" element={<Schedule />} />
           <Route path="/checkin" element={<CheckIn />} />
           <Route path="/exercicios" element={<Exercises />} />

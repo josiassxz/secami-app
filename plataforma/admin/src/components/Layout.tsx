@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
+import { api, type PendingRegistration } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui";
 import {
   LayoutDashboard,
   Users,
+  UserCheck,
   CalendarDays,
   CheckSquare,
   Dumbbell,
@@ -20,6 +23,20 @@ import {
   Sun,
   Moon,
 } from "lucide-react";
+
+/** Contagem de cadastros pendentes de aprovação, pro badge no menu.
+ *  Mesma queryKey usada pela tela de Cadastros Pendentes: aprovar/recusar por
+ *  lá invalida essa query e o badge atualiza sozinho. Refetch periódico cobre
+ *  o caso de outro admin aprovar/recusar em outra sessão. */
+function usePendingRegistrationsCount(enabled: boolean) {
+  const { data } = useQuery({
+    queryKey: ["pending-registrations"],
+    queryFn: () => api<PendingRegistration[]>("/admin/cadastros/pendentes"),
+    enabled,
+    refetchInterval: 60_000,
+  });
+  return data?.length ?? 0;
+}
 
 type NavItem = { to: string; label: string; icon: any; roles: string[] };
 type NavGroup = { title: string; items: NavItem[] };
@@ -36,6 +53,7 @@ const GROUPS: NavGroup[] = [
     title: "Academia",
     items: [
       { to: "/alunos", label: "Alunos", icon: Users, roles: ["admin", "gerente", "recepcao", "professor"] },
+      { to: "/cadastros-pendentes", label: "Cadastros Pendentes", icon: UserCheck, roles: ["admin", "gerente"] },
       { to: "/agenda", label: "Agenda", icon: CalendarDays, roles: ["admin", "gerente", "recepcao", "professor"] },
       { to: "/checkin", label: "Check-in", icon: CheckSquare, roles: ["admin", "recepcao", "professor"] },
     ],
@@ -74,6 +92,7 @@ export default function Layout() {
   const { user, signOut, hasRole } = useAuth();
   const navigate = useNavigate();
   const { dark, toggle } = useTheme();
+  const pendingCount = usePendingRegistrationsCount(hasRole("admin", "gerente"));
 
   const hoje = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -122,7 +141,12 @@ export default function Layout() {
                       }
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
-                      {item.label}
+                      <span className="flex-1">{item.label}</span>
+                      {item.to === "/cadastros-pendentes" && pendingCount > 0 && (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1.5 text-[11px] font-bold text-gold-fg">
+                          {pendingCount}
+                        </span>
+                      )}
                     </NavLink>
                   ))}
                 </div>

@@ -1,11 +1,12 @@
 package br.gov.goias.secami.auth;
 
+import br.gov.goias.secami.academy.student.Student;
+import br.gov.goias.secami.academy.student.StudentRepository;
 import br.gov.goias.secami.auth.web.dto.LoginRequest;
 import br.gov.goias.secami.auth.web.dto.TokenResponse;
 import br.gov.goias.secami.common.error.DomainExceptions.BusinessException;
 import br.gov.goias.secami.identity.AppUser;
 import br.gov.goias.secami.identity.AppUserRepository;
-import br.gov.goias.secami.identity.Roles;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import org.springframework.stereotype.Service;
@@ -16,32 +17,34 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Orquestra o login: valida credencial pelo {@link AuthProvider} ativo,
- * provisiona/atualiza o {@code app_user} (JIT) e emite os tokens. SPEC §12.2.
+ * Orquestra o login: valida e-mail/senha pelo {@link AuthProvider} e emite
+ * os tokens. Sem provisionamento just-in-time — o {@code app_user} nasce no
+ * cadastro público (aluno) ou é criado pelo admin (staff), nunca no login.
  */
 @Service
 public class AuthService {
 
     private final AuthProvider authProvider;
     private final AppUserRepository users;
+    private final StudentRepository students;
     private final JwtService jwt;
 
-    public AuthService(AuthProvider authProvider, AppUserRepository users, JwtService jwt) {
+    public AuthService(AuthProvider authProvider, AppUserRepository users,
+                        StudentRepository students, JwtService jwt) {
         this.authProvider = authProvider;
         this.users = users;
+        this.students = students;
         this.jwt = jwt;
     }
 
     @Transactional
     public TokenResponse login(LoginRequest req) {
-        AuthenticatedUser authed = authProvider
-                .authenticate(req.username().trim(), req.password())
-                .orElseThrow(() -> new BusinessException("Usuário ou senha inválidos."));
-
-        AppUser user = provision(authed);
-        if (!user.isAtivo()) {
-            throw new BusinessException("Usuário inativo.");
-        }
+        UUID userId = authProvider
+                .authenticate(req.email().trim(), req.password())
+                .orElseThrow(() -> new BusinessException("E-mail ou senha inválidos."));
+        AppUser user = users.findById(userId)
+                .orElseThrow(() -> new BusinessException("E-mail ou senha inválidos."));
+        checkPodeLogar(user);
         return issueTokens(user);
     }
 
@@ -61,32 +64,28 @@ public class AuthService {
             throw new BusinessException("Token de refresh inválido ou expirado.");
         }
         AppUser user = users.findById(userId)
-                .filter(AppUser::isAtivo)
                 .orElseThrow(() -> new BusinessException("Usuário inválido."));
+        checkPodeLogar(user);
         return issueTokens(user);
     }
 
-    /** Provisionamento just-in-time por objectGUID (AD) ou samAccountName. */
-    private AppUser provision(AuthenticatedUser authed) {
-        AppUser user = null;
-        if (authed.ldapGuid() != null) {
-            user = users.findByLdapGuid(authed.ldapGuid()).orElse(null);
+    /** Mensagem específica por motivo de bloqueio, em vez de "usuário inativo" genérico. */
+    private void checkPodeLogar(AppUser user) {
+        if (user.isAtivo()) {
+            return;
         }
-        if (user == null && authed.samAccountName() != null) {
-            user = users.findBySamAccountNameIgnoreCase(authed.samAccountName()).orElse(null);
+        Student student = students.findByUserId(user.getId()).orElse(null);
+        if (student != null && Student.STATUS_PENDENTE.equals(student.getStatusCadastro())) {
+            throw new BusinessException(
+                    "Seu cadastro está em análise. Você receberá um aviso assim que for aprovado.");
         }
-        boolean isNew = user == null;
-        if (isNew) {
-            user = new AppUser();
-            user.getRoles().add(Roles.ALUNO); // papel padrão no primeiro acesso (SPEC §12.3)
+        if (student != null && Student.STATUS_REJEITADO.equals(student.getStatusCadastro())) {
+            String motivo = student.getMotivoRejeicao();
+            throw new BusinessException(motivo != null && !motivo.isBlank()
+                    ? "Seu cadastro foi recusado: " + motivo
+                    : "Seu cadastro foi recusado. Procure a administração da academia.");
         }
-        user.setLdapGuid(authed.ldapGuid());
-        user.setSamAccountName(authed.samAccountName());
-        user.setEmail(authed.email());
-        user.setNome(authed.nome());
-        user.setTipoIdentidade(authed.tipoIdentidade());
-        // Não sobrescreve password_hash (usado só por identidade local/dev).
-        return users.save(user);
+        throw new BusinessException("Usuário inativo. Procure a administração.");
     }
 
     private TokenResponse issueTokens(AppUser user) {

@@ -46,5 +46,8 @@ dist/
 # === Maven (plataforma/backend/) ===
 target/
 
+# === Uploads locais (atestados médicos etc.) — dados de usuário, nunca versionar ===
+plataforma/backend/uploads/
+
 # === Logs ===
 *.log

@@ -11,9 +11,10 @@ import org.springframework.stereotype.Component;
 import java.util.Set;
 
 /**
- * Semeia usuários de desenvolvimento (senha padrão) quando LDAP está desabilitado.
- * NÃO roda em produção (dev-auth desabilitado lá). SPEC §12 (modo dev).
- * Senha dev de todos: {@code secami123}.
+ * Semeia usuários de desenvolvimento (senha padrão). Desligar via
+ * secami.dev-auth.enabled=false em produção. Login é por e-mail (ver
+ * LocalAuthProvider) — os e-mails abaixo são as credenciais de dev.
+ * Senha de todos: {@code secami123}.
  */
 @Component
 @ConditionalOnProperty(name = "secami.dev-auth.enabled", havingValue = "true", matchIfMissing = true)
@@ -41,7 +42,8 @@ public class DevDataSeeder implements ApplicationRunner {
         seed("recepcao", "Recepção SECAMI", "recepcao@dev.secami", Set.of(Roles.RECEPCAO), hash);
         seed("professor", "Professor SECAMI", "professor@dev.secami", Set.of(Roles.PROFESSOR), hash);
         seed("aluno", "Aluno SECAMI", "aluno@dev.secami", Set.of(Roles.ALUNO), hash);
-        log.warn("[DEV] Usuários de desenvolvimento semeados (senha '{}'): admin/gerente/recepcao/professor/aluno", DEV_PASSWORD);
+        log.warn("[DEV] Usuários semeados (senha '{}'): admin@dev.secami, gerente@dev.secami, "
+                + "recepcao@dev.secami, professor@dev.secami, aluno@dev.secami", DEV_PASSWORD);
     }
 
     private void seed(String sam, String nome, String email, Set<String> roles, String hash) {

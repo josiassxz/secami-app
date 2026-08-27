@@ -10,7 +10,7 @@ import { clearTokens, getAccessToken, login as apiLogin, me, type Me } from "./a
 type AuthCtx = {
   user: Me | null;
   loading: boolean;
-  signIn: (username: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
   signOut: () => void;
   hasRole: (...roles: string[]) => boolean;
 };
@@ -46,8 +46,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("secami:auth-expired", onAuthExpired);
   }, []);
 
-  async function signIn(username: string, password: string) {
-    await apiLogin(username, password);
+  async function signIn(email: string, password: string) {
+    await apiLogin(email, password);
     setUser(await me());
   }
 

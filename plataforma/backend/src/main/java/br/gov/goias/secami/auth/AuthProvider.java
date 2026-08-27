@@ -1,14 +1,11 @@
 package br.gov.goias.secami.auth;
 
 import java.util.Optional;
+import java.util.UUID;
 
-/**
- * Abstrai a validação de credencial. Exatamente um bean fica ativo conforme
- * {@code secami.ldap.enabled}: {@link LdapAuthProvider} (prod) ou
- * {@link DevAuthProvider} (dev, sem rede corporativa).
- */
+/** Abstrai a validação de credencial (e-mail + senha) contra {@code app_user}. */
 public interface AuthProvider {
 
-    /** @return dados do usuário autenticado, ou vazio se credencial inválida. */
-    Optional<AuthenticatedUser> authenticate(String username, String rawPassword);
+    /** @return id do usuário autenticado, ou vazio se e-mail/senha não confere. */
+    Optional<UUID> authenticate(String email, String rawPassword);
 }

@@ -37,6 +37,11 @@ spring:
   jackson:
     default-property-inclusion: non_null
 
+  servlet:
+    multipart:
+      max-file-size: 12MB
+      max-request-size: 15MB
+
 server:
   port: ${SERVER_PORT:8080}
   error:
@@ -51,27 +56,20 @@ secami:
     refresh-token-days: ${JWT_REFRESH_DAYS:7}
     issuer: secami-backend
 
-  ldap:
-    enabled: ${LDAP_ENABLED:false}          # false em dev (sem rede AD); true em homolog/prod
-    host: ${LDAP_HOST:dc2-dcsrv05.goias.intra}
-    port: ${LDAP_PORT:636}
-    ssl: ${LDAP_SSL:true}
-    base-dn: ${LDAP_BASE_DN:OU=Usuarios,OU=SGG,OU=GOVERNADORIA (SGG),OU=ORGAOS,DC=goias,DC=intra}
-    bind-dn: ${LDAP_BIND_DN:sistemas.sgg@sistemas.goias.gov.br}
-    bind-password: ${LDAP_BIND_PASSWORD:}    # NUNCA versionar — via env/secret manager
-    login-attribute: ${LDAP_LOGIN_ATTR:samAccountName}
-    sync-attribute: ${LDAP_SYNC_ATTR:objectGUID}
-    user-filter: ${LDAP_USER_FILTER:(&(objectClass=user)(objectCategory=person)(!(userAccountControl:1.2.840.113556.1.4.803:=2)))}
-
-  # Modo de desenvolvimento: quando ldap.enabled=false, autentica contra usuários
-  # locais semeados (ver DevAuthProvider) — permite rodar sem rede corporativa.
+  # Login é 100% e-mail/senha local (LDAP removido) — controla só se os
+  # usuários de desenvolvimento (admin/gerente/... senha secami123) são
+  # semeados no boot (ver DevDataSeeder).
   dev-auth:
     enabled: ${DEV_AUTH_ENABLED:true}
 
   timezone: America/Sao_Paulo
 
   cors:
-    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+    allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:5050}
+
+  storage:
+    base-path: ${STORAGE_BASE_PATH:./uploads}
+    max-file-size-mb: ${STORAGE_MAX_FILE_MB:10}
 
 springdoc:
   swagger-ui:
@@ -83,11 +81,6 @@ management:
       exposure:
         include: health,info,metrics
   health:
-    ldap:
-      # Indicador autoconfigurado do Spring Boot testa um LdapTemplate genérico
-      # (localhost:389), não a config real (secami.ldap.*/LdapAuthProvider) —
-      # sempre acusaria DOWN em dev e não reflete a saúde real da autenticação.
-      enabled: false
     mail:
       # Idem: tenta abrir uma conexão SMTP real (localhost:1025/Mailpit) só pra
       # health-check — em dev o Mailpit nem sempre está rodando, e o envio real

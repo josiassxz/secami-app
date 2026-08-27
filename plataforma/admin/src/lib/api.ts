@@ -82,11 +82,11 @@ export async function api<T = any>(
 }
 
 // ---- Auth ----
-export async function login(username: string, password: string) {
+export async function login(email: string, password: string) {
   const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ username, password }),
+    body: JSON.stringify({ email, password }),
   });
   const data = await parse(res);
   setTokens(data.accessToken, data.refreshToken);
@@ -104,3 +104,59 @@ export type Me = {
 export function me() {
   return api<Me>("/me");
 }
+
+// ---- Mídia (arquivos autenticados: atestado médico, foto, etc.) ----
+/** Baixa um arquivo protegido (ex.: atestado médico) como Blob, incluindo o
+ *  header Authorization — esses endpoints não podem ser usados num <a href>
+ *  puro porque exigem token. Reaproveita a mesma lógica de retry-após-refresh
+ *  usada em `api()`. */
+export async function downloadMedia(id: string, retry = true): Promise<Blob> {
+  const token = getAccessToken();
+  const headers: Record<string, string> = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(`${BASE}/media/${id}`, { headers });
+
+  if (res.status === 401) {
+    if (retry && (await tryRefresh())) {
+      return downloadMedia(id, false);
+    }
+    clearTokens();
+    window.dispatchEvent(new Event("secami:auth-expired"));
+  }
+  if (!res.ok) {
+    let msg = `Erro ${res.status}`;
+    try {
+      const body = await res.json();
+      msg = body?.message || body?.error || msg;
+    } catch {
+      // corpo não é JSON (ex.: resposta vazia) — mantém a mensagem padrão
+    }
+    throw new ApiError(res.status, msg);
+  }
+  return res.blob();
+}
+
+// ---- Cadastros pendentes (auto-cadastro público aguardando aprovação) ----
+export type PendingRegistration = {
+  studentId: string;
+  fullName: string;
+  cpf: string;
+  email: string;
+  phone: string;
+  studentType: "Civil" | "Militar";
+  birthDate: string;
+  weightKg: number | null;
+  heightCm: number | null;
+  objetivos: string[];
+  departmentName: string;
+  parQ: Record<string, boolean>;
+  termoResponsabilidadeAceitoEm: string;
+  termoCienciaAceitoEm: string;
+  medicoNome: string;
+  medicoCrm: string;
+  medicoCrmUf: string;
+  atestadoEmissaoData: string;
+  atestadoArquivoId: string;
+  createdAt: string;
+};

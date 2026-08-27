@@ -18,6 +18,10 @@ import java.util.UUID;
 @NoArgsConstructor
 public class Media {
 
+    public static final String TIPO_FOTO_ALUNO = "foto_aluno";
+    public static final String TIPO_EXERCICIO = "exercicio";
+    public static final String TIPO_ATESTADO_MEDICO = "atestado_medico";
+
     @Id
     @UuidGenerator(style = UuidGenerator.Style.TIME)
     private UUID id;

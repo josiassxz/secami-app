@@ -21,7 +21,7 @@ class LoginTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username":"admin","password":"secami123"}""")
+                                {"email":"admin@dev.secami","password":"secami123"}""")
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
@@ -36,7 +36,7 @@ class LoginTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username":"aluno","password":"secami123"}""")
+                                {"email":"aluno@dev.secami","password":"secami123"}""")
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
@@ -49,10 +49,10 @@ class LoginTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username":"admin","password":"senha-errada"}""")
+                                {"email":"admin@dev.secami","password":"senha-errada"}""")
                 )
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("Usuário ou senha inválidos."));
+                .andExpect(jsonPath("$.message").value("E-mail ou senha inválidos."));
     }
 
     @Test
@@ -60,10 +60,10 @@ class LoginTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username":"usuario-que-nao-existe","password":"qualquer"}""")
+                                {"email":"usuario-que-nao-existe@dev.secami","password":"qualquer"}""")
                 )
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("Usuário ou senha inválidos."));
+                .andExpect(jsonPath("$.message").value("E-mail ou senha inválidos."));
     }
 
     @Test
@@ -71,7 +71,7 @@ class LoginTest extends AbstractIntegrationTest {
         mockMvc.perform(post("/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"username":"","password":""}""")
+                                {"email":"","password":""}""")
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors", org.hamcrest.Matchers.hasSize(2)));
