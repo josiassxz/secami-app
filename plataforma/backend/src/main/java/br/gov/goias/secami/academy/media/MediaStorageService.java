@@ -69,6 +69,37 @@ public class MediaStorageService {
         return repo.save(media);
     }
 
+    /** Salva bytes já em memória (ex.: baixados de uma URL do legado) — mesma
+     *  lógica de {@link #save}, mas sem depender de um MultipartFile. */
+    public Media saveBytes(byte[] bytes, String contentType, String originalFilename, String tipo) {
+        if (bytes == null || bytes.length == 0) {
+            throw new BusinessException("Arquivo vazio.");
+        }
+        if (bytes.length > maxFileSizeBytes) {
+            throw new BusinessException("Arquivo excede o tamanho máximo de "
+                    + (maxFileSizeBytes / (1024 * 1024)) + "MB.");
+        }
+        String ext = (originalFilename != null && originalFilename.contains("."))
+                ? originalFilename.substring(originalFilename.lastIndexOf('.'))
+                : "";
+        String storageKey = tipo + "/" + UUID.randomUUID() + ext;
+        Path dest = basePath.resolve(storageKey).normalize();
+        if (!dest.startsWith(basePath)) {
+            throw new BusinessException("Nome de arquivo inválido.");
+        }
+        try {
+            Files.createDirectories(dest.getParent());
+            Files.write(dest, bytes);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Falha ao salvar arquivo.", e);
+        }
+        Media media = new Media();
+        media.setTipo(tipo);
+        media.setStorageKey(storageKey);
+        media.setContentType(contentType);
+        return repo.save(media);
+    }
+
     /** Carrega o arquivo do disco pra download/visualização (admin). */
     public LoadedFile load(UUID mediaId) {
         Media media = repo.findById(mediaId)

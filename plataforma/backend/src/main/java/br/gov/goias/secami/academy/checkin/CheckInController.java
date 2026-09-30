@@ -31,6 +31,14 @@ public class CheckInController {
         return service.byDate(date).stream().map(Response::from).toList();
     }
 
+    /** Visão completa do dia: agendamentos (com quem faltou) + check-in
+     *  autodeclarado + confirmação real de entrada/saída pela catraca. */
+    @GetMapping("/checkins/resumo")
+    public List<CheckInDtos.ResumoDia> resumoDoDia(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return service.resumoDoDia(date);
+    }
+
     @PostMapping("/checkins")
     public Response checkIn(@Valid @RequestBody CheckInRequest req) {
         return Response.from(service.checkIn(req.studentId(), req.date(), req.notes(), currentUser.id()));

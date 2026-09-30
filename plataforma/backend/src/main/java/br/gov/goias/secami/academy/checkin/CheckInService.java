@@ -14,7 +14,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /** Presença: check-in/out manual e marcação de falta. SPEC §9.5. */
@@ -39,6 +42,37 @@ public class CheckInService {
     @Transactional(readOnly = true)
     public List<CheckIn> byDate(LocalDate date) {
         return checkins.findByDate(date);
+    }
+
+    /** Junta agendamentos do dia (com status, inclui "faltou") + check-in
+     *  autodeclarado (se houve) + confirmação real de entrada/saída pela
+     *  catraca — visão completa pra recepção/admin, não só quem já fez
+     *  check-in. Visitas sem agendamento (check-in espontâneo) também
+     *  aparecem, ao final. */
+    @Transactional(readOnly = true)
+    public List<CheckInDtos.ResumoDia> resumoDoDia(LocalDate date) {
+        List<Appointment> agendamentos = appointments.findByDateAndDeletedAtIsNull(date);
+        List<CheckIn> checkinsDoDia = checkins.findByDate(date);
+
+        Map<UUID, CheckIn> porAgendamento = new HashMap<>();
+        List<CheckIn> semAgendamento = new ArrayList<>();
+        for (CheckIn c : checkinsDoDia) {
+            if (c.getAppointmentId() != null) {
+                porAgendamento.put(c.getAppointmentId(), c);
+            } else {
+                semAgendamento.add(c);
+            }
+        }
+
+        List<CheckInDtos.ResumoDia> linhas = new ArrayList<>();
+        for (Appointment a : agendamentos) {
+            if (Appointment.CANCELADO.equals(a.getStatus())) continue;
+            linhas.add(CheckInDtos.ResumoDia.deAgendamento(a, porAgendamento.get(a.getId())));
+        }
+        for (CheckIn c : semAgendamento) {
+            linhas.add(CheckInDtos.ResumoDia.deVisitaEspontanea(c));
+        }
+        return linhas;
     }
 
     @Transactional

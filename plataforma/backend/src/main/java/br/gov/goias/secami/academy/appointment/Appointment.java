@@ -72,6 +72,29 @@ public class Appointment {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
+    /** Vínculo (UID) da liberação dinâmica de acesso no Accelero pra este
+     *  agendamento (Civil) — usado pra revogar exatamente essa liberação se
+     *  o agendamento for cancelado, ou removê-la quando a janela expirar
+     *  (ver AcceleroExpiracaoService). Null se não liberado (Militar,
+     *  Accelero desligado, a liberação falhou, ou já foi revogada/removida). */
+    @Column(name = "accelero_acesso_vinculo_id")
+    private String acceleroAcessoVinculoId;
+
+    /** Fim da janela de acesso liberada no Accelero (início marcado + 5h) —
+     *  usado pelo job que remove o vínculo acima depois que ela passa. */
+    @Column(name = "accelero_acesso_expira_em")
+    private OffsetDateTime acceleroAcessoExpiraEm;
+
+    /** Confirmação REAL de entrada/saída pela catraca (Accelero), preenchida
+     *  pelo job AcceleroPresencaService — distinto do check-in autodeclarado
+     *  (CheckIn.checkInTime/checkOutTime), que é manual/pode não acontecer
+     *  mesmo com presença física real. Null até o job confirmar. */
+    @Column(name = "entrada_confirmada_em")
+    private OffsetDateTime entradaConfirmadaEm;
+
+    @Column(name = "saida_confirmada_em")
+    private OffsetDateTime saidaConfirmadaEm;
+
     public boolean ativo() {
         return deletedAt == null && !CANCELADO.equals(status);
     }

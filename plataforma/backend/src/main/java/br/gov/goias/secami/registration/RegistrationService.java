@@ -5,7 +5,9 @@ import br.gov.goias.secami.academy.department.DepartmentRepository;
 import br.gov.goias.secami.academy.media.Media;
 import br.gov.goias.secami.academy.media.MediaStorageService;
 import br.gov.goias.secami.academy.student.Student;
+import br.gov.goias.secami.academy.student.StudentPerfilService;
 import br.gov.goias.secami.academy.student.StudentRepository;
+import br.gov.goias.secami.accelero.AcceleroSyncService;
 import br.gov.goias.secami.common.Cpf;
 import br.gov.goias.secami.common.error.DomainExceptions.BusinessException;
 import br.gov.goias.secami.common.error.DomainExceptions.ConflictException;
@@ -45,22 +47,24 @@ public class RegistrationService {
     private final DepartmentRepository departments;
     private final MediaStorageService storage;
     private final PasswordEncoder encoder;
+    private final AcceleroSyncService acceleroSync;
+    private final StudentPerfilService perfis;
 
     public RegistrationService(StudentRepository students, AppUserRepository users,
                                 DepartmentRepository departments, MediaStorageService storage,
-                                PasswordEncoder encoder) {
+                                PasswordEncoder encoder, AcceleroSyncService acceleroSync,
+                                StudentPerfilService perfis) {
         this.students = students;
         this.users = users;
         this.departments = departments;
         this.storage = storage;
         this.encoder = encoder;
+        this.acceleroSync = acceleroSync;
+        this.perfis = perfis;
     }
 
     @Transactional
     public Student cadastrar(CadastroRequest req, MultipartFile atestado) {
-        if (!Set.of("Civil", "Militar").contains(req.studentType())) {
-            throw new BusinessException("Categoria inválida — use Civil ou Militar.");
-        }
         if (!req.parQ().keySet().containsAll(PAR_Q_PERGUNTAS)) {
             throw new BusinessException("Responda todas as perguntas do questionário PAR-Q.");
         }
@@ -99,7 +103,9 @@ public class RegistrationService {
         s.setUserId(user.getId());
         s.setFullName(req.fullName().trim());
         s.setCpf(cpf);
-        s.setStudentType(req.studentType());
+        // Categoria (Civil/Militar) fica com o valor padrão da entidade até o
+        // admin decidir no momento da aprovação (ver aprovar()) — o formulário
+        // público não pergunta mais isso.
         s.setDepartment(department);
         s.setPhone(req.whatsapp());
         s.setEmail(email);
@@ -130,13 +136,33 @@ public class RegistrationService {
         return students.findByStatusCadastroAndDeletedAtIsNullOrderByCreatedAtAsc(Student.STATUS_PENDENTE);
     }
 
+    /**
+     * @param studentType categoria do aluno (Civil ou Militar) — ignorada pro instrutor
+     * @param perfil      {@code aluno} (padrão quando nulo/vazio) ou {@code instrutor}
+     */
     @Transactional
-    public Student aprovar(UUID studentId) {
+    public Student aprovar(UUID studentId, String studentType, String perfil) {
+        String perfilNormalizado = (perfil == null || perfil.isBlank())
+                ? RegistrationDtos.AprovarRequest.PERFIL_ALUNO : perfil.trim().toLowerCase();
+        boolean instrutor = RegistrationDtos.AprovarRequest.PERFIL_INSTRUTOR.equals(perfilNormalizado);
+        if (!instrutor && !RegistrationDtos.AprovarRequest.PERFIL_ALUNO.equals(perfilNormalizado)) {
+            throw new BusinessException("Perfil inválido — use aluno ou instrutor.");
+        }
+        if (!instrutor && !Set.of(Student.TIPO_CIVIL, Student.TIPO_MILITAR).contains(studentType)) {
+            throw new BusinessException("Categoria inválida — use Civil ou Militar.");
+        }
         Student s = pendente(studentId);
+        s.setStudentType(instrutor ? Student.TIPO_INSTRUTOR : studentType);
         s.setStatusCadastro(Student.STATUS_APROVADO);
         s.setMotivoRejeicao(null);
         students.save(s);
         ativarUsuario(s.getUserId(), true);
+        // O cadastro público nasce com o papel 'aluno'; instrutor troca pelo
+        // papel 'professor' (deixa de ver as funções de aluno no app).
+        perfis.sincronizarPapeis(s);
+        // Libera o acesso físico à academia (catraca) — best-effort, nunca
+        // impede a aprovação (ver AcceleroSyncService.aoAprovar).
+        acceleroSync.aoAprovar(s);
         return s;
     }
 
@@ -165,5 +191,82 @@ public class RegistrationService {
             u.setAtivo(ativo);
             users.save(u);
         });
+    }
+
+    /** Cria login (e-mail/senha) pra um aluno que já existe sem conta — caso
+     *  dos alunos migrados do legado (base44), que têm perfil (Student) mas
+     *  nunca tiveram AppUser/senha. */
+    @Transactional
+    public void criarAcesso(UUID studentId, String email, String password) {
+        Student s = students.findByIdAndDeletedAtIsNull(studentId)
+                .orElseThrow(() -> new NotFoundException("Aluno não encontrado."));
+        if (s.getUserId() != null) {
+            throw new ConflictException("Este aluno já tem acesso.");
+        }
+        String emailNormalizado = email.trim().toLowerCase();
+        if (users.findByEmailIgnoreCase(emailNormalizado).isPresent()) {
+            throw new ConflictException("Já existe uma conta com este e-mail.");
+        }
+        criarAcessoInterno(s, emailNormalizado, password);
+    }
+
+    /** Provisiona login em massa pros alunos migrados do legado que nunca tiveram
+     *  AppUser: usa o e-mail que já veio na migração e senha padrão
+     *  "PrimeiroNome@123" (sem acentos). Best-effort por aluno — um e-mail
+     *  duplicado ou ausente não derruba o lote inteiro, só pula aquele aluno. */
+    @Transactional
+    public RegistrationDtos.CriarAcessosEmMassaResponse criarAcessosEmMassa() {
+        List<RegistrationDtos.AcessoCriado> criados = new java.util.ArrayList<>();
+        List<RegistrationDtos.AcessoPulado> pulados = new java.util.ArrayList<>();
+
+        for (Student s : students.findByDeletedAtIsNullAndUserIdIsNullAndLegacyIdIsNotNull()) {
+            if (s.getEmail() == null || s.getEmail().isBlank()) {
+                pulados.add(new RegistrationDtos.AcessoPulado(s.getId(), s.getFullName(), "sem e-mail cadastrado"));
+                continue;
+            }
+            String emailNormalizado = s.getEmail().trim().toLowerCase();
+            if (users.findByEmailIgnoreCase(emailNormalizado).isPresent()) {
+                pulados.add(new RegistrationDtos.AcessoPulado(s.getId(), s.getFullName(), "já existe uma conta com este e-mail"));
+                continue;
+            }
+            String senha = senhaPadrao(s.getFullName());
+            if (senha == null) {
+                pulados.add(new RegistrationDtos.AcessoPulado(s.getId(), s.getFullName(), "não foi possível gerar senha a partir do nome"));
+                continue;
+            }
+            criarAcessoInterno(s, emailNormalizado, senha);
+            criados.add(new RegistrationDtos.AcessoCriado(s.getId(), s.getFullName(), emailNormalizado, senha));
+        }
+        return new RegistrationDtos.CriarAcessosEmMassaResponse(criados, pulados);
+    }
+
+    private void criarAcessoInterno(Student s, String emailNormalizado, String password) {
+        AppUser user = new AppUser();
+        user.setNome(s.getFullName());
+        user.setEmail(emailNormalizado);
+        user.setTipoIdentidade("local");
+        user.setAtivo(true);
+        user.setPasswordHash(encoder.encode(password));
+        user.getRoles().add(Roles.ALUNO);
+        user = users.save(user);
+
+        s.setUserId(user.getId());
+        if (s.getEmail() == null || s.getEmail().isBlank()) {
+            s.setEmail(emailNormalizado);
+        }
+        students.save(s);
+    }
+
+    /** "João Batista da Silva" -> "Joao@123". Sem acentos, primeiro nome
+     *  capitalizado + "@123" (padrão pedido pro lote dos alunos migrados). */
+    private static String senhaPadrao(String fullName) {
+        if (fullName == null || fullName.isBlank()) return null;
+        String primeiroNome = fullName.trim().split("\\s+")[0];
+        String semAcento = java.text.Normalizer.normalize(primeiroNome, java.text.Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replaceAll("[^A-Za-z]", "");
+        if (semAcento.isEmpty()) return null;
+        String capitalizado = Character.toUpperCase(semAcento.charAt(0)) + semAcento.substring(1).toLowerCase();
+        return capitalizado + "@123";
     }
 }

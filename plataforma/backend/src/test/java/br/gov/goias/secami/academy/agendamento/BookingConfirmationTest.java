@@ -15,8 +15,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * SPEC §9.4 — confirmação do agendamento pelo aluno (POST /me/appointments).
  *
  * <p>A confirmação é bloqueada SALVO SE todas as condições abaixo forem verdadeiras:
- * foto obrigatória; janela de 48h revalidada; atestado válido só para Civil (Militar
- * isento); máx. 2 agendamentos ativos; 1 por dia; sem duplicado exato; capacidade Civil
+ * janela de 48h revalidada; atestado válido só para Civil (Militar isento);
+ * máx. 2 agendamentos ativos; 1 por dia; sem duplicado exato; capacidade Civil
  * respeitada (Militar sem limite). Cada teste viola exatamente UMA condição, mantendo
  * as demais válidas.
  *
@@ -52,21 +52,6 @@ class BookingConfirmationTest extends SchedulingTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(Appointment.AGENDADO))
                 .andExpect(jsonPath("$.forced").value(false));
-    }
-
-    // ---- Foto obrigatória ----
-
-    @Test
-    void semFoto_bloqueiaConfirmacao() throws Exception {
-        Student s = newStudent("Civil");
-        comAtestado(s, hoje().minusMonths(1)); // atestado ok, mas sem foto
-        vinculadoAoUsuario(s, appUserId("aluno"));
-        String token = loginAs("aluno");
-        slotAberto("08:00");
-
-        bookAsStudent(token, amanha(), "08:00")
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("Foto obrigatória para reconhecimento facial da catraca."));
     }
 
     // ---- Atestado (só Civil; Militar isento) ----

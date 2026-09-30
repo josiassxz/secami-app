@@ -8,6 +8,7 @@ public final class Roles {
     public static final String ADMIN = "admin";
     public static final String GERENTE = "gerente";
     public static final String RECEPCAO = "recepcao";
+    /** Perfil "Instrutor" na interface (app e admin): prescreve fichas de treino. */
     public static final String PROFESSOR = "professor";
     public static final String ALUNO = "aluno";
 

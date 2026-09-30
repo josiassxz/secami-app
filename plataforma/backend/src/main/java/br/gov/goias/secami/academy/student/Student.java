@@ -17,7 +17,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/** Perfil do aluno (Civil ou Militar). SPEC §8.2. */
+/** Cadastro de pessoa da academia: aluno (Civil ou Militar) ou instrutor. SPEC §8.2. */
 @Entity
 @Table(name = "student")
 @Getter
@@ -41,8 +41,20 @@ public class Student {
 
     private String matricula;
 
+    public static final String TIPO_CIVIL = "Civil";
+    public static final String TIPO_MILITAR = "Militar";
+    /** Perfil de instrutor (prescreve fichas de treino) — não é aluno: não
+     *  agenda horário; o login dele tem o papel 'professor' em vez de 'aluno'. */
+    public static final String TIPO_INSTRUTOR = "Instrutor";
+    public static final java.util.Set<String> TIPOS =
+            java.util.Set.of(TIPO_CIVIL, TIPO_MILITAR, TIPO_INSTRUTOR);
+
     @Column(name = "student_type", nullable = false)
-    private String studentType = "Civil";  // Civil | Militar
+    private String studentType = TIPO_CIVIL;  // Civil | Militar | Instrutor
+
+    public boolean isInstrutor() {
+        return TIPO_INSTRUTOR.equals(studentType);
+    }
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
@@ -112,11 +124,32 @@ public class Student {
     @Column(name = "motivo_rejeicao")
     private String motivoRejeicao;
 
+    public static final String SITUACAO_ATIVO = "ATIVO";
+    public static final String SITUACAO_INATIVO = "INATIVO";
+    public static final String SITUACAO_BLOQUEADO = "BLOQUEADO";
+
+    @Column(nullable = false)
+    private String situacao = SITUACAO_ATIVO;
+
     @Column(nullable = false)
     private boolean active = true;
 
+    /** Define situação e sincroniza o flag active para compatibilidade. */
+    public void setSituacao(String situacao) {
+        this.situacao = situacao;
+        this.active = SITUACAO_ATIVO.equals(situacao);
+    }
+
     @Column(name = "legacy_id", unique = true)
     private String legacyId;
+
+    /** UID da pessoa correspondente no Accelero (catraca) — achado por CPF. */
+    @Column(name = "accelero_pessoa_id")
+    private String acceleroPessoaId;
+
+    /** Quando as categorias de entrada/saída foram liberadas no Accelero. */
+    @Column(name = "accelero_liberado_em")
+    private OffsetDateTime acceleroLiberadoEm;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

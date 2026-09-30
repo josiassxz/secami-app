@@ -100,6 +100,46 @@ class SlotConfigCadastroTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void criarSlotComFormatoDeHorarioInvalido_retorna400() throws Exception {
+        String token = loginAs("admin");
+        postSlot(token, "9h", "10:00", null, null, null, null)
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void criarSlotComHorarioFinalAntesDoInicial_retorna422() throws Exception {
+        String token = loginAs("admin");
+        postSlot(token, "10:00", "09:00", null, null, null, null)
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void editarSlotParaHorarioDeOutroSlotJaExistente_retorna409() throws Exception {
+        saveSlot("11:00", "12:00", 40, false, false, null);
+        SlotConfig alvo = saveSlot("18:00", "19:00", 40, false, false, null);
+        String token = loginAs("admin");
+
+        mockMvc.perform(authed(put("/slot-configs/" + alvo.getId()), token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new SlotConfigUpsert("11:00", "12:00", null, null, null, null))))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void editarSlotMantendoOMesmoHorario_naoConflitaComEleMesmo() throws Exception {
+        SlotConfig s = saveSlot("19:00", "20:00", 40, false, false, null);
+        String token = loginAs("admin");
+
+        mockMvc.perform(authed(put("/slot-configs/" + s.getId()), token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                new SlotConfigUpsert("19:00", "20:00", 50, null, null, null))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.maxCapacity").value(50));
+    }
+
+    @Test
     void listagemDeSlotsAcessivelATodosOsPapeisAutenticados() throws Exception {
         saveSlot("06:00", "07:00", 40, false, false, null);
         for (String role : new String[] {"admin", "gerente", "recepcao", "professor", "aluno"}) {

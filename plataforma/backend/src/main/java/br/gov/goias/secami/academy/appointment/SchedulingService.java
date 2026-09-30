@@ -8,10 +8,13 @@ import br.gov.goias.secami.academy.slot.SlotConfig;
 import br.gov.goias.secami.academy.slot.SlotConfigRepository;
 import br.gov.goias.secami.academy.student.Student;
 import br.gov.goias.secami.academy.student.StudentRepository;
+import br.gov.goias.secami.accelero.AcceleroSyncService;
 import br.gov.goias.secami.common.error.DomainExceptions.BusinessException;
 import br.gov.goias.secami.common.error.DomainExceptions.ConflictException;
 import br.gov.goias.secami.common.error.DomainExceptions.NotFoundException;
 import br.gov.goias.secami.config.SecamiProperties;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +28,7 @@ import java.util.UUID;
 
 /**
  * Motor de agendamento — todas as regras da SPEC §9.4 no servidor.
- * Janela de 48h, máx. 2 ativos, 1/dia, capacidade de civis, foto e atestado.
+ * Janela de 48h, máx. 2 ativos, 1/dia, capacidade de civis, atestado (Civil).
  */
 @Service
 public class SchedulingService {
@@ -37,15 +40,17 @@ public class SchedulingService {
     private final SlotConfigRepository slots;
     private final BlockedDateRepository blockedDates;
     private final StudentRepository students;
+    private final AcceleroSyncService acceleroSync;
     private final ZoneId zone;
 
     public SchedulingService(AppointmentRepository appointments, SlotConfigRepository slots,
                              BlockedDateRepository blockedDates, StudentRepository students,
-                             SecamiProperties props) {
+                             AcceleroSyncService acceleroSync, SecamiProperties props) {
         this.appointments = appointments;
         this.slots = slots;
         this.blockedDates = blockedDates;
         this.students = students;
+        this.acceleroSync = acceleroSync;
         this.zone = ZoneId.of(props.getTimezone());
     }
 
@@ -109,6 +114,11 @@ public class SchedulingService {
 
     private Appointment doBook(Student student, LocalDate date, String slotStart,
                                boolean staff, String notes, UUID actor) {
+        // Instrutor não é aluno: não ocupa vaga de horário (vale pro próprio
+        // e pro encaixe feito pela recepção).
+        if (student.isInstrutor()) {
+            throw new BusinessException("O perfil de instrutor não faz agendamento de horário.");
+        }
         ZonedDateTime now = ZonedDateTime.now(zone);
         LocalDate hoje = now.toLocalDate();
         boolean civil = isCivil(student);
@@ -116,10 +126,11 @@ public class SchedulingService {
         SlotConfig slot = slots.findBySlotStart(slotStart)
                 .orElseThrow(() -> new BusinessException("Horário indisponível."));
 
-        // Gates comuns a aluno e staff: foto + atestado (Civil).
-        if (student.getPhotoId() == null) {
-            throw new BusinessException("Foto obrigatória para reconhecimento facial da catraca.");
-        }
+        // Gate comum a aluno e staff: atestado (Civil). Não exige foto aqui —
+        // o reconhecimento facial na catraca é feito com a foto que já existe
+        // no Accelero (pessoa vinculada por CPF), não com uma cópia própria
+        // deste sistema; exigir isso bloquearia todo mundo, já que nem o
+        // cadastro público nem a migração do legado preenchem esse campo.
         if (civil && !student.atestadoValido(hoje)) {
             throw new BusinessException("Atestado médico ausente ou vencido (validade de 1 ano).");
         }
@@ -169,7 +180,12 @@ public class SchedulingService {
         a.setForced(staff);
         a.setNotes(notes);
         a.setCreatedBy(actor);
-        return appointments.save(a);
+        a = appointments.save(a);
+        // Libera a entrada na catraca pra este horário específico (Civil —
+        // Militar já tem entrada vitalícia desde a aprovação). Best-effort,
+        // nunca impede o agendamento.
+        acceleroSync.aoAgendar(a);
+        return a;
     }
 
     @Transactional
@@ -184,6 +200,8 @@ public class SchedulingService {
         }
         a.setStatus(Appointment.CANCELADO);
         appointments.save(a);
+        // Revoga a entrada liberada dinamicamente pra este horário, se houver.
+        acceleroSync.aoCancelar(a);
     }
 
     @Transactional(readOnly = true)
@@ -196,6 +214,60 @@ public class SchedulingService {
     @Transactional(readOnly = true)
     public List<Appointment> byRange(LocalDate from, LocalDate to) {
         return appointments.findByDateRange(from, to);
+    }
+
+    /** Histórico de agendamentos do aluno num período (para modal de detalhes). */
+    @Transactional(readOnly = true)
+    public List<Appointment> getStudentHistory(UUID studentId, LocalDate from, LocalDate to) {
+        if (!students.existsById(studentId)) {
+            throw new NotFoundException("Aluno não encontrado.");
+        }
+        return appointments.findByStudentIdAndDateBetween(studentId, from, to);
+    }
+
+    // ---- Relatórios: listagem filtrada/paginada + resumo agregado ----
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<Appointment> byRangeFiltered(
+            LocalDate from, LocalDate to, String status, String q,
+            org.springframework.data.domain.Pageable pageable) {
+        String s = (status == null || status.isBlank()) ? null : status.trim();
+        String term = (q == null || q.isBlank()) ? null : q.trim();
+        return appointments.findByDateRangeFiltered(from, to, s, term, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public AppointmentDtos.SummaryResponse summarize(LocalDate from, LocalDate to, String status, String q) {
+        String s = (status == null || status.isBlank()) ? null : status.trim();
+        String term = (q == null || q.isBlank()) ? null : q.trim();
+        List<Object[]> rows = appointments.summarizeByRange(from, to, s, term);
+        long agendado = 0, confirmado = 0, faltou = 0, cancelado = 0;
+        double somaPermanencia = 0;
+        long countPermanencia = 0;
+        long confirmadosCatraca = 0;
+        for (Object[] r : rows) {
+            String st = (String) r[0];
+            long cnt = ((Number) r[1]).longValue();
+            switch (st) {
+                case Appointment.AGENDADO -> agendado = cnt;
+                case Appointment.CONFIRMADO -> confirmado = cnt;
+                case Appointment.FALTOU -> faltou = cnt;
+                case Appointment.CANCELADO -> cancelado = cnt;
+            }
+            if (r[2] != null) {
+                somaPermanencia += ((Number) r[2]).doubleValue() * cnt;
+                countPermanencia += cnt;
+            }
+            if (r[3] != null) {
+                confirmadosCatraca += ((Number) r[3]).longValue();
+            }
+        }
+        long totalNaoCancelado = agendado + confirmado + faltou;
+        double taxaFalta = totalNaoCancelado > 0 ? (double) faltou / totalNaoCancelado : 0.0;
+        Double permanenciaMedia = countPermanencia > 0 ? somaPermanencia / countPermanencia : null;
+        return new AppointmentDtos.SummaryResponse(
+                agendado, confirmado, faltou, cancelado,
+                permanenciaMedia, taxaFalta, confirmadosCatraca);
     }
 
     // ---- Grade (visão staff) ----

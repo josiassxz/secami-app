@@ -1,8 +1,9 @@
 # Perfil de teste (ativado via @ActiveProfiles("test")): banco local dedicado
 # secami_test (mesmo Postgres 18 do dev, isolado dos dados reais migrados em
-# `secami`), LDAP desligado (DevAuthProvider + DevDataSeeder semeiam os
-# usuários padrão automaticamente na primeira execução). Sem Mailpit — os
-# testes que envolvem e-mail usam @MockBean em JavaMailSender.
+# `secami`). Login local: DevDataSeeder semeia os usuários padrão
+# automaticamente na primeira execução. Sem Mailpit — os testes que envolvem
+# e-mail usam @MockBean em JavaMailSender; idem pro Accelero (@MockBean em
+# AcceleroClient nos testes que precisam dele ligado).
 spring:
   datasource:
     # DB_URL sobrescrevível por env var — cada grupo de teste (agentes
@@ -14,14 +15,12 @@ spring:
     password:
 
 secami:
-  ldap:
-    enabled: false
   dev-auth:
     enabled: true
+  accelero:
+    enabled: false
 
 management:
   health:
-    ldap:
-      enabled: false
     mail:
       enabled: false

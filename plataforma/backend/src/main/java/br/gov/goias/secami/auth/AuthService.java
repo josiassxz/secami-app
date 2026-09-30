@@ -14,24 +14,25 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Orquestra o login: valida e-mail/senha pelo {@link AuthProvider} e emite
- * os tokens. Sem provisionamento just-in-time — o {@code app_user} nasce no
+ * Orquestra o login: tenta os {@link AuthProvider}s em ordem (senha local,
+ * depois conta do governo via LDAP, se ligado) e emite os tokens. Sem provisionamento just-in-time — o {@code app_user} nasce no
  * cadastro público (aluno) ou é criado pelo admin (staff), nunca no login.
  */
 @Service
 public class AuthService {
 
-    private final AuthProvider authProvider;
+    private final List<AuthProvider> authProviders;
     private final AppUserRepository users;
     private final StudentRepository students;
     private final JwtService jwt;
 
-    public AuthService(AuthProvider authProvider, AppUserRepository users,
+    public AuthService(List<AuthProvider> authProviders, AppUserRepository users,
                         StudentRepository students, JwtService jwt) {
-        this.authProvider = authProvider;
+        this.authProviders = authProviders;
         this.users = users;
         this.students = students;
         this.jwt = jwt;
@@ -39,11 +40,14 @@ public class AuthService {
 
     @Transactional
     public TokenResponse login(LoginRequest req) {
-        UUID userId = authProvider
-                .authenticate(req.email().trim(), req.password())
-                .orElseThrow(() -> new BusinessException("E-mail ou senha inválidos."));
+        String identificador = req.email().trim();
+        UUID userId = authProviders.stream()
+                .map(p -> p.authenticate(identificador, req.password()))
+                .flatMap(Optional::stream)
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("E-mail/usuário ou senha inválidos."));
         AppUser user = users.findById(userId)
-                .orElseThrow(() -> new BusinessException("E-mail ou senha inválidos."));
+                .orElseThrow(() -> new BusinessException("E-mail/usuário ou senha inválidos."));
         checkPodeLogar(user);
         return issueTokens(user);
     }

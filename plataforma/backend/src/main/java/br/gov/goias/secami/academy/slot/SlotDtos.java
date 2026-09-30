@@ -2,6 +2,7 @@ package br.gov.goias.secami.academy.slot;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 
 import java.time.LocalDate;
 import java.util.UUID;
@@ -19,9 +20,11 @@ public final class SlotDtos {
         }
     }
 
+    private static final String HHMM = "^([01]\\d|2[0-3]):[0-5]\\d$";
+
     public record SlotConfigUpsert(
-            @NotBlank String slotStart,
-            @NotBlank String slotEnd,
+            @NotBlank @Pattern(regexp = HHMM, message = "Use o formato HH:mm.") String slotStart,
+            @NotBlank @Pattern(regexp = HHMM, message = "Use o formato HH:mm.") String slotEnd,
             Integer maxCapacity,
             Boolean civilRestricted,
             Boolean blocked,

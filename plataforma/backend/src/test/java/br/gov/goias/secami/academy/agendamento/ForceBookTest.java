@@ -10,8 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * SPEC §9.4 — force-book pela recepção/gestão (POST /appointments).
  *
- * <p>Exige foto e (se Civil) atestado válido — os mesmos gates comuns ao aluno —
- * mas PULA janela de 48h, máx. 2 ativos, 1 por dia e capacidade Civil. Cria
+ * <p>Exige (se Civil) atestado válido — o mesmo gate comum ao aluno — mas PULA
+ * janela de 48h, máx. 2 ativos, 1 por dia e capacidade Civil. Cria
  * {@code forced=true}.
  */
 class ForceBookTest extends SchedulingTestSupport {
@@ -37,18 +37,6 @@ class ForceBookTest extends SchedulingTestSupport {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(Appointment.AGENDADO))
                 .andExpect(jsonPath("$.forced").value(true));
-    }
-
-    @Test
-    void forceBookAindaAssimExigeFoto() throws Exception {
-        Student aluno = newStudent("Civil");
-        comAtestado(aluno, hoje().minusMonths(1)); // atestado ok, sem foto
-        slotAberto("08:00");
-
-        String staffToken = loginAs("recepcao");
-        forceBook(staffToken, aluno.getId(), amanha(), "08:00", null)
-                .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("Foto obrigatória para reconhecimento facial da catraca."));
     }
 
     @Test

@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 public final class StudentDtos {
@@ -17,17 +18,22 @@ public final class StudentDtos {
             UUID departmentId, String departmentName, String phone, String email,
             LocalDate birthDate, BigDecimal weightKg, BigDecimal heightCm, String goal,
             UUID photoId, String atestadoNumero, LocalDate atestadoData,
-            boolean active, boolean atestadoValido) {
+            boolean active, String situacao, boolean atestadoValido, Integer diasParaVencimentoAtestado) {
 
         public static Response from(Student s, boolean maskCpf) {
             String cpf = maskCpf ? Cpf.mask(s.getCpf()) : Cpf.format(s.getCpf());
+            Integer dias = null;
+            if (s.getAtestadoData() != null) {
+                LocalDate vencimento = s.getAtestadoData().plusYears(1);
+                dias = (int) ChronoUnit.DAYS.between(LocalDate.now(), vencimento);
+            }
             return new Response(
                     s.getId(), s.getFullName(), cpf, s.getMatricula(), s.getStudentType(),
                     s.getDepartment() != null ? s.getDepartment().getId() : null,
                     s.getDepartment() != null ? s.getDepartment().getName() : null,
                     s.getPhone(), s.getEmail(), s.getBirthDate(), s.getWeightKg(), s.getHeightCm(),
                     s.getGoal(), s.getPhotoId(), s.getAtestadoNumero(), s.getAtestadoData(),
-                    s.isActive(), s.atestadoValido(LocalDate.now()));
+                    s.isActive(), s.getSituacao(), s.atestadoValido(LocalDate.now()), dias);
         }
     }
 
@@ -35,7 +41,7 @@ public final class StudentDtos {
             @NotBlank(message = "Informe o nome completo.") String fullName,
             @ValidCpf String cpf,
             String matricula,
-            String studentType,     // Civil | Militar
+            String studentType,     // Civil | Militar | Instrutor
             UUID departmentId,
             String phone,
             String email,
@@ -46,7 +52,8 @@ public final class StudentDtos {
             UUID photoId,
             String atestadoNumero,
             LocalDate atestadoData,
-            Boolean active
+            Boolean active,
+            String situacao
     ) {}
 
     /** Aluno edita apenas o próprio perfil. */

@@ -280,7 +280,7 @@ class StudentCadastroTest extends AbstractIntegrationTest {
 
     private static UpsertRequest req(String fullName, String cpf) {
         return new UpsertRequest(fullName, cpf, null, "Civil", null, null, null,
-                null, null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null);
     }
 
     private Student saveStudent(String fullName, String cpf) {

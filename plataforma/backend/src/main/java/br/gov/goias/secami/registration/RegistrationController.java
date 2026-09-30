@@ -3,8 +3,10 @@ package br.gov.goias.secami.registration;
 import br.gov.goias.secami.academy.department.DepartmentDtos;
 import br.gov.goias.secami.academy.department.DepartmentRepository;
 import br.gov.goias.secami.academy.student.Student;
+import br.gov.goias.secami.registration.RegistrationDtos.AprovarRequest;
 import br.gov.goias.secami.registration.RegistrationDtos.CadastroRequest;
 import br.gov.goias.secami.registration.RegistrationDtos.CadastroResponse;
+import br.gov.goias.secami.registration.RegistrationDtos.CriarAcessoRequest;
 import br.gov.goias.secami.registration.RegistrationDtos.PendenteResponse;
 import br.gov.goias.secami.registration.RegistrationDtos.RejeitarRequest;
 import jakarta.validation.Valid;
@@ -53,13 +55,29 @@ public class RegistrationController {
 
     @PostMapping("/admin/cadastros/{id}/aprovar")
     @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
-    public PendenteResponse aprovar(@PathVariable UUID id) {
-        return PendenteResponse.from(service.aprovar(id));
+    public PendenteResponse aprovar(@PathVariable UUID id, @Valid @RequestBody AprovarRequest req) {
+        return PendenteResponse.from(service.aprovar(id, req.studentType(), req.perfil()));
     }
 
     @PostMapping("/admin/cadastros/{id}/rejeitar")
     @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
     public PendenteResponse rejeitar(@PathVariable UUID id, @Valid @RequestBody RejeitarRequest req) {
         return PendenteResponse.from(service.rejeitar(id, req.motivo()));
+    }
+
+    /** Cria login (e-mail/senha) pra um aluno que já existe sem conta — caso
+     *  dos alunos migrados do legado, que têm perfil mas nunca tiveram AppUser. */
+    @PostMapping("/admin/alunos/{id}/criar-acesso")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
+    public void criarAcesso(@PathVariable UUID id, @Valid @RequestBody CriarAcessoRequest req) {
+        service.criarAcesso(id, req.email(), req.password());
+    }
+
+    /** Provisiona login em massa pra todos os alunos migrados do legado sem acesso —
+     *  usa o e-mail já cadastrado + senha padrão "PrimeiroNome@123". */
+    @PostMapping("/admin/alunos/criar-acessos-em-massa")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
+    public RegistrationDtos.CriarAcessosEmMassaResponse criarAcessosEmMassa() {
+        return service.criarAcessosEmMassa();
     }
 }

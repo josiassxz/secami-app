@@ -6,6 +6,7 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
@@ -26,12 +27,14 @@ public final class RegistrationDtos {
             @NotNull(message = "Informe a data de nascimento.") LocalDate birthDate,
             @NotBlank(message = "Informe o WhatsApp para contato.") String whatsapp,
             @NotNull(message = "Selecione a secretaria/órgão.") UUID departmentId,
-            @NotBlank @Email(message = "Informe um e-mail válido.") String email,
+            @NotBlank @Email(message = "Informe um e-mail válido.")
+            @Pattern(regexp = "(?i)^[^@\\s]+@goias\\.gov\\.br$",
+                    message = "O e-mail precisa ser do domínio @goias.gov.br.")
+            String email,
             @NotBlank @Size(min = 8, message = "A senha precisa ter pelo menos 8 caracteres.") String password,
             BigDecimal weightKg,
             BigDecimal heightCm,
             List<String> objetivos,
-            @NotBlank(message = "Selecione a categoria (Civil ou Militar).") String studentType,
             @NotNull(message = "Responda o questionário PAR-Q completo.") Map<String, Boolean> parQ,
             @AssertTrue(message = "É necessário aceitar a declaração e o termo de responsabilidade.")
             boolean termoResponsabilidade,
@@ -68,4 +71,38 @@ public final class RegistrationDtos {
     }
 
     public record RejeitarRequest(@NotBlank(message = "Informe o motivo da recusa.") String motivo) {}
+
+    /** Cria login pra um aluno sem conta (ex.: migrado do legado). */
+    public record CriarAcessoRequest(
+            @NotBlank @Email(message = "Informe um e-mail válido.") String email,
+            @NotBlank @Size(min = 8, message = "A senha precisa ter pelo menos 8 caracteres.") String password) {}
+
+    /**
+     * Decisão do admin no momento da aprovação — não no cadastro público:
+     * o perfil ({@code aluno}, padrão, ou {@code instrutor}) e, pra aluno, a
+     * categoria (Civil/Militar). Instrutor não tem categoria.
+     */
+    public record AprovarRequest(String studentType, String perfil) {
+
+        public static final String PERFIL_ALUNO = "aluno";
+        public static final String PERFIL_INSTRUTOR = "instrutor";
+
+        public boolean instrutor() {
+            return perfil != null && PERFIL_INSTRUTOR.equalsIgnoreCase(perfil.trim());
+        }
+
+        @com.fasterxml.jackson.annotation.JsonIgnore
+        @AssertTrue(message = "Selecione a categoria (Civil ou Militar).")
+        public boolean isCategoriaInformada() {
+            return instrutor() || (studentType != null && !studentType.isBlank());
+        }
+    }
+
+    /** Resultado do provisionamento em massa de acesso pros alunos migrados do legado. */
+    public record AcessoCriado(UUID studentId, String fullName, String email, String senhaGerada) {}
+
+    public record AcessoPulado(UUID studentId, String fullName, String motivo) {}
+
+    public record CriarAcessosEmMassaResponse(
+            List<AcessoCriado> criados, List<AcessoPulado> pulados) {}
 }

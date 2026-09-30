@@ -52,7 +52,7 @@ class LoginTest extends AbstractIntegrationTest {
                                 {"email":"admin@dev.secami","password":"senha-errada"}""")
                 )
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("E-mail ou senha inválidos."));
+                .andExpect(jsonPath("$.message").value("E-mail/usuário ou senha inválidos."));
     }
 
     @Test
@@ -63,7 +63,7 @@ class LoginTest extends AbstractIntegrationTest {
                                 {"email":"usuario-que-nao-existe@dev.secami","password":"qualquer"}""")
                 )
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("E-mail ou senha inválidos."));
+                .andExpect(jsonPath("$.message").value("E-mail/usuário ou senha inválidos."));
     }
 
     @Test

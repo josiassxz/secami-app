@@ -8,6 +8,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -17,10 +22,12 @@ public class AppointmentController {
 
     private final SchedulingService scheduling;
     private final CurrentUser currentUser;
+    private final RelatorioExportService relatorioExportService;
 
-    public AppointmentController(SchedulingService scheduling, CurrentUser currentUser) {
+    public AppointmentController(SchedulingService scheduling, CurrentUser currentUser, RelatorioExportService relatorioExportService) {
         this.scheduling = scheduling;
         this.currentUser = currentUser;
+        this.relatorioExportService = relatorioExportService;
     }
 
     // ---- Aluno ----
@@ -45,10 +52,39 @@ public class AppointmentController {
 
     @GetMapping("/appointments")
     @PreAuthorize("hasAnyRole('ADMIN','GERENTE','RECEPCAO','PROFESSOR')")
-    public List<Response> list(
+    public Page<Response> list(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-        return scheduling.byRange(from, to).stream().map(Response::from).toList();
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size) {
+        return scheduling.byRangeFiltered(from, to, status, q,
+                PageRequest.of(page, Math.min(size, 200))).map(Response::from);
+    }
+
+    @GetMapping("/appointments/summary")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE','RECEPCAO','PROFESSOR')")
+    public SummaryResponse summary(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q) {
+        return scheduling.summarize(from, to, status, q);
+    }
+
+    @GetMapping("/appointments/export")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
+    public void exportExcel(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String q,
+            HttpServletResponse response) throws IOException {
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition",
+                "attachment; filename=relatorio_" + from + "_" + to + ".xlsx");
+        relatorioExportService.exportar(from, to, status, q, response.getOutputStream());
     }
 
     @GetMapping("/schedule")
@@ -63,6 +99,17 @@ public class AppointmentController {
     public Response forceBook(@Valid @RequestBody StaffBookRequest req) {
         return Response.from(scheduling.forceBook(
                 req.studentId(), req.date(), req.slotStart(), req.notes(), currentUser.id()));
+    }
+
+    // ---- Histórico do aluno (staff) ----
+
+    @GetMapping("/students/{studentId}/appointments")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE','RECEPCAO')")
+    public List<Response> studentHistory(
+            @PathVariable UUID studentId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
+        return scheduling.getStudentHistory(studentId, from, to).stream().map(Response::from).toList();
     }
 
     // ---- Cancelar (staff ou dono) ----

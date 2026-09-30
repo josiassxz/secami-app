@@ -71,6 +71,28 @@ secami:
     base-path: ${STORAGE_BASE_PATH:./uploads}
     max-file-size-mb: ${STORAGE_MAX_FILE_MB:10}
 
+  # Catracas da academia (sistema Accelero) — desligado por padrão (ACCELERO_ENABLED)
+  # porque só é alcançável de dentro da rede do governo. Credenciais NUNCA
+  # hardcoded aqui — vêm de env/secret manager.
+  accelero:
+    enabled: ${ACCELERO_ENABLED:false}
+    base-url: ${ACCELERO_BASE:https://10.5.150.8}
+    usuario: ${ACCELERO_USER:}
+    senha: ${ACCELERO_PASS:}
+    categoria-acesso-id: ${ACCELERO_CATEGORIA_ACESSO:1213819408}
+
+  # Login com a conta do governo (AD via LDAPS) — desligado por padrão
+  # (LDAP_ENABLED) porque só é alcançável de dentro da rede do governo. A
+  # senha da conta de serviço NUNCA fica aqui: vem de env/secret manager.
+  ldap:
+    enabled: ${LDAP_ENABLED:false}
+    url: ${LDAP_URL:ldaps://dc2-dcsrv05.goias.intra:636}
+    base-dn: ${LDAP_BASE_DN:OU=ORGAOS,DC=goias,DC=intra}
+    bind-dn: ${LDAP_BIND_DN:svc.academia.pplt@sistemas.goias.gov.br}
+    bind-password: ${LDAP_BIND_PASSWORD:}
+    login-attribute: ${LDAP_LOGIN_ATTR:sAMAccountName}
+    cpf-attribute: ${LDAP_CPF_ATTR:description}
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
