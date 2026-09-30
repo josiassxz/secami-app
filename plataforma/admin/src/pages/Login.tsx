@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/lib/auth";
 import { Button, Input, Label } from "@/components/ui";
 import { AlertCircle } from "lucide-react";
+import { mensagemDeErro } from "@/lib/erros";
 
 export default function Login() {
   const { signIn } = useAuth();
@@ -20,7 +21,7 @@ export default function Login() {
       await signIn(email, password);
       navigate("/");
     } catch (err: any) {
-      setError(err?.message || "Não foi possível entrar.");
+      setError(mensagemDeErro(err, "Não foi possível entrar."));
     } finally {
       setLoading(false);
     }
@@ -50,15 +51,17 @@ export default function Login() {
           className="space-y-5 rounded-lg border border-line bg-surface p-6 shadow-1"
         >
           <div>
-            <Label htmlFor="user">E-mail</Label>
+            <Label htmlFor="user">E-mail ou usuário</Label>
             <Input
               id="user"
-              type="email"
+              type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="seu.email@exemplo.com"
+              placeholder="usuario.rede ou seu.email@goias.gov.br"
               autoFocus
-              autoComplete="email"
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
             />
           </div>
           <div>
@@ -89,7 +92,7 @@ export default function Login() {
         </form>
 
         <p className="mt-6 text-center text-xs leading-relaxed text-content-faint">
-          Acesso por e-mail e senha. Problemas de acesso? Fale com a TI/infraestrutura.
+          Entre com seu usuário e senha do governo (ou e-mail e senha do cadastro). Problemas de acesso? Fale com a TI/infraestrutura.
         </p>
       </div>
     </div>

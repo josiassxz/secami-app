@@ -169,10 +169,10 @@ describe("api()", () => {
     expect(getAccessToken()).toBe("access-1");
   });
 
-  it("quando o corpo do erro não tem message/error, usa a mensagem padrão 'Erro <status>'", async () => {
+  it("quando o corpo do erro não tem message/error, usa a mensagem padrão do status", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(jsonResponse(404));
 
-    await expect(api("/inexistente")).rejects.toMatchObject({ status: 404, message: "Erro 404" });
+    await expect(api("/inexistente")).rejects.toMatchObject({ status: 404, message: "Recurso não encontrado." });
   });
 });
 

@@ -4,6 +4,7 @@ import Students from "@/pages/Students";
 import { api } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { renderWithProviders } from "./render-with-providers";
+import { ApiError } from "@/lib/erros";
 
 vi.mock("@/lib/api", () => ({
   api: vi.fn(),
@@ -277,7 +278,7 @@ describe("Students - novo aluno", () => {
     mockAuth(["admin"]);
     setupApi({
       list: page({ content: [], totalElements: 0 }),
-      onCreate: () => Promise.reject(new Error("Já existe aluno com esse CPF.")),
+      onCreate: () => Promise.reject(new ApiError(409, "Já existe aluno com esse CPF.")),
     });
     renderWithProviders(<Students />);
     await screen.findByText("Nenhum aluno cadastrado");

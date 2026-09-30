@@ -1,5 +1,19 @@
 // Cliente HTTP com JWT (access + refresh). SPEC §9.2.
-const BASE = (import.meta.env.VITE_API_URL as string) || "http://localhost:8080";
+// `??` (não `||`): VITE_API_URL="" é um valor válido — faz as chamadas caírem
+// em path relativo (mesma origem da página, via proxy do nginx pro backend),
+// o que evita mixed content quando a página é servida em HTTPS mas ainda
+// precisaria falar com o backend em HTTP puro por IP.
+const BASE = (import.meta.env.VITE_API_URL as string) ?? "http://localhost:8080";
+
+import {
+  ApiError,
+  MSG_CONEXAO,
+  MSG_RESPOSTA_INESPERADA,
+  mensagemPadraoPorStatus,
+} from "./erros";
+
+// Reexporta pra manter `import { ApiError } from "@/lib/api"` funcionando.
+export { ApiError, mensagemDeErro, MSG_CONEXAO, MSG_GENERICA } from "./erros";
 
 const ACCESS_KEY = "secami.access";
 const REFRESH_KEY = "secami.refresh";
@@ -19,36 +33,61 @@ export function clearTokens() {
   localStorage.removeItem(REFRESH_KEY);
 }
 
-export class ApiError extends Error {
-  status: number;
-  constructor(status: number, message: string) {
-    super(message);
-    this.status = status;
+/** fetch que nunca deixa a exceção crua do navegador ("Failed to fetch",
+ *  "Load failed", "NetworkError...") chegar na UI. */
+async function fetchSeguro(input: string, init?: RequestInit): Promise<Response> {
+  try {
+    return await fetch(input, init);
+  } catch {
+    throw new ApiError(0, MSG_CONEXAO);
   }
 }
 
 async function parse(res: Response) {
+  // O corpo pode não ser JSON (página HTML de erro do nginx/gateway, texto
+  // simples do Spring como "Invalid CORS request", SPA fallback devolvendo
+  // index.html com 200...). JSON.parse direto vazava "Unexpected token '<',
+  // "<!DOCTYPE "... is not valid JSON" pra tela.
   const text = await res.text();
-  const body = text ? JSON.parse(text) : null;
+  let body: any = null;
+  let corpoInvalido = false;
+  if (text.trim()) {
+    try {
+      body = JSON.parse(text);
+    } catch {
+      corpoInvalido = true;
+    }
+  }
   if (!res.ok) {
-    const msg = body?.message || body?.error || `Erro ${res.status}`;
+    const bruto = body?.message ?? body?.error;
+    const msg =
+      typeof bruto === "string" && bruto.trim() ? bruto : mensagemPadraoPorStatus(res.status);
     throw new ApiError(res.status, msg);
   }
+  // 2xx com corpo não-JSON = algo (proxy/SPA) respondeu no lugar da API.
+  if (corpoInvalido) throw new ApiError(res.status, MSG_RESPOSTA_INESPERADA);
   return body;
 }
 
 async function tryRefresh(): Promise<boolean> {
   const refresh = getRefreshToken();
   if (!refresh) return false;
-  const res = await fetch(`${BASE}/auth/refresh`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refreshToken: refresh }),
-  });
-  if (!res.ok) return false;
-  const data = await res.json();
-  setTokens(data.accessToken, data.refreshToken);
-  return true;
+  try {
+    const res = await fetch(`${BASE}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: refresh }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    if (!data?.accessToken || !data?.refreshToken) return false;
+    setTokens(data.accessToken, data.refreshToken);
+    return true;
+  } catch {
+    // Rede fora do ar ou resposta que não é JSON: trata como "não deu pra
+    // renovar" (o chamador cai no fluxo normal de sessão expirada).
+    return false;
+  }
 }
 
 export async function api<T = any>(
@@ -65,7 +104,7 @@ export async function api<T = any>(
   const token = getAccessToken();
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}${path}`, { ...options, headers });
+  const res = await fetchSeguro(`${BASE}${path}`, { ...options, headers });
 
   if (res.status === 401) {
     if (retry && (await tryRefresh())) {
@@ -83,7 +122,7 @@ export async function api<T = any>(
 
 // ---- Auth ----
 export async function login(email: string, password: string) {
-  const res = await fetch(`${BASE}/auth/login`, {
+  const res = await fetchSeguro(`${BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -115,7 +154,7 @@ export async function downloadMedia(id: string, retry = true): Promise<Blob> {
   const headers: Record<string, string> = {};
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const res = await fetch(`${BASE}/media/${id}`, { headers });
+  const res = await fetchSeguro(`${BASE}/media/${id}`, { headers });
 
   if (res.status === 401) {
     if (retry && (await tryRefresh())) {
@@ -125,12 +164,13 @@ export async function downloadMedia(id: string, retry = true): Promise<Blob> {
     window.dispatchEvent(new Event("secami:auth-expired"));
   }
   if (!res.ok) {
-    let msg = `Erro ${res.status}`;
+    let msg = mensagemPadraoPorStatus(res.status);
     try {
       const body = await res.json();
-      msg = body?.message || body?.error || msg;
+      const bruto = body?.message ?? body?.error;
+      if (typeof bruto === "string" && bruto.trim()) msg = bruto;
     } catch {
-      // corpo não é JSON (ex.: resposta vazia) — mantém a mensagem padrão
+      // corpo não é JSON (ex.: resposta vazia/HTML) — mantém a mensagem padrão
     }
     throw new ApiError(res.status, msg);
   }
@@ -144,7 +184,7 @@ export type PendingRegistration = {
   cpf: string;
   email: string;
   phone: string;
-  studentType: "Civil" | "Militar";
+  studentType: "Civil" | "Militar" | "Instrutor";
   birthDate: string;
   weightKg: number | null;
   heightCm: number | null;

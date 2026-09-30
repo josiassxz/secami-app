@@ -4,6 +4,7 @@ import { api } from "@/lib/api";
 import { formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/PageHeader";
 import { Modal } from "@/components/Modal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge, Button, Card, Input, Label, Table, TableSkeleton, TBody, TD, TH, THead, TR } from "@/components/ui";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -11,6 +12,7 @@ export default function BlockedDates() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ date: "", slotStart: "", reason: "" });
+  const [confirmTarget, setConfirmTarget] = useState<any>(null);
 
   const { data, isLoading } = useQuery({ queryKey: ["blocked-dates"], queryFn: () => api(`/blocked-dates`) });
   const save = useMutation({
@@ -19,7 +21,7 @@ export default function BlockedDates() {
   });
   const del = useMutation({
     mutationFn: (id: string) => api(`/blocked-dates/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["blocked-dates"] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["blocked-dates"] }); setConfirmTarget(null); },
   });
 
   return (
@@ -39,7 +41,7 @@ export default function BlockedDates() {
                   <TD>{b.slotStart ? <span className="tabular-nums">{b.slotStart}</span> : <Badge tone="neutral">dia inteiro</Badge>}</TD>
                   <TD className="text-content-soft">{b.reason || "—"}</TD>
                   <TD className="text-right">
-                    <Button variant="ghost" size="sm" aria-label={`Remover bloqueio de ${formatDate(b.date)}`} onClick={() => del.mutate(b.id)}>
+                    <Button variant="ghost" size="sm" aria-label={`Remover bloqueio de ${formatDate(b.date)}`} onClick={() => setConfirmTarget(b)}>
                       <Trash2 className="h-4 w-4 text-danger" />
                     </Button>
                   </TD>
@@ -61,6 +63,15 @@ export default function BlockedDates() {
           <div><Label>Motivo</Label><Input value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} /></div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={!!confirmTarget}
+        onClose={() => setConfirmTarget(null)}
+        onConfirm={() => del.mutate(confirmTarget.id)}
+        loading={del.isPending}
+        title="Remover bloqueio"
+        message={confirmTarget && <>Tem certeza que deseja remover o bloqueio de <strong>{formatDate(confirmTarget.date)}</strong>?</>}
+      />
     </div>
   );
 }

@@ -80,7 +80,6 @@ describe("PendingRegistrations - listagem", () => {
     renderWithProviders(<PendingRegistrations />);
 
     expect(await screen.findByText("Maria Teste da Silva")).toBeInTheDocument();
-    expect(screen.getByText("Civil")).toBeInTheDocument();
     expect(screen.getByText("maria.teste@example.com")).toBeInTheDocument();
     expect(screen.getByText("52998224725")).toBeInTheDocument();
     expect(screen.getByText(/Dr\. Joao Souza/)).toBeInTheDocument();
@@ -110,11 +109,24 @@ describe("PendingRegistrations - listagem", () => {
 });
 
 describe("PendingRegistrations - aprovar", () => {
-  it("aprova e o item some da lista", async () => {
+  it("exige o perfil selecionado antes de habilitar Aprovar", async () => {
     setupApi();
     renderWithProviders(<PendingRegistrations />);
     await screen.findByText("Maria Teste da Silva");
 
+    expect(screen.getByRole("button", { name: "Aprovar" })).toBeDisabled();
+
+    fireEvent.change(screen.getByLabelText("Perfil"), { target: { value: "Civil" } });
+
+    expect(screen.getByRole("button", { name: "Aprovar" })).toBeEnabled();
+  });
+
+  it("aprova como aluno com a categoria escolhida e o item some da lista", async () => {
+    setupApi();
+    renderWithProviders(<PendingRegistrations />);
+    await screen.findByText("Maria Teste da Silva");
+
+    fireEvent.change(screen.getByLabelText("Perfil"), { target: { value: "Militar" } });
     fireEvent.click(screen.getByRole("button", { name: "Aprovar" }));
 
     await waitFor(() => {
@@ -122,11 +134,57 @@ describe("PendingRegistrations - aprovar", () => {
         ([p, opts]) => p === `/admin/cadastros/${REG.studentId}/aprovar` && (opts as any)?.method === "POST"
       );
       expect(calls).toHaveLength(1);
+      expect(JSON.parse((calls[0][1] as any).body)).toEqual({ perfil: "aluno", studentType: "Militar" });
     });
 
     await waitFor(() =>
       expect(screen.queryByText("Maria Teste da Silva")).not.toBeInTheDocument()
     );
+    expect(await screen.findByText("Nenhum cadastro pendente")).toBeInTheDocument();
+  });
+});
+
+describe("PendingRegistrations - aprovar como instrutor", () => {
+  const aprovarCalls = () =>
+    apiMock.mock.calls.filter(
+      ([p, opts]) => p === `/admin/cadastros/${REG.studentId}/aprovar` && (opts as any)?.method === "POST"
+    );
+
+  it("pede confirmação antes de aprovar como instrutor", async () => {
+    setupApi();
+    renderWithProviders(<PendingRegistrations />);
+    await screen.findByText("Maria Teste da Silva");
+
+    fireEvent.change(screen.getByLabelText("Perfil"), { target: { value: "Instrutor" } });
+    fireEvent.click(screen.getByRole("button", { name: "Aprovar" }));
+
+    expect(
+      await screen.findByRole("heading", { name: /Aprovar Maria Teste da Silva como instrutor/ })
+    ).toBeInTheDocument();
+    // Só abrir o diálogo não aprova ninguém.
+    expect(aprovarCalls()).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancelar" }));
+    await waitFor(() =>
+      expect(screen.queryByRole("heading", { name: /como instrutor/ })).not.toBeInTheDocument()
+    );
+    expect(aprovarCalls()).toHaveLength(0);
+  });
+
+  it("confirma e envia o perfil instrutor, sem categoria de aluno", async () => {
+    setupApi();
+    renderWithProviders(<PendingRegistrations />);
+    await screen.findByText("Maria Teste da Silva");
+
+    fireEvent.change(screen.getByLabelText("Perfil"), { target: { value: "Instrutor" } });
+    fireEvent.click(screen.getByRole("button", { name: "Aprovar" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Aprovar como instrutor" }));
+
+    await waitFor(() => {
+      const calls = aprovarCalls();
+      expect(calls).toHaveLength(1);
+      expect(JSON.parse((calls[0][1] as any).body)).toEqual({ perfil: "instrutor" });
+    });
     expect(await screen.findByText("Nenhum cadastro pendente")).toBeInTheDocument();
   });
 });

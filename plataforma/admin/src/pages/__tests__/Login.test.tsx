@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import Login from "@/pages/Login";
 import { useAuth } from "@/lib/auth";
+import { ApiError } from "@/lib/erros";
 
 vi.mock("@/lib/auth", () => ({
   useAuth: vi.fn(),
@@ -38,7 +39,7 @@ describe("<Login />", () => {
   it("renderiza os campos de usuário e senha e o botão de entrar", () => {
     renderLogin(vi.fn());
 
-    expect(screen.getByLabelText("E-mail")).toBeInTheDocument();
+    expect(screen.getByLabelText("E-mail ou usuário")).toBeInTheDocument();
     expect(screen.getByLabelText("Senha")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Entrar" })).toBeInTheDocument();
   });
@@ -47,7 +48,7 @@ describe("<Login />", () => {
     const signIn = vi.fn().mockResolvedValue(undefined);
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
+    await userEvent.type(screen.getByLabelText("E-mail ou usuário"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "senha123");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
@@ -56,10 +57,10 @@ describe("<Login />", () => {
   });
 
   it("mostra a mensagem de erro na tela quando o login falha e NÃO navega", async () => {
-    const signIn = vi.fn().mockRejectedValue(new Error("Usuário ou senha inválidos"));
+    const signIn = vi.fn().mockRejectedValue(new ApiError(401, "Usuário ou senha inválidos"));
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
+    await userEvent.type(screen.getByLabelText("E-mail ou usuário"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "senhaerrada");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
@@ -68,11 +69,26 @@ describe("<Login />", () => {
     expect(screen.queryByText("Página inicial")).not.toBeInTheDocument();
   });
 
+  it("erro técnico (não-ApiError) nunca aparece na tela — mostra texto padrão", async () => {
+    const signIn = vi
+      .fn()
+      .mockRejectedValue(new SyntaxError('Unexpected token \'<\', "<!DOCTYPE "... is not valid JSON'));
+    renderLogin(signIn);
+
+    await userEvent.type(screen.getByLabelText("E-mail ou usuário"), "fulano@dev.secami");
+    await userEvent.type(screen.getByLabelText("Senha"), "x");
+    await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Não foi possível entrar.");
+    expect(alert).not.toHaveTextContent(/Unexpected token|DOCTYPE/);
+  });
+
   it("quando o erro não tem mensagem, mostra um texto padrão em vez de deixar a tela muda", async () => {
     const signIn = vi.fn().mockRejectedValue({});
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
+    await userEvent.type(screen.getByLabelText("E-mail ou usuário"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "x");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
@@ -90,7 +106,7 @@ describe("<Login />", () => {
     );
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
+    await userEvent.type(screen.getByLabelText("E-mail ou usuário"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "senha123");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
 
@@ -107,7 +123,7 @@ describe("<Login />", () => {
       .mockResolvedValueOnce(undefined);
     renderLogin(signIn);
 
-    await userEvent.type(screen.getByLabelText("E-mail"), "fulano@dev.secami");
+    await userEvent.type(screen.getByLabelText("E-mail ou usuário"), "fulano@dev.secami");
     await userEvent.type(screen.getByLabelText("Senha"), "errada");
     await userEvent.click(screen.getByRole("button", { name: "Entrar" }));
     await screen.findByRole("alert");

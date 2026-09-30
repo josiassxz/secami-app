@@ -96,12 +96,14 @@ export default function Dashboard() {
 
   const students = useQuery({
     queryKey: ["students-count"],
-    queryFn: () => api(`/students?size=1`),
+    queryFn: () => api(`/students?size=1&perfil=aluno`),
     enabled: staff,
   });
   const appts = useQuery({
     queryKey: ["appts-today", d],
-    queryFn: () => api(`/appointments?from=${d}&to=${d}`),
+    // GET /appointments é paginado (Page do Spring): os itens vêm em
+    // `content`. size=200 (máximo aceito pelo backend) cobre um dia inteiro.
+    queryFn: () => api(`/appointments?from=${d}&to=${d}&size=200`),
     enabled: staff,
   });
   const schedule = useQuery({
@@ -116,8 +118,9 @@ export default function Dashboard() {
   });
   const notices = useQuery({ queryKey: ["notices-active"], queryFn: () => api(`/notices/active`) });
 
-  const apptList = (appts.data || []).filter((a: any) => a.status !== "cancelado");
-  const faltas = (appts.data || []).filter((a: any) => a.status === "faltou").length;
+  const apptsHoje: any[] = appts.data?.content ?? [];
+  const apptList = apptsHoje.filter((a: any) => a.status !== "cancelado");
+  const faltas = apptsHoje.filter((a: any) => a.status === "faltou").length;
   const slots = (schedule.data || []).filter((s: any) => !s.blocked);
   const noticeList = notices.data || [];
 

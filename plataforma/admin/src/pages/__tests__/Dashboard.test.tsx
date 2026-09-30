@@ -41,7 +41,8 @@ const SCHEDULE_TODAY = [
 function setupApi(overrides: Record<string, unknown> = {}) {
   const responses: Record<string, unknown> = {
     "/students": { totalElements: 42, content: [] },
-    "/appointments": APPTS_TODAY,
+    // Mesmo formato do backend real: GET /appointments é paginado.
+    "/appointments": { content: APPTS_TODAY, totalElements: APPTS_TODAY.length },
     "/schedule": SCHEDULE_TODAY,
     "/checkins": [{ id: "c1" }, { id: "c2" }, { id: "c3" }],
     "/notices/active": [],
@@ -145,7 +146,7 @@ describe("Dashboard", () => {
 
   it("mostra mensagem de vazio quando não há agendamentos hoje", async () => {
     mockAuth(["admin"]);
-    setupApi({ "/appointments": [] });
+    setupApi({ "/appointments": { content: [], totalElements: 0 } });
     renderWithProviders(<Dashboard />);
 
     expect(await screen.findByText("Nenhum agendamento para hoje.")).toBeInTheDocument();

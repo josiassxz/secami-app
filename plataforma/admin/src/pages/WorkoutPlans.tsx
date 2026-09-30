@@ -11,7 +11,7 @@ export default function WorkoutPlans() {
 
   const students = useQuery({
     queryKey: ["wp-students", q],
-    queryFn: () => api(`/students?q=${encodeURIComponent(q)}&size=6`),
+    queryFn: () => api(`/students?q=${encodeURIComponent(q)}&size=6&perfil=aluno`),
     enabled: q.length >= 2,
   });
   const plans = useQuery({

@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { PageHeader } from "@/components/PageHeader";
 import { Modal } from "@/components/Modal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Avatar, Badge, Button, Card, Input, Label, Table, TableSkeleton, TBody, TD, TH, THead, TR } from "@/components/ui";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 
@@ -11,6 +12,7 @@ export default function Departments() {
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<any>(null);
   const [form, setForm] = useState({ name: "", sigla: "", andar: "" });
+  const [confirmTarget, setConfirmTarget] = useState<any>(null);
 
   const { data, isLoading } = useQuery({ queryKey: ["departments"], queryFn: () => api(`/departments`) });
 
@@ -23,7 +25,7 @@ export default function Departments() {
   });
   const del = useMutation({
     mutationFn: (id: string) => api(`/departments/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["departments"] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["departments"] }); setConfirmTarget(null); },
   });
 
   function openNew() { setEdit(null); setForm({ name: "", sigla: "", andar: "" }); setOpen(true); }
@@ -55,7 +57,7 @@ export default function Departments() {
                       <Button variant="ghost" size="sm" aria-label={`Editar ${d.name}`} onClick={() => openEdit(d)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
-                      <Button variant="ghost" size="sm" aria-label={`Excluir ${d.name}`} onClick={() => del.mutate(d.id)}>
+                      <Button variant="ghost" size="sm" aria-label={`Excluir ${d.name}`} onClick={() => setConfirmTarget(d)}>
                         <Trash2 className="h-4 w-4 text-danger" />
                       </Button>
                     </div>
@@ -82,6 +84,15 @@ export default function Departments() {
           </div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={!!confirmTarget}
+        onClose={() => setConfirmTarget(null)}
+        onConfirm={() => del.mutate(confirmTarget.id)}
+        loading={del.isPending}
+        title="Excluir secretaria"
+        message={<>Tem certeza que deseja excluir <strong>{confirmTarget?.name}</strong>? Essa ação não pode ser desfeita.</>}
+      />
     </div>
   );
 }

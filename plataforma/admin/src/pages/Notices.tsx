@@ -4,8 +4,10 @@ import { api } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/PageHeader";
 import { Modal } from "@/components/Modal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge, Button, Card, Input, Label, Select, Skeleton, Textarea } from "@/components/ui";
 import { Plus, Trash2 } from "lucide-react";
+import { rotuloPapel } from "@/lib/papeis";
 
 const ROLES = ["aluno", "professor", "recepcao", "gerente", "admin"];
 const empty = { title: "", content: "", type: "info", targetRoles: ["aluno"], active: true };
@@ -14,6 +16,7 @@ export default function Notices() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<any>(empty);
+  const [confirmTarget, setConfirmTarget] = useState<any>(null);
 
   const { data, isLoading } = useQuery({ queryKey: ["notices-all"], queryFn: () => api(`/notices`) });
   const save = useMutation({
@@ -22,7 +25,7 @@ export default function Notices() {
   });
   const del = useMutation({
     mutationFn: (id: string) => api(`/notices/${id}`, { method: "DELETE" }),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["notices-all"] }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ["notices-all"] }); setConfirmTarget(null); },
   });
 
   function toggleRole(r: string) {
@@ -58,9 +61,9 @@ export default function Notices() {
                     <span className="font-semibold text-content">{n.title}</span>
                   </div>
                   <p className="whitespace-pre-line text-sm leading-relaxed text-content-soft">{n.content}</p>
-                  <p className="mt-2 text-xs text-content-faint">Para: {(n.targetRoles || []).join(", ")}</p>
+                  <p className="mt-2 text-xs text-content-faint">Para: {(n.targetRoles || []).map(rotuloPapel).join(", ")}</p>
                 </div>
-                <Button variant="ghost" size="sm" aria-label={`Excluir aviso ${n.title}`} onClick={() => del.mutate(n.id)}>
+                <Button variant="ghost" size="sm" aria-label={`Excluir aviso ${n.title}`} onClick={() => setConfirmTarget(n)}>
                   <Trash2 className="h-4 w-4 text-danger" />
                 </Button>
               </div>
@@ -102,13 +105,22 @@ export default function Notices() {
                       : "bg-surface-alt text-content-soft hover:bg-line/50 hover:text-content"
                   )}
                 >
-                  {r}
+                  {rotuloPapel(r)}
                 </button>
               ))}
             </div>
           </div>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={!!confirmTarget}
+        onClose={() => setConfirmTarget(null)}
+        onConfirm={() => del.mutate(confirmTarget.id)}
+        loading={del.isPending}
+        title="Excluir aviso"
+        message={<>Tem certeza que deseja excluir o aviso <strong>{confirmTarget?.title}</strong>? Essa ação não pode ser desfeita.</>}
+      />
     </div>
   );
 }

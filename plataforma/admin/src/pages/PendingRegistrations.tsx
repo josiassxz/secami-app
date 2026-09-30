@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api, downloadMedia, type PendingRegistration } from "@/lib/api";
+import { mensagemDeErro } from "@/lib/erros";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { PageHeader } from "@/components/PageHeader";
 import { Modal } from "@/components/Modal";
-import { Avatar, Badge, Button, Card, Label, Textarea } from "@/components/ui";
+import { Avatar, Badge, Button, Card, Label, Select, Textarea } from "@/components/ui";
 import {
   AlertCircle,
   ChevronDown,
@@ -67,6 +68,8 @@ const PARQ_QUESTIONS: { key: string; label: string }[] = [
   },
 ];
 
+const PERFIL_INSTRUTOR = "Instrutor";
+
 function ErrorBox({ message }: { message: string }) {
   return (
     <div className="flex items-start gap-2 rounded-md bg-danger/10 px-3 py-2 text-sm text-danger">
@@ -93,6 +96,13 @@ export default function PendingRegistrations() {
   const [rejectError, setRejectError] = useState<string | null>(null);
   const [actionErrors, setActionErrors] = useState<Record<string, string>>({});
   const [loadingAtestadoId, setLoadingAtestadoId] = useState<string | null>(null);
+  // O perfil não vem do formulário público — o admin escolhe aqui, no momento
+  // da aprovação: aluno (Civil ou Militar) ou Instrutor (prescreve as fichas
+  // de treino e não agenda horário).
+  const [perfilEscolhido, setPerfilEscolhido] = useState<Record<string, string>>({});
+  // Aprovar como instrutor dá acesso de equipe (dados dos alunos, fichas) —
+  // pede confirmação antes.
+  const [instrutorTarget, setInstrutorTarget] = useState<PendingRegistration | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["pending-registrations"],
@@ -100,18 +110,32 @@ export default function PendingRegistrations() {
   });
 
   const approve = useMutation({
-    mutationFn: (studentId: string) =>
-      api(`/admin/cadastros/${studentId}/aprovar`, { method: "POST" }),
-    onSuccess: (_data, studentId) => {
+    // `perfil` vem do seletor: "Civil"/"Militar" (aluno) ou "Instrutor".
+    mutationFn: ({ studentId, perfil }: { studentId: string; perfil: string }) =>
+      api(`/admin/cadastros/${studentId}/aprovar`, {
+        method: "POST",
+        body: JSON.stringify(
+          perfil === PERFIL_INSTRUTOR ? { perfil: "instrutor" } : { perfil: "aluno", studentType: perfil }
+        ),
+      }),
+    onSuccess: (_data, { studentId }) => {
       qc.invalidateQueries({ queryKey: ["pending-registrations"] });
+      setInstrutorTarget(null);
       setActionErrors((prev) => {
         const { [studentId]: _removed, ...rest } = prev;
         return rest;
       });
     },
-    onError: (err: any, studentId) =>
-      setActionErrors((prev) => ({ ...prev, [studentId]: err?.message || "Não foi possível aprovar." })),
+    onError: (err: any, { studentId }) => {
+      setInstrutorTarget(null);
+      setActionErrors((prev) => ({ ...prev, [studentId]: mensagemDeErro(err, "Não foi possível aprovar.") }));
+    },
   });
+
+  function onApprove(r: PendingRegistration, perfil: string) {
+    if (perfil === PERFIL_INSTRUTOR) setInstrutorTarget(r);
+    else approve.mutate({ studentId: r.studentId, perfil });
+  }
 
   const reject = useMutation({
     mutationFn: ({ studentId, motivo }: { studentId: string; motivo: string }) =>
@@ -125,7 +149,7 @@ export default function PendingRegistrations() {
       setRejectReason("");
       setRejectError(null);
     },
-    onError: (err: any) => setRejectError(err?.message || "Não foi possível recusar."),
+    onError: (err: any) => setRejectError(mensagemDeErro(err, "Não foi possível recusar.")),
   });
 
   function openReject(r: PendingRegistration) {
@@ -160,7 +184,7 @@ export default function PendingRegistrations() {
     } catch (err: any) {
       setActionErrors((prev) => ({
         ...prev,
-        [r.studentId]: err?.message || "Não foi possível abrir o atestado.",
+        [r.studentId]: mensagemDeErro(err, "Não foi possível abrir o atestado."),
       }));
     } finally {
       setLoadingAtestadoId(null);
@@ -199,9 +223,10 @@ export default function PendingRegistrations() {
         <div className="space-y-4">
           {rows.map((r) => {
             const expanded = expandedId === r.studentId;
-            const isApprovingThis = approve.isPending && approve.variables === r.studentId;
+            const isApprovingThis = approve.isPending && approve.variables?.studentId === r.studentId;
             const isLoadingAtestado = loadingAtestadoId === r.studentId;
             const error = actionErrors[r.studentId];
+            const perfil = perfilEscolhido[r.studentId] ?? "";
 
             return (
               <Card key={r.studentId} className="overflow-hidden">
@@ -212,20 +237,39 @@ export default function PendingRegistrations() {
                       <div>
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-semibold text-content">{r.fullName}</span>
-                          <Badge tone={r.studentType === "Militar" ? "warning" : "info"}>
-                            {r.studentType}
-                          </Badge>
                         </div>
                         <div className="mt-0.5 text-xs text-content-soft">
                           {r.departmentName} · Cadastrado em {formatDateTime(r.createdAt)}
                         </div>
                       </div>
                     </div>
-                    <div className="flex shrink-0 gap-2">
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Select
+                        aria-label="Perfil"
+                        className="h-9 w-40"
+                        value={perfil}
+                        onChange={(e) =>
+                          setPerfilEscolhido((prev) => ({ ...prev, [r.studentId]: e.target.value }))
+                        }
+                      >
+                        <option value="" disabled>
+                          Perfil
+                        </option>
+                        <optgroup label="Aluno">
+                          <option value="Civil">Aluno · Civil</option>
+                          <option value="Militar">Aluno · Militar</option>
+                        </optgroup>
+                        <option value={PERFIL_INSTRUTOR}>Instrutor</option>
+                      </Select>
                       <Button variant="outline" size="sm" onClick={() => openReject(r)}>
                         Recusar
                       </Button>
-                      <Button size="sm" loading={isApprovingThis} onClick={() => approve.mutate(r.studentId)}>
+                      <Button
+                        size="sm"
+                        loading={isApprovingThis}
+                        disabled={!perfil}
+                        onClick={() => onApprove(r, perfil)}
+                      >
                         Aprovar
                       </Button>
                     </div>
@@ -337,6 +381,39 @@ export default function PendingRegistrations() {
           })}
         </div>
       )}
+
+      <Modal
+        open={!!instrutorTarget}
+        onClose={() => !approve.isPending && setInstrutorTarget(null)}
+        title={`Aprovar ${instrutorTarget?.fullName ?? ""} como instrutor?`}
+        footer={
+          <>
+            <Button variant="outline" onClick={() => setInstrutorTarget(null)} disabled={approve.isPending}>
+              Cancelar
+            </Button>
+            <Button
+              loading={approve.isPending}
+              onClick={() =>
+                instrutorTarget &&
+                approve.mutate({ studentId: instrutorTarget.studentId, perfil: PERFIL_INSTRUTOR })
+              }
+            >
+              Aprovar como instrutor
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-2 text-sm text-content-soft">
+          <p>
+            O instrutor prescreve as fichas de treino dos alunos, pelo aplicativo e por este painel, e
+            passa a ver os dados dos alunos.
+          </p>
+          <p>
+            Ele não agenda horário nem vê as telas de aluno no aplicativo, e a catraca da academia fica
+            liberada para ele de forma permanente.
+          </p>
+        </div>
+      </Modal>
 
       <Modal
         open={!!rejectTarget}

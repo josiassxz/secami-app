@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { api, type PendingRegistration } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { rotuloPapel } from "@/lib/papeis";
 import { Avatar } from "@/components/ui";
 import {
   LayoutDashboard,
@@ -161,7 +162,7 @@ export default function Layout() {
             <div className="min-w-0 flex-1">
               <div className="truncate text-[13px] font-semibold text-content">{user?.nome}</div>
               <div className="truncate text-[11px] capitalize text-content-soft">
-                {user?.roles.join(" · ")}
+                {user?.roles.map(rotuloPapel).join(" · ")}
               </div>
             </div>
             <button

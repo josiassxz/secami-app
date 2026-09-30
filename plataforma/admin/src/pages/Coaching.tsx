@@ -26,7 +26,7 @@ export default function Coaching() {
 
   return (
     <div>
-      <PageHeader title="Coaching" subtitle="Vínculos professor ↔ aluno" />
+      <PageHeader title="Coaching" subtitle="Vínculos instrutor ↔ aluno" />
 
       <Card className="mb-6 overflow-hidden">
         <CardContent className="pt-5">
