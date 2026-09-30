@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../config/env.dart';
 import '../../features/academy/presentation/academia_home_screen.dart';
+import '../../features/academy/presentation/avisos_janela.dart';
 import '../../features/academy/presentation/avisos_screen.dart';
 import '../../features/academy/presentation/meu_perfil_screen.dart';
 import '../../features/academy/presentation/meu_treino_screen.dart';
@@ -154,7 +155,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       if (Env.hasRestApi)
         GoRoute(path: '/cadastro', builder: (_, _) => const CadastroScreen()),
       ShellRoute(
-        builder: (context, state, child) => HomeShell(child: child),
+        // Avisos do admin abrem como janela ao entrar no app (só no modo
+        // SECAMI; fora dele o gate não faz nada).
+        builder: (context, state, child) =>
+            AvisosJanelaGate(child: HomeShell(child: child)),
         routes: [
           GoRoute(path: '/library', builder: (_, _) => const LibraryScreen()),
           GoRoute(path: '/routines', builder: (_, _) => const RoutinesScreen()),

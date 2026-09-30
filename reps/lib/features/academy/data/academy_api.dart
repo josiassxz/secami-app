@@ -111,16 +111,19 @@ class WorkoutPlanDto {
 /// Aviso/informativo.
 class NoticeDto {
   const NoticeDto({
+    this.id = '',
     required this.title,
     required this.content,
     required this.type,
   });
 
+  final String id;
   final String title;
   final String content;
   final String type;
 
   factory NoticeDto.fromJson(Map<String, dynamic> j) => NoticeDto(
+    id: (j['id'] as String?) ?? '',
     title: (j['title'] as String?) ?? '',
     content: (j['content'] as String?) ?? '',
     type: (j['type'] as String?) ?? 'info',

@@ -12,10 +12,12 @@ public final class NoticeDtos {
 
     public record Response(
             UUID id, String title, String content, String type,
-            boolean active, List<String> targetRoles, OffsetDateTime createdAt) {
+            boolean active, List<String> targetRoles,
+            java.time.LocalDate exibirDe, java.time.LocalDate exibirAte,
+            OffsetDateTime createdAt) {
         public static Response from(Notice n) {
             return new Response(n.getId(), n.getTitle(), n.getContent(), n.getType(),
-                    n.isActive(), n.getTargetRoles(), n.getCreatedAt());
+                    n.isActive(), n.getTargetRoles(), n.getExibirDe(), n.getExibirAte(), n.getCreatedAt());
         }
     }
 
@@ -24,6 +26,9 @@ public final class NoticeDtos {
             @NotBlank(message = "Informe o conteúdo.") String content,
             String type,
             Boolean active,
-            List<String> targetRoles
+            List<String> targetRoles,
+            /** Período de exibição (inclusive); nulos = sem limite. */
+            java.time.LocalDate exibirDe,
+            java.time.LocalDate exibirAte
     ) {}
 }

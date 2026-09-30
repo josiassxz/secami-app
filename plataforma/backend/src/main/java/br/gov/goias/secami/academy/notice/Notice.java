@@ -43,6 +43,14 @@ public class Notice {
     @Column(name = "target_roles", nullable = false, columnDefinition = "jsonb")
     private List<String> targetRoles = new ArrayList<>(List.of("aluno"));
 
+    /** Primeiro dia em que o aviso aparece (inclusive). Nulo = desde já. */
+    @Column(name = "exibir_de")
+    private java.time.LocalDate exibirDe;
+
+    /** Último dia em que o aviso aparece (inclusive). Nulo = sem data de fim. */
+    @Column(name = "exibir_ate")
+    private java.time.LocalDate exibirAte;
+
     @Column(name = "created_by")
     private UUID createdBy;
 
@@ -56,4 +64,16 @@ public class Notice {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
+
+    /** Ativo e com {@code hoje} dentro do período de exibição (datas inclusive). */
+    public boolean emExibicao(java.time.LocalDate hoje) {
+        return active
+                && (exibirDe == null || !hoje.isBefore(exibirDe))
+                && (exibirAte == null || !hoje.isAfter(exibirAte));
+    }
+
+    /** Sem papel-alvo = todos; senão, basta o usuário ter um dos papéis. */
+    public boolean visivelPara(java.util.Collection<String> papeis) {
+        return targetRoles == null || targetRoles.isEmpty() || targetRoles.stream().anyMatch(papeis::contains);
+    }
 }

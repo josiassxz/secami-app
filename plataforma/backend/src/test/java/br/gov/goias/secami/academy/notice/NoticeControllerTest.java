@@ -93,7 +93,7 @@ class NoticeControllerTest extends AbstractIntegrationTest {
     void criarAvisoComoGerenteEhAceitoEFicaVisivelParaOPapelAlvo() throws Exception {
         String token = loginAs("gerente");
         String body = objectMapper.writeValueAsString(new NoticeDtos.UpsertRequest(
-                "Manutenção da academia", "Fechado das 12h às 13h", "warning", true, List.of("aluno")));
+                "Manutenção da academia", "Fechado das 12h às 13h", "warning", true, List.of("aluno"), null, null));
 
         mockMvc.perform(authed(post("/notices"), token)
                         .contentType(MediaType.APPLICATION_JSON)
@@ -107,7 +107,7 @@ class NoticeControllerTest extends AbstractIntegrationTest {
     void alunoNaoPodeCriarAviso() throws Exception {
         String token = loginAs("aluno");
         String body = objectMapper.writeValueAsString(new NoticeDtos.UpsertRequest(
-                "Tentativa indevida", "conteúdo", "info", true, List.of("aluno")));
+                "Tentativa indevida", "conteúdo", "info", true, List.of("aluno"), null, null));
 
         mockMvc.perform(authed(post("/notices"), token)
                         .contentType(MediaType.APPLICATION_JSON)

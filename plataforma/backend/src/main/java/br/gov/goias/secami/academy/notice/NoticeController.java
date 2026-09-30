@@ -17,11 +17,20 @@ import java.util.UUID;
 public class NoticeController {
 
     private final NoticeRepository repo;
+    private final NoticeDispensaRepository dispensas;
     private final CurrentUser currentUser;
+    private final java.time.ZoneId zone;
 
-    public NoticeController(NoticeRepository repo, CurrentUser currentUser) {
+    public NoticeController(NoticeRepository repo, NoticeDispensaRepository dispensas, CurrentUser currentUser,
+                            br.gov.goias.secami.config.SecamiProperties props) {
         this.repo = repo;
+        this.dispensas = dispensas;
         this.currentUser = currentUser;
+        this.zone = java.time.ZoneId.of(props.getTimezone());
+    }
+
+    private java.time.LocalDate hoje() {
+        return java.time.LocalDate.now(zone);
     }
 
     /** Todos (para gestão). Admin/gerente. */
@@ -31,15 +40,34 @@ public class NoticeController {
         return repo.findAll().stream().map(Response::from).toList();
     }
 
-    /** Ativos visíveis para os papéis do usuário atual (dashboard). */
+    /** Ativos, dentro do período de exibição e visíveis para os papéis do
+     *  usuário atual (tela "Avisos" do app e painel do admin). */
     @GetMapping("/active")
     public List<Response> activeForMe() {
         var roles = currentUser.require().getRoles();
+        java.time.LocalDate hoje = hoje();
         return repo.findByActiveTrueOrderByCreatedAtDesc().stream()
-                .filter(n -> n.getTargetRoles() == null || n.getTargetRoles().isEmpty()
-                        || n.getTargetRoles().stream().anyMatch(roles::contains))
+                .filter(n -> n.emExibicao(hoje) && n.visivelPara(roles))
                 .map(Response::from)
                 .toList();
+    }
+
+    /** O que o app deve abrir como janela ao entrar: os avisos de
+     *  {@link #activeForMe()} menos os que o usuário marcou "não mostrar novamente". */
+    @GetMapping("/modal")
+    public List<Response> modalForMe() {
+        var dispensados = dispensas.avisosDispensadosPor(currentUser.id());
+        return activeForMe().stream().filter(n -> !dispensados.contains(n.id())).toList();
+    }
+
+    /** "Não mostrar novamente" — idempotente. */
+    @PostMapping("/{id}/dispensar")
+    public void dispensar(@PathVariable UUID id) {
+        if (!repo.existsById(id)) throw new NotFoundException("Aviso não encontrado.");
+        UUID usuario = currentUser.id();
+        if (!dispensas.existsById(new NoticeDispensa.Chave(id, usuario))) {
+            dispensas.save(new NoticeDispensa(id, usuario));
+        }
     }
 
     @PostMapping
@@ -72,5 +100,12 @@ public class NoticeController {
         if (req.type() != null) n.setType(req.type());
         if (req.active() != null) n.setActive(req.active());
         if (req.targetRoles() != null) n.setTargetRoles(req.targetRoles());
+        if (req.exibirDe() != null && req.exibirAte() != null && req.exibirAte().isBefore(req.exibirDe())) {
+            throw new br.gov.goias.secami.common.error.DomainExceptions.BusinessException(
+                    "A data final da exibição deve ser igual ou posterior à data inicial.");
+        }
+        // Período sempre vem completo do formulário: nulo limpa o limite.
+        n.setExibirDe(req.exibirDe());
+        n.setExibirAte(req.exibirAte());
     }
 }
