@@ -43,15 +43,11 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
   final _cpfCtrl = TextEditingController();
   final _whatsappCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
-  final _senhaCtrl = TextEditingController();
-  final _confirmaSenhaCtrl = TextEditingController();
   final _pesoCtrl = TextEditingController();
   final _alturaCtrl = TextEditingController();
   DateTime? _nascimento;
   String? _departamentoId;
   final Set<String> _objetivosSelecionados = {};
-  bool _obscureSenha = true;
-  bool _obscureConfirma = true;
 
   // ---- Passo 2: PAR-Q ----
   final Map<String, bool?> _parQ = {
@@ -78,8 +74,6 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
     _cpfCtrl.dispose();
     _whatsappCtrl.dispose();
     _emailCtrl.dispose();
-    _senhaCtrl.dispose();
-    _confirmaSenhaCtrl.dispose();
     _pesoCtrl.dispose();
     _alturaCtrl.dispose();
     _medicoNomeCtrl.dispose();
@@ -247,7 +241,6 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
         whatsapp: _whatsappCtrl.text.trim(),
         departmentId: _departamentoId!,
         email: _emailCtrl.text.trim(),
-        password: _senhaCtrl.text,
         weightKg: _parseDouble(_pesoCtrl.text),
         heightCm: _parseDouble(_alturaCtrl.text),
         objetivos: _objetivosSelecionados.toList(),
@@ -478,46 +471,15 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
               },
             ),
             const SizedBox(height: AppTheme.space16),
-            _campoLabel('SENHA', scheme),
-            TextFormField(
-              controller: _senhaCtrl,
-              obscureText: _obscureSenha,
-              autofillHints: const [AutofillHints.newPassword],
-              decoration: InputDecoration(
-                hintText: 'Mínimo de 8 caracteres',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureSenha
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                  ),
-                  onPressed: () =>
-                      setState(() => _obscureSenha = !_obscureSenha),
-                ),
-              ),
-              validator: (v) => (v == null || v.length < 8)
-                  ? 'A senha deve ter no mínimo 8 caracteres'
-                  : null,
-            ),
-            const SizedBox(height: AppTheme.space16),
-            _campoLabel('CONFIRMAR SENHA', scheme),
-            TextFormField(
-              controller: _confirmaSenhaCtrl,
-              obscureText: _obscureConfirma,
-              decoration: InputDecoration(
-                hintText: 'Repita a senha',
-                suffixIcon: IconButton(
-                  icon: Icon(
-                    _obscureConfirma
-                        ? Icons.visibility_outlined
-                        : Icons.visibility_off_outlined,
-                  ),
-                  onPressed: () =>
-                      setState(() => _obscureConfirma = !_obscureConfirma),
-                ),
-              ),
-              validator: (v) =>
-                  (v != _senhaCtrl.text) ? 'As senhas não conferem' : null,
+            const SizedBox(height: AppTheme.space8),
+            // Sem criação de senha: o login é pela conta da rede do governo.
+            Text(
+              'Você não precisa criar senha. Depois de aprovado, entre no '
+              'aplicativo com o usuário e a senha da rede do governo — os '
+              'mesmos do computador do trabalho.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: AppTheme.space16),
             Row(
@@ -1252,8 +1214,8 @@ class _CadastroSucessoView extends StatelessWidget {
                 const SizedBox(height: AppTheme.space12),
                 Text(
                   'Seu acesso ficará pendente até a administração da '
-                  'academia analisar seus dados. Você vai poder entrar '
-                  'assim que for aprovado.',
+                  'academia analisar seus dados. Assim que for aprovado, '
+                  'entre com o usuário e a senha da rede do governo.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),

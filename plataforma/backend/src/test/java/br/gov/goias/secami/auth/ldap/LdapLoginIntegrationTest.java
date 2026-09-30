@@ -1,5 +1,6 @@
 package br.gov.goias.secami.auth.ldap;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import br.gov.goias.secami.AbstractIntegrationTest;
 import br.gov.goias.secami.academy.cadastros.CpfTestFactory;
 import br.gov.goias.secami.academy.student.Student;
@@ -41,6 +42,7 @@ class LdapLoginIntegrationTest extends AbstractIntegrationTest {
     @Autowired private StudentRepository students;
     @Autowired private PasswordEncoder encoder;
     @MockBean private LdapDirectory directory;
+    @Autowired private br.gov.goias.secami.academy.department.DepartmentRepository departments;
 
     private AppUser contaLocal(String email, boolean ativo) {
         AppUser u = new AppUser();
@@ -261,5 +263,64 @@ class LdapLoginIntegrationTest extends AbstractIntegrationTest {
         login(sam, "senha-do-governo").andExpect(status().isOk());
 
         assertThat(students.findById(aluno.getId()).orElseThrow().getEmail()).isEqualTo("contato@gmail.com");
+    }
+
+    /** Cadastro público sem senha (o formulário não pede mais): depois de
+     *  aprovado, a pessoa entra só com a conta do governo — a senha local
+     *  não existe. */
+    @Test
+    void cadastroSemSenha_entraSoPelaContaDoGoverno() throws Exception {
+        String email = emailGov();
+        ObjectNode dados = objectMapper.createObjectNode();
+        dados.put("fullName", "Servidora Sem Senha");
+        dados.put("cpf", br.gov.goias.secami.academy.cadastros.CpfTestFactory.next());
+        dados.put("birthDate", "1990-01-01");
+        dados.put("whatsapp", "62999990000");
+        dados.put("departmentId", departamento().toString());
+        dados.put("email", email);
+        ObjectNode parQ = dados.putObject("parQ");
+        for (String pergunta : br.gov.goias.secami.registration.RegistrationService.PAR_Q_PERGUNTAS) {
+            parQ.put(pergunta, false);
+        }
+        dados.put("termoResponsabilidade", true);
+        dados.put("termoCiencia", true);
+        dados.put("medicoNome", "Dr. Teste");
+        dados.put("medicoCrm", "1234");
+        dados.put("medicoCrmUf", "GO");
+        dados.put("atestadoEmissaoData", java.time.LocalDate.now().toString());
+        var dadosPart = new org.springframework.mock.web.MockMultipartFile(
+                "dados", "", "application/json", objectMapper.writeValueAsBytes(dados));
+        var atestado = new org.springframework.mock.web.MockMultipartFile(
+                "atestado", "atestado.pdf", "application/pdf", "%PDF-1.4\n%%EOF".getBytes());
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .multipart("/cadastro").file(dadosPart).file(atestado))
+                .andExpect(status().isCreated());
+
+        AppUser conta = users.findByEmailIgnoreCase(email).orElseThrow();
+        assertThat(conta.getPasswordHash()).isNull();
+        Student aluno = students.findByUserId(conta.getId()).orElseThrow();
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .post("/admin/cadastros/" + aluno.getId() + "/aprovar")
+                        .header("Authorization", "Bearer " + loginAs("admin"))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"studentType\":\"Civil\"}"))
+                .andExpect(status().isOk());
+
+        // Sem senha local: e-mail + qualquer senha não entra.
+        when(directory.authenticate(anyString(), anyString())).thenReturn(LdapAuthResult.naoEncontrado());
+        login(email, "qualquer-senha-123").andExpect(status().isUnprocessableEntity());
+
+        // Pela conta do governo, vinculada pelo e-mail institucional, entra.
+        String sam = sam();
+        when(directory.authenticate(sam, "senha-do-governo")).thenReturn(LdapAuthResult.autenticado(
+                new LdapUser(UUID.randomUUID(), sam, email, "Servidora Sem Senha", null)));
+        login(sam, "senha-do-governo").andExpect(status().isOk()).andExpect(jsonPath("$.accessToken").exists());
+    }
+
+    private UUID departamento() {
+        return departments.findAll().stream().findFirst().orElseGet(() -> {
+            var d = new br.gov.goias.secami.academy.department.Department();
+            d.setName("Secretaria Teste " + UUID.randomUUID());
+            return departments.save(d);
+        }).getId();
     }
 }

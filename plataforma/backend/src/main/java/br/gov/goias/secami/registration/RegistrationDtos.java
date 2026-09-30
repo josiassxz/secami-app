@@ -31,7 +31,9 @@ public final class RegistrationDtos {
             @Pattern(regexp = "(?i)^[^@\\s]+@goias\\.gov\\.br$",
                     message = "O e-mail precisa ser do domínio @goias.gov.br.")
             String email,
-            @NotBlank @Size(min = 8, message = "A senha precisa ter pelo menos 8 caracteres.") String password,
+            /** Opcional: o login é pela conta do governo (AD/LDAP), então o
+             *  formulário não pede mais senha. Se vier, vale como senha local. */
+            @Size(min = 8, message = "A senha precisa ter pelo menos 8 caracteres.") String password,
             BigDecimal weightKg,
             BigDecimal heightCm,
             List<String> objetivos,

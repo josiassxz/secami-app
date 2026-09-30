@@ -36,7 +36,7 @@ import java.util.UUID;
 public class RegistrationService {
 
     /** As 10 perguntas do PAR-Q — todas obrigatórias, todas precisam de resposta. */
-    static final Set<String> PAR_Q_PERGUNTAS = Set.of(
+    public static final Set<String> PAR_Q_PERGUNTAS = Set.of(
             "problema_coracao", "dor_peito_atividade", "dor_peito_mes",
             "desequilibrio_tontura", "problema_osseo_articular", "tratamento_pressao_coracao",
             "outra_razao_nao_praticar", "tratamento_continuo", "cirurgia_compromete_atividade",
@@ -93,7 +93,10 @@ public class RegistrationService {
         user.setEmail(email);
         user.setTipoIdentidade("local");
         user.setAtivo(false);
-        user.setPasswordHash(encoder.encode(req.password()));
+        // Sem senha local: a pessoa entra com a conta do governo (AD), que é
+        // vinculada a este cadastro pelo e-mail institucional ou pelo CPF.
+        boolean temSenha = req.password() != null && !req.password().isBlank();
+        user.setPasswordHash(temSenha ? encoder.encode(req.password()) : null);
         user.getRoles().add(Roles.ALUNO);
         user = users.save(user);
 

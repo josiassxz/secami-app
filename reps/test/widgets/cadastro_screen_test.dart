@@ -71,6 +71,46 @@ void main() {
     expect(find.widgetWithText(FilledButton, 'Continuar'), findsOneWidget);
   });
 
+  testWidgets('não pede senha: explica que o login é pela rede do governo', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      overrides: [
+        cadastroServiceProvider.overrideWithValue(_FakeCadastroService()),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('SENHA'), findsNothing);
+    expect(find.text('CONFIRMAR SENHA'), findsNothing);
+    expect(find.textContaining('Você não precisa criar senha'), findsOneWidget);
+  });
+
+  test('o envio do cadastro não leva senha', () {
+    final json = CadastroRequest(
+      fullName: 'Fulana',
+      cpf: '11144477735',
+      birthDate: DateTime(1990),
+      whatsapp: '62999990000',
+      departmentId: 'd1',
+      email: 'fulana@goias.gov.br',
+      weightKg: null,
+      heightCm: null,
+      objetivos: const [],
+      parQ: const ParQRespostas(respostas: {}),
+      termoResponsabilidade: true,
+      termoCiencia: true,
+      medicoNome: 'Dr.',
+      medicoCrm: '1',
+      medicoCrmUf: 'GO',
+      atestadoEmissaoData: DateTime(2026, 9, 1),
+    ).toJson();
+
+    expect(json.containsKey('password'), isFalse);
+    expect(json['email'], 'fulana@goias.gov.br');
+  });
+
   testWidgets('bloqueia avanco do passo 1 com formulario vazio', (
     tester,
   ) async {

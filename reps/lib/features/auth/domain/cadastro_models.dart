@@ -106,7 +106,6 @@ class CadastroRequest {
     required this.whatsapp,
     required this.departmentId,
     required this.email,
-    required this.password,
     required this.weightKg,
     required this.heightCm,
     required this.objetivos,
@@ -127,7 +126,6 @@ class CadastroRequest {
   final String whatsapp;
   final String departmentId;
   final String email;
-  final String password;
   final double? weightKg;
   final double? heightCm;
   final List<String> objetivos;
@@ -151,7 +149,6 @@ class CadastroRequest {
     'whatsapp': whatsapp,
     'departmentId': departmentId,
     'email': email,
-    'password': password,
     'weightKg': weightKg,
     'heightCm': heightCm,
     'objetivos': objetivos,
