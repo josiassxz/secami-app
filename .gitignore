@@ -7,6 +7,16 @@ ldap.md
 **/.env.local
 !**/.env.example
 
+# accelero/accelero.py (pasta na RAIZ do projeto) tem usuário/senha reais do
+# Accelero hardcoded como fallback (o próprio arquivo já avisa "não
+# commitar") — fica de fora até isso virar variável de ambiente. Ancorado na
+# raiz (/accelero/) pra não capturar o pacote Java
+# br.gov.goias.secami.accelero (esse SIM deve ser versionado).
+/accelero/
+
+# Relatórios gerados nas cargas de alunos (nomes, e-mails e senhas iniciais).
+/dados/relatorios-carga-*/
+
 # === macOS / IDE ===
 .DS_Store
 *.iml
