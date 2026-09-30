@@ -24,12 +24,15 @@ class WorkoutLogApi {
     final today = DateTime.now();
     final date =
         '${today.year.toString().padLeft(4, '0')}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-    return _api.put('/me/workout-logs', body: {
-      'date': date,
-      'workoutPlanId': workoutPlanId,
-      'sheetLabel': sheetLabel,
-      'exercises': exercises.map((e) => e.toJson()).toList(),
-    });
+    return _api.put(
+      '/me/workout-logs',
+      body: {
+        'date': date,
+        'workoutPlanId': workoutPlanId,
+        'sheetLabel': sheetLabel,
+        'exercises': exercises.map((e) => e.toJson()).toList(),
+      },
+    );
   }
 }
 

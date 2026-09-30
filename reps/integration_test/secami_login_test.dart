@@ -127,6 +127,11 @@ void main() {
     await tester.tap(agendarBtn);
     await _settle(tester);
 
+    // Modal de confirmação (mostra o horário) — confirma com "Sim".
+    expect(find.text('Confirmar agendamento?'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilledButton, 'Sim'));
+    await _settle(tester);
+
     // O SnackBar "Agendado com sucesso!" (duração padrão 4s) fica parado na
     // tela sem gerar frames novos depois da animação de entrada — pumpAndSettle
     // retorna antes dele sumir, e ele cobre o botão "Cancelar" (que fica perto

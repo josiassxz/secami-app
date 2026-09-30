@@ -16,6 +16,7 @@ import '../../auth/data/auth_service.dart';
 import '../../auth/data/rest_auth_service.dart';
 import '../data/export_service.dart';
 import '../data/settings_providers.dart';
+import '../../../core/network/erro_amigavel.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -34,9 +35,16 @@ class SettingsScreen extends ConsumerWidget {
     } on Exception catch (e, st) {
       await Observability.captureError(e, st, hint: 'export');
       if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erro ao exportar: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            mensagemDeErro(
+              e,
+              fallback: 'Não foi possível exportar seus dados.',
+            ),
+          ),
+        ),
+      );
     }
   }
 
@@ -143,6 +151,50 @@ class SettingsScreen extends ConsumerWidget {
     final isGuest = ref.watch(isGuestProvider);
     final syncStatus = ref.watch(syncStatusProvider).valueOrNull;
 
+    // Seção "Treinador". No modo legado (Supabase) os três atalhos de
+    // coaching aparecem sempre. No modo SECAMI, "Meus alunos" e "Minha
+    // academia" dependem de recursos que só existem no Supabase; sobra "Meu
+    // treinador" pra quem é aluno e, pro instrutor (papel `professor`), o
+    // atalho das fichas de treino. Sem nenhum item, a seção não é exibida.
+    final restApi = Env.hasRestApi;
+    final secamiUser = restApi
+        ? ref.watch(secamiCurrentUserProvider).valueOrNull
+        : null;
+    final treinadorTiles = <Widget>[
+      if (!restApi)
+        ListTile(
+          leading: const Icon(Icons.groups_outlined),
+          title: const Text('Meus alunos'),
+          subtitle: const Text('Acompanhe quem você treina'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/coach/alunos'),
+        ),
+      if (!restApi || (secamiUser?.isAluno ?? false))
+        ListTile(
+          leading: const Icon(Icons.sports_outlined),
+          title: const Text('Meu treinador'),
+          subtitle: const Text('Vincule-se com um código de convite'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/coach/treinador'),
+        ),
+      if (!restApi)
+        ListTile(
+          leading: const Icon(Icons.business_outlined),
+          title: const Text('Minha academia'),
+          subtitle: const Text('Reúna professores sob a mesma marca'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/coach/academia'),
+        ),
+      if (restApi && (secamiUser?.isInstrutor ?? false))
+        ListTile(
+          leading: const Icon(Icons.assignment_ind_outlined),
+          title: const Text('Alunos e fichas de treino'),
+          subtitle: const Text('Prescreva fichas para os alunos da academia'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push('/instrutor/alunos'),
+        ),
+    ];
+
     return Scaffold(
       appBar: AppBar(title: const Text('Ajustes')),
       body: ListView(
@@ -185,29 +237,11 @@ class SettingsScreen extends ConsumerWidget {
                   : () => _syncNow(context, ref),
             ),
             const Divider(),
-            const _SectionLabel('Treinador'),
-            ListTile(
-              leading: const Icon(Icons.groups_outlined),
-              title: const Text('Meus alunos'),
-              subtitle: const Text('Acompanhe quem você treina'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push('/coach/alunos'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.sports_outlined),
-              title: const Text('Meu treinador'),
-              subtitle: const Text('Vincule-se com um código de convite'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push('/coach/treinador'),
-            ),
-            ListTile(
-              leading: const Icon(Icons.business_outlined),
-              title: const Text('Minha academia'),
-              subtitle: const Text('Reúna professores sob a mesma marca'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => context.push('/coach/academia'),
-            ),
-            const Divider(),
+            if (treinadorTiles.isNotEmpty) ...[
+              const _SectionLabel('Treinador'),
+              ...treinadorTiles,
+              const Divider(),
+            ],
           ],
           const _SectionLabel('Timer de descanso'),
           SwitchListTile(
@@ -320,7 +354,7 @@ class SettingsScreen extends ConsumerWidget {
                 // redirect do GoRouter manda de volta pra dentro do app em vez
                 // de deixar cair em /sign-in. Mesmo bug/fix do fluxo de login.
                 if (Env.hasRestApi) {
-                  await ref.refresh(secamiCurrentUserProvider.future);
+                  final _ = await ref.refresh(secamiCurrentUserProvider.future);
                 }
                 if (context.mounted) context.go('/');
               },

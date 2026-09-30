@@ -54,11 +54,20 @@ class CadastroService {
         'Não foi possível carregar a lista de secretarias/órgãos.',
       );
     }
-    final data = jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
-    return data
-        .map((e) => Departamento.fromJson(e as Map<String, dynamic>))
-        .where((d) => d.active)
-        .toList();
+    try {
+      final data = jsonDecode(utf8.decode(res.bodyBytes)) as List<dynamic>;
+      return data
+          .map((e) => Departamento.fromJson(e as Map<String, dynamic>))
+          .where((d) => d.active)
+          .toList();
+    } on Object {
+      // 200 com HTML/JSON inesperado (proxy no lugar da API) — nunca deixa o
+      // FormatException/TypeError chegar na tela.
+      throw CadastroApiException(
+        res.statusCode,
+        'Não foi possível carregar a lista de secretarias/órgãos.',
+      );
+    }
   }
 
   /// Envia o formulario completo + PDF do atestado. `multipart/form-data`
@@ -121,7 +130,11 @@ class CadastroService {
         data = null;
       }
     }
-    final backendMessage = data?['message'] as String?;
+    final rawMessage = data?['message'];
+    final backendMessage =
+        (rawMessage is String && rawMessage.trim().isNotEmpty)
+        ? rawMessage
+        : null;
     Map<String, String>? fieldErrors;
     final rawFieldErrors = data?['fieldErrors'];
     if (rawFieldErrors is Map) {

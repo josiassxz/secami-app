@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/config/env.dart';
 import 'core/router/app_router.dart';
 import 'core/sync/sync_providers.dart';
 import 'core/theme/app_theme.dart';
@@ -40,7 +41,9 @@ class _RepsAppState extends ConsumerState<RepsApp> {
     ref.watch(syncEngineProvider);
     final router = ref.watch(routerProvider);
     return MaterialApp.router(
-      title: 'reps',
+      // Muda a aba/título no modo REST (deploy academia-secami) — no modo
+      // reps local-first o app nativo continua se identificando como "reps".
+      title: Env.hasRestApi ? 'academia-secami' : 'reps',
       debugShowCheckedModeBanner: false,
       scaffoldMessengerKey: _scaffoldKey,
       theme: AppTheme.light(),

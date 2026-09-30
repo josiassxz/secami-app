@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../data/academy_providers.dart';
+import '../../../core/network/erro_amigavel.dart';
 
 /// Avisos/informativos da academia, filtrados por papel no backend. SPEC §9.3.
 class AvisosScreen extends ConsumerWidget {
@@ -26,7 +27,13 @@ class AvisosScreen extends ConsumerWidget {
                 children: [
                   Icon(Icons.error_outline, size: 40, color: scheme.error),
                   const SizedBox(height: AppTheme.space12),
-                  Text('Erro: $e', textAlign: TextAlign.center),
+                  Text(
+                    mensagemDeErro(
+                      e,
+                      fallback: 'Não foi possível carregar os avisos.',
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ],
               ),
             ),

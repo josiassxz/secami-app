@@ -3,10 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/logging/observability.dart';
+import '../../../core/network/api_client.dart';
+import '../../../core/router/secami_access.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/rest_auth_service.dart';
 
-/// Login local por e-mail/senha (SPEC §12, revisado — LDAP removido).
+/// Login por usuário-ou-e-mail + senha: senha local do cadastro OU a do
+/// governo (AD/LDAP, decidido no backend — SPEC §12).
 /// Substitui o fluxo de e-mail/senha do Supabase quando `Env.hasRestApi`
 /// (ver app_router.dart). Nome do arquivo é legado (era só LDAP antes).
 class LdapSignInScreen extends ConsumerStatefulWidget {
@@ -46,11 +49,13 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
       // Aguarda o provider resolver ANTES de navegar: um invalidate() sem
       // esperar deixa currentUserProvider momentaneamente null (loading),
       // e o redirect reativo do router bate de volta pra /sign-in antes
-      // do go('/routines') "vencer" a corrida.
-      await ref.refresh(secamiCurrentUserProvider.future);
+      // do go(...) "vencer" a corrida.
+      final user = await ref.refresh(secamiCurrentUserProvider.future);
       await Observability.track('sign_in_success');
       if (!mounted) return;
-      context.go('/routines');
+      // Quem é só instrutor entra direto na Academia (alunos e fichas); os
+      // demais, no diário de treinos — mesma regra do redirect do router.
+      context.go(rotaInicialSecami(user));
     } catch (e, st) {
       await Observability.captureError(e, st, hint: 'ldap_sign_in');
       setState(() => _error = _humanize(e));
@@ -92,7 +97,9 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
                               const SizedBox(height: AppTheme.space16),
                               Text(
                                 'Academia SECAMI',
-                                style: Theme.of(context).textTheme.headlineSmall,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.headlineSmall,
                                 textAlign: TextAlign.center,
                               ),
                               const SizedBox(height: AppTheme.space4),
@@ -106,7 +113,7 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
                               ),
                               const SizedBox(height: AppTheme.space32),
                               Text(
-                                'E-MAIL',
+                                'USUÁRIO OU E-MAIL',
                                 style: AppTheme.label(
                                   11,
                                   color: scheme.onSurfaceVariant,
@@ -115,13 +122,16 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
                               const SizedBox(height: AppTheme.space8),
                               TextFormField(
                                 controller: _userCtrl,
-                                keyboardType: TextInputType.emailAddress,
-                                autofillHints: const [AutofillHints.email],
+                                keyboardType: TextInputType.text,
+                                autocorrect: false,
+                                enableSuggestions: false,
+                                textCapitalization: TextCapitalization.none,
+                                autofillHints: const [AutofillHints.username],
                                 textInputAction: TextInputAction.next,
                                 onFieldSubmitted: (_) =>
                                     _passwordFocus.requestFocus(),
                                 decoration: InputDecoration(
-                                  hintText: 'seu@email.com',
+                                  hintText: 'usuário ou seu@email.com',
                                   prefixIcon: Icon(
                                     Icons.alternate_email,
                                     size: 20,
@@ -130,7 +140,7 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
                                 ),
                                 validator: (v) =>
                                     (v == null || v.trim().isEmpty)
-                                    ? 'Informe o e-mail'
+                                    ? 'Informe o usuário ou e-mail'
                                     : null,
                               ),
                               const SizedBox(height: AppTheme.space16),
@@ -320,11 +330,15 @@ class _ErrorBanner extends StatelessWidget {
 }
 
 String _humanize(Object e) {
-  final msg = e.toString().trim();
   // O backend já devolve mensagens finais em pt-BR pra login/cadastro
   // (inválido, cadastro em análise, cadastro recusado + motivo, inativo) —
-  // repassa direto em vez de genericizar. Só cai no fallback se vier algo
-  // que não pareça mensagem de negócio (erro técnico/rede sem tradução).
+  // repassa direto em vez de genericizar. Qualquer exceção que NÃO seja
+  // ApiException (rede, JSON malformado etc.) nunca aparece como texto
+  // técnico bruto pro usuário.
+  if (e is! ApiException) {
+    return 'Não foi possível entrar agora. Tente de novo em instantes.';
+  }
+  final msg = e.message.trim();
   if (msg.isEmpty || msg.length > 200) {
     return 'Não foi possível entrar agora. Tente de novo em instantes.';
   }

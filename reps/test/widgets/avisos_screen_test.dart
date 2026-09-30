@@ -81,6 +81,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Erro:'), findsOneWidget);
+    expect(find.text('Não foi possível carregar os avisos.'), findsOneWidget);
+    // Detalhe técnico da exceção nunca aparece pro usuário.
+    expect(find.textContaining('falha de rede'), findsNothing);
   });
 }

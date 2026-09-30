@@ -7,6 +7,7 @@ import '../../../domain/entities/exercise_id.dart';
 import '../../auth/data/auth_providers.dart';
 import '../../library/data/library_repository.dart';
 import '../../../domain/entities/exercise.dart';
+import '../../../core/network/erro_amigavel.dart';
 
 class _GroupVolume {
   _GroupVolume(this.grupo);
@@ -76,7 +77,11 @@ class WeeklyVolumeScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Resumo semanal')),
       body: asyncTuple.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erro: $e')),
+        error: (e, _) => Center(
+          child: Text(
+            mensagemDeErro(e, fallback: 'Não foi possível carregar o volume.'),
+          ),
+        ),
         data: (tuple) {
           final atual = tuple.$1;
           final anterior = tuple.$2;

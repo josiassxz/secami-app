@@ -9,6 +9,7 @@ import '../config/env.dart';
 import '../config/supabase_client.dart';
 import '../logging/observability.dart';
 import '../network/api_client.dart';
+import '../network/erro_amigavel.dart';
 import 'rest_sync_transport.dart';
 import 'sync_mappers.dart';
 import 'sync_status.dart';
@@ -108,10 +109,10 @@ class SyncEngine {
   /// `dynamic` — despacho em tempo de execução, sem duplicar a lógica de
   /// push/pull/last-write-wins para os dois transportes.
   Future<void> runOnce() => _runOnce(
-        Env.hasRestApi
-            ? RestSyncTransport(_apiClient ?? ApiClient())
-            : SupabaseConfig.clientOrNull,
-      );
+    Env.hasRestApi
+        ? RestSyncTransport(_apiClient ?? ApiClient())
+        : SupabaseConfig.clientOrNull,
+  );
 
   /// So para testes: injeta um [SupabaseClient] (com stub http + sessao fake)
   /// para exercitar o ciclo real de push/pull/status sem o singleton global do
@@ -203,10 +204,14 @@ class SyncEngine {
     }
   }
 
-  String _shortError(Object e) {
-    final s = e.toString();
-    return s.length > 240 ? '${s.substring(0, 240)}...' : s;
-  }
+  /// Texto que o usuário vê ao tocar no aviso de sync com falha: nunca o
+  /// toString técnico da exceção (o detalhe completo já vai pra telemetria em
+  /// `Observability.captureError`, no catch de quem chama).
+  String _shortError(Object e) => mensagemDeErro(
+    e,
+    fallback:
+        'Não foi possível sincronizar agora. Vamos tentar de novo em instantes.',
+  );
 
   /// Tabelas sincronizáveis (push + pull genéricos). Adicionar uma tabela ao
   /// sync = registrar um [SyncableTable] aqui — sem editar push/pull/mappers
@@ -410,9 +415,9 @@ class SyncEngine {
   /// e set_logs/routine_exercises de exercicios padrao ficam so locais.
   Future<void> _loadExerciseMap(dynamic client) async {
     try {
-      final rows = await client
-          .from(_tableExercises)
-          .select('id, slug, criado_por') as List;
+      final rows =
+          await client.from(_tableExercises).select('id, slug, criado_por')
+              as List;
       final slugTo = <String, String>{};
       final uuidTo = <String, String>{};
       for (final r in rows.cast<Map<String, dynamic>>()) {

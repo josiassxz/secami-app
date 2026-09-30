@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../domain/entities/exercise_id.dart';
 import '../../auth/data/auth_providers.dart';
 import '../../library/data/library_repository.dart';
+import '../../../core/network/erro_amigavel.dart';
 
 class _RecordRow {
   const _RecordRow({
@@ -67,7 +68,14 @@ class RecordsScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Recordes')),
       body: asyncList.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erro: $e')),
+        error: (e, _) => Center(
+          child: Text(
+            mensagemDeErro(
+              e,
+              fallback: 'Não foi possível carregar os recordes.',
+            ),
+          ),
+        ),
         data: (list) {
           if (list.isEmpty) {
             return Center(

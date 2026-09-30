@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/academy_api.dart';
 import '../data/academy_providers.dart';
+import '../../../core/network/erro_amigavel.dart';
 
 /// Agendamento de horários pelo aluno (SPEC §9.4 / §10.4). Todas as regras
 /// (janela de 48h, foto, atestado, capacidade) são validadas pelo backend —
@@ -72,7 +74,12 @@ class MinhaAgendaScreen extends ConsumerWidget {
               ),
               error: (e, _) => Padding(
                 padding: const EdgeInsets.symmetric(vertical: AppTheme.space16),
-                child: Text('Não foi possível carregar os horários: $e'),
+                child: Text(
+                  mensagemDeErro(
+                    e,
+                    fallback: 'Não foi possível carregar os horários.',
+                  ),
+                ),
               ),
               data: (slots) {
                 if (slots.isEmpty) {
@@ -87,6 +94,11 @@ class MinhaAgendaScreen extends ConsumerWidget {
                       _SlotTile(
                         slot: s,
                         onBook: () async {
+                          final confirmar = await _confirmarAgendamento(
+                            context,
+                            s,
+                          );
+                          if (confirmar != true || !context.mounted) return;
                           final messenger = ScaffoldMessenger.of(context);
                           try {
                             await ref
@@ -121,7 +133,12 @@ class MinhaAgendaScreen extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(vertical: AppTheme.space24),
                 child: Center(child: CircularProgressIndicator()),
               ),
-              error: (e, _) => Text('Erro: $e'),
+              error: (e, _) => Text(
+                mensagemDeErro(
+                  e,
+                  fallback: 'Não foi possível carregar seus agendamentos.',
+                ),
+              ),
               data: (appts) {
                 final ativos =
                     appts.where((a) => a.status != 'cancelado').toList()
@@ -323,6 +340,31 @@ class _SlotTile extends StatelessWidget {
   }
 }
 
+Future<bool?> _confirmarAgendamento(BuildContext context, AvailableSlot s) {
+  return showDialog<bool>(
+    context: context,
+    builder: (dialogCtx) => AlertDialog(
+      title: const Text('Confirmar agendamento?'),
+      content: Text('Agendar o horário ${s.slotStart} – ${s.slotEnd}?'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(dialogCtx).pop(false),
+          child: const Text('Não'),
+        ),
+        FilledButton(
+          // O tema define FilledButton com minimumSize largura-infinita (pro
+          // botão de CTA de tela cheia, ex. "Agendar") — sem essa sobrescrita
+          // ele estica e desalinha ao lado do TextButton compacto num Row de
+          // ações de dialog (mesma armadilha do botão "Agendar" do _SlotTile).
+          style: FilledButton.styleFrom(minimumSize: const Size(88, 44)),
+          onPressed: () => Navigator.of(dialogCtx).pop(true),
+          child: const Text('Sim'),
+        ),
+      ],
+    ),
+  );
+}
+
 String _iso(DateTime d) =>
     '${d.year.toString().padLeft(4, '0')}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
 
@@ -360,10 +402,14 @@ Color _statusColor(String status, ColorScheme scheme) => switch (status) {
 };
 
 String _humanize(Object e) {
-  final msg = e.toString();
-  if (msg.contains('foto')) {
-    return 'Você precisa cadastrar uma foto no perfil antes de agendar.';
+  // ApiException já traz mensagem final em pt-BR do backend (SchedulingService
+  // valida cada regra com uma mensagem pronta) — repassa direto. Qualquer
+  // outro tipo de exceção (rede, parse etc.) nunca aparece pro usuário como
+  // texto técnico bruto.
+  if (e is! ApiException) {
+    return 'Não foi possível agendar agora. Tente de novo em instantes.';
   }
+  final msg = e.message;
   if (msg.contains('atestado')) return 'Atestado médico ausente ou vencido.';
   if (msg.contains('48h')) {
     return 'Só é possível agendar com até 48h de antecedência.';
@@ -372,5 +418,5 @@ String _humanize(Object e) {
     return 'Você já possui 2 agendamentos ativos.';
   }
   if (msg.contains('cheio')) return 'Horário cheio para civis.';
-  return 'Não foi possível agendar: $msg';
+  return msg;
 }

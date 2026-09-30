@@ -66,12 +66,18 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       setState(() => _success = true);
     } on AuthException catch (e, st) {
       await Observability.captureError(e, st, hint: 'sign_up');
-      // Mostra a mensagem real do Supabase (ex.: signups desabilitados,
-      // senha fraca, e-mail ja cadastrado, API key invalida).
-      setState(() => _error = 'Erro ao criar conta: ${e.message}');
+      // Detalhe do Supabase (signups desabilitados, senha fraca, API key
+      // invalida...) fica só na telemetria acima — não vai pra tela.
+      setState(
+        () => _error =
+            'Não foi possível criar a conta. Verifique os dados e tente novamente.',
+      );
     } catch (e, st) {
       await Observability.captureError(e, st, hint: 'sign_up');
-      setState(() => _error = 'Não foi possível criar a conta: $e');
+      setState(
+        () => _error =
+            'Não foi possível criar a conta agora. Tente novamente em instantes.',
+      );
     } finally {
       if (mounted) {
         setState(() => _loading = false);

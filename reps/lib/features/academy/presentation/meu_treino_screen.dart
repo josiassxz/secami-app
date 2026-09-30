@@ -5,6 +5,7 @@ import '../../../core/theme/app_theme.dart';
 import '../data/academy_api.dart';
 import '../data/academy_providers.dart';
 import '../data/workout_log_api.dart';
+import '../../../core/network/erro_amigavel.dart';
 
 /// Execução da ficha (A–D) prescrita pelo professor (SPEC §9.3 / §10.4).
 /// Marca exercícios feitos com carga; salva no dia via /me/workout-logs.
@@ -36,7 +37,12 @@ class _MeuTreinoScreenState extends ConsumerState<MeuTreinoScreen>
       appBar: AppBar(title: const Text('Meu Treino')),
       body: plansAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => _ErrorState(message: 'Erro: $e'),
+        error: (e, _) => _ErrorState(
+          message: mensagemDeErro(
+            e,
+            fallback: 'Não foi possível carregar seus treinos.',
+          ),
+        ),
         data: (plans) {
           final ativas = plans.where((p) => p.active).toList();
           if (ativas.isEmpty) {
@@ -117,9 +123,13 @@ class _MeuTreinoScreenState extends ConsumerState<MeuTreinoScreen>
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Não foi possível salvar: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              mensagemDeErro(e, fallback: 'Não foi possível salvar o treino.'),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -144,7 +154,7 @@ class _EmptyFicha extends StatelessWidget {
         const SizedBox(height: AppTheme.space16),
         Text(
           'Você ainda não tem uma ficha de treino prescrita.\n'
-          'Fale com o professor da academia.',
+          'Fale com o instrutor da academia.',
           textAlign: TextAlign.center,
           style: Theme.of(
             context,

@@ -73,7 +73,8 @@ Future<void> main() async {
   );
 }
 
-/// Substitui a tela preta padrao de erro de build por algo legivel.
+/// Substitui a tela preta/cinza padrao de erro de build por um aviso legivel
+/// e sem jargao tecnico (o detalhe so aparece fora de release).
 /// Funciona sem ancestral Material (usa apenas widgets basicos).
 class _FatalErrorWidget extends StatelessWidget {
   const _FatalErrorWidget({required this.details});
@@ -94,7 +95,7 @@ class _FatalErrorWidget extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'ERRO NESTA TELA (tire um print):',
+                'Algo deu errado nesta tela.',
                 style: TextStyle(
                   color: Color(0xFFFFFFFF),
                   fontSize: 20,
@@ -102,14 +103,27 @@ class _FatalErrorWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
-                details.exceptionAsString(),
-                style: const TextStyle(
+              const Text(
+                'Volte e tente novamente. Se o problema continuar, avise o '
+                'suporte da Academia SECAMI.',
+                style: TextStyle(
                   color: Color(0xFFFFFFFF),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                 ),
               ),
+              // Detalhe técnico só fora de release (o erro já vai pra
+              // telemetria em FlutterError.onError).
+              if (!kReleaseMode) ...[
+                const SizedBox(height: 12),
+                Text(
+                  details.exceptionAsString(),
+                  style: const TextStyle(
+                    color: Color(0xFFFFFFFF),
+                    fontSize: 12,
+                  ),
+                ),
+              ],
               if (!kReleaseMode && details.stack != null) ...[
                 const SizedBox(height: 12),
                 Text(

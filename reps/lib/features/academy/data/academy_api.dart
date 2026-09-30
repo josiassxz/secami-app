@@ -21,13 +21,13 @@ class AvailableSlot {
   final String? reason;
 
   factory AvailableSlot.fromJson(Map<String, dynamic> j) => AvailableSlot(
-        slotStart: j['slotStart'] as String,
-        slotEnd: (j['slotEnd'] as String?) ?? '',
-        maxCapacity: (j['maxCapacity'] as num?)?.toInt() ?? 0,
-        civilCount: (j['civilCount'] as num?)?.toInt() ?? 0,
-        available: (j['available'] as bool?) ?? false,
-        reason: j['reason'] as String?,
-      );
+    slotStart: j['slotStart'] as String,
+    slotEnd: (j['slotEnd'] as String?) ?? '',
+    maxCapacity: (j['maxCapacity'] as num?)?.toInt() ?? 0,
+    civilCount: (j['civilCount'] as num?)?.toInt() ?? 0,
+    available: (j['available'] as bool?) ?? false,
+    reason: j['reason'] as String?,
+  );
 }
 
 /// Agendamento do aluno.
@@ -73,12 +73,12 @@ class PlanExercise {
   final String? notes;
 
   factory PlanExercise.fromJson(Map<String, dynamic> j) => PlanExercise(
-        exerciseName: (j['exerciseName'] as String?) ?? '',
-        sets: (j['sets'] as num?)?.toInt(),
-        reps: j['reps'] as String?,
-        restSeconds: (j['restSeconds'] as num?)?.toInt(),
-        notes: j['notes'] as String?,
-      );
+    exerciseName: (j['exerciseName'] as String?) ?? '',
+    sets: (j['sets'] as num?)?.toInt(),
+    reps: j['reps'] as String?,
+    restSeconds: (j['restSeconds'] as num?)?.toInt(),
+    notes: j['notes'] as String?,
+  );
 }
 
 /// Ficha de treino (A–D) prescrita ao aluno.
@@ -98,14 +98,14 @@ class WorkoutPlanDto {
   final List<PlanExercise> exercises;
 
   factory WorkoutPlanDto.fromJson(Map<String, dynamic> j) => WorkoutPlanDto(
-        id: j['id'] as String,
-        sheetLabel: (j['sheetLabel'] as String?) ?? 'A',
-        title: (j['title'] as String?) ?? '',
-        active: (j['active'] as bool?) ?? true,
-        exercises: ((j['exercises'] as List?) ?? const [])
-            .map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
-            .toList(),
-      );
+    id: j['id'] as String,
+    sheetLabel: (j['sheetLabel'] as String?) ?? 'A',
+    title: (j['title'] as String?) ?? '',
+    active: (j['active'] as bool?) ?? true,
+    exercises: ((j['exercises'] as List?) ?? const [])
+        .map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
+        .toList(),
+  );
 }
 
 /// Aviso/informativo.
@@ -121,10 +121,10 @@ class NoticeDto {
   final String type;
 
   factory NoticeDto.fromJson(Map<String, dynamic> j) => NoticeDto(
-        title: (j['title'] as String?) ?? '',
-        content: (j['content'] as String?) ?? '',
-        type: (j['type'] as String?) ?? 'info',
-      );
+    title: (j['title'] as String?) ?? '',
+    content: (j['content'] as String?) ?? '',
+    type: (j['type'] as String?) ?? 'info',
+  );
 }
 
 /// Acesso REST as funcionalidades de academia do aluno (SPEC §10.4).
@@ -134,16 +134,20 @@ class AcademyApi {
   final ApiClient _api;
 
   Future<List<AvailableSlot>> availableSlots(String date) async {
-    final data = await _api.get('/me/appointments/available?date=$date') as List;
+    final data =
+        await _api.get('/me/appointments/available?date=$date') as List;
     return data
         .map((e) => AvailableSlot.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 
   Future<ScheduledAppointment> book(String date, String slotStart) async {
-    final data = await _api.post('/me/appointments',
-            body: {'date': date, 'slotStart': slotStart})
-        as Map<String, dynamic>;
+    final data =
+        await _api.post(
+              '/me/appointments',
+              body: {'date': date, 'slotStart': slotStart},
+            )
+            as Map<String, dynamic>;
     return ScheduledAppointment.fromJson(data);
   }
 
@@ -165,7 +169,9 @@ class AcademyApi {
 
   Future<List<NoticeDto>> notices() async {
     final data = await _api.get('/notices/active') as List;
-    return data.map((e) => NoticeDto.fromJson(e as Map<String, dynamic>)).toList();
+    return data
+        .map((e) => NoticeDto.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<Map<String, dynamic>> myProfile() async =>

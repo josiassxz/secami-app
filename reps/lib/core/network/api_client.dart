@@ -31,6 +31,11 @@ class ApiClient {
 
   final http.Client _client;
 
+  /// Sem timeout, um servidor que aceita a conexão e não responde deixa a
+  /// tela girando pra sempre; estourou → cai no mesmo tratamento de falha de
+  /// rede (mensagem amigável).
+  static const _timeout = Duration(seconds: 30);
+
   static const _kAccess = 'secami.access';
   static const _kRefresh = 'secami.refresh';
 
@@ -53,7 +58,9 @@ class ApiClient {
       if (parts.length != 3) return null;
       var payload = parts[1].replaceAll('-', '+').replaceAll('_', '/');
       payload += '=' * ((4 - payload.length % 4) % 4);
-      final map = jsonDecode(utf8.decode(base64.decode(payload))) as Map<String, dynamic>;
+      final map =
+          jsonDecode(utf8.decode(base64.decode(payload)))
+              as Map<String, dynamic>;
       return map['sub'] as String?;
     } catch (_) {
       return null;
@@ -117,24 +124,42 @@ class ApiClient {
     final encoded = body == null ? null : jsonEncode(body);
 
     http.Response res;
-    switch (method) {
-      case 'GET':
-        res = await _client.get(uri, headers: headers);
-        break;
-      case 'POST':
-        res = await _client.post(uri, headers: headers, body: encoded);
-        break;
-      case 'PUT':
-        res = await _client.put(uri, headers: headers, body: encoded);
-        break;
-      case 'PATCH':
-        res = await _client.patch(uri, headers: headers, body: encoded);
-        break;
-      case 'DELETE':
-        res = await _client.delete(uri, headers: headers);
-        break;
-      default:
-        throw ArgumentError('Metodo nao suportado: $method');
+    try {
+      switch (method) {
+        case 'GET':
+          res = await _client.get(uri, headers: headers).timeout(_timeout);
+          break;
+        case 'POST':
+          res = await _client
+              .post(uri, headers: headers, body: encoded)
+              .timeout(_timeout);
+          break;
+        case 'PUT':
+          res = await _client
+              .put(uri, headers: headers, body: encoded)
+              .timeout(_timeout);
+          break;
+        case 'PATCH':
+          res = await _client
+              .patch(uri, headers: headers, body: encoded)
+              .timeout(_timeout);
+          break;
+        case 'DELETE':
+          res = await _client.delete(uri, headers: headers).timeout(_timeout);
+          break;
+        default:
+          throw ArgumentError('Metodo nao suportado: $method');
+      }
+    } on ArgumentError {
+      rethrow;
+    } catch (e) {
+      // Falha de rede (sem internet, servidor fora do ar, bloqueio de mixed
+      // content, timeout etc.) — nunca repassa a exceção técnica bruta
+      // (ex.: "ClientException: Failed to fetch") pro usuário.
+      throw ApiException(
+        0,
+        'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.',
+      );
     }
 
     if (res.statusCode == 401 && auth && retry && await _tryRefresh()) {
@@ -144,29 +169,68 @@ class ApiClient {
   }
 
   dynamic _parse(http.Response res) {
-    final text = utf8.decode(res.bodyBytes);
-    final data = text.isEmpty ? null : jsonDecode(text);
-    if (res.statusCode >= 200 && res.statusCode < 300) {
+    final text = utf8.decode(res.bodyBytes, allowMalformed: true);
+    final ok = res.statusCode >= 200 && res.statusCode < 300;
+
+    // O corpo pode não ser JSON válido (página de erro de proxy/gateway,
+    // texto simples como "Invalid CORS request" etc.) — nunca deixa o
+    // FormatException do jsonDecode vazar pra UI.
+    dynamic data;
+    var corpoInvalido = false;
+    if (text.trim().isNotEmpty) {
+      try {
+        data = jsonDecode(text);
+      } catch (_) {
+        corpoInvalido = true;
+      }
+    }
+
+    if (ok) {
+      // 2xx com HTML/texto no lugar de JSON = proxy/SPA respondendo no lugar
+      // da API (ex.: rota errada, deploy em andamento). Devolver null aqui
+      // faria a tela quebrar adiante com um erro de cast sem sentido.
+      if (corpoInvalido) {
+        throw ApiException(res.statusCode, _mensagemRespostaInesperada);
+      }
       return data;
     }
-    final msg = (data is Map && data['message'] != null)
-        ? data['message'] as String
-        : 'Erro ${res.statusCode}';
+
+    final message = data is Map ? data['message'] : null;
+    final msg = (message is String && message.trim().isNotEmpty)
+        ? message
+        : _mensagemPadraoPorStatus(res.statusCode);
     throw ApiException(res.statusCode, msg);
   }
+
+  static const _mensagemRespostaInesperada =
+      'O servidor devolveu uma resposta inesperada. Tente novamente em '
+      'instantes.';
+
+  String _mensagemPadraoPorStatus(int status) => switch (status) {
+    401 || 403 => 'Sessão expirada ou sem permissão. Faça login novamente.',
+    404 => 'Recurso não encontrado.',
+    >= 500 => 'Servidor indisponível no momento. Tente novamente em instantes.',
+    _ => 'Não foi possível completar a operação. Tente novamente.',
+  };
 
   Future<bool> _tryRefresh() async {
     final refresh = await _refreshToken;
     if (refresh == null) return false;
     try {
-      final res = await _client.post(
-        Uri.parse('$_base/auth/refresh'),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'refreshToken': refresh}),
-      );
+      final res = await _client
+          .post(
+            Uri.parse('$_base/auth/refresh'),
+            headers: {'Content-Type': 'application/json'},
+            body: jsonEncode({'refreshToken': refresh}),
+          )
+          .timeout(_timeout);
       if (res.statusCode != 200) return false;
-      final data = jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
-      await saveTokens(data['accessToken'] as String, data['refreshToken'] as String);
+      final data =
+          jsonDecode(utf8.decode(res.bodyBytes)) as Map<String, dynamic>;
+      await saveTokens(
+        data['accessToken'] as String,
+        data['refreshToken'] as String,
+      );
       return true;
     } catch (_) {
       return false;

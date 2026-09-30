@@ -3,17 +3,6 @@
 /// pendente de aprovacao do admin.
 library;
 
-/// Categoria do aluno, exigida pelo backend (`studentType`).
-enum StudentType {
-  civil('Civil'),
-  militar('Militar');
-
-  const StudentType(this.apiValue);
-
-  /// Valor exato esperado pelo backend.
-  final String apiValue;
-}
-
 /// Objetivos possiveis (`objetivos[]`) — valores EXATOS esperados pelo
 /// backend, com acentuacao original.
 const List<String> cadastroObjetivos = [
@@ -121,7 +110,6 @@ class CadastroRequest {
     required this.weightKg,
     required this.heightCm,
     required this.objetivos,
-    required this.studentType,
     required this.parQ,
     required this.termoResponsabilidade,
     required this.termoCiencia,
@@ -143,7 +131,6 @@ class CadastroRequest {
   final double? weightKg;
   final double? heightCm;
   final List<String> objetivos;
-  final StudentType studentType;
   final ParQRespostas parQ;
   final bool termoResponsabilidade;
   final bool termoCiencia;
@@ -168,7 +155,6 @@ class CadastroRequest {
     'weightKg': weightKg,
     'heightCm': heightCm,
     'objetivos': objetivos,
-    'studentType': studentType.apiValue,
     'parQ': parQ.toJson(),
     'termoResponsabilidade': termoResponsabilidade,
     'termoCiencia': termoCiencia,

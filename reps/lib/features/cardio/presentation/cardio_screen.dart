@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/cardio_providers.dart';
 import 'cardio_form_sheet.dart';
+import '../../../core/network/erro_amigavel.dart';
 
 class CardioScreen extends ConsumerWidget {
   const CardioScreen({super.key});
@@ -50,7 +51,11 @@ class CardioScreen extends ConsumerWidget {
       ),
       body: asyncList.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erro: $e')),
+        error: (e, _) => Center(
+          child: Text(
+            mensagemDeErro(e, fallback: 'Não foi possível carregar o cardio.'),
+          ),
+        ),
         data: (list) {
           if (list.isEmpty) {
             // Mesmo padrao das outras telas vazias do app (icone + rotulo +

@@ -8,24 +8,31 @@ final agendaSelectedDateProvider = StateProvider<DateTime>((ref) {
   return DateTime(now.year, now.month, now.day);
 });
 
-final availableSlotsProvider = FutureProvider.autoDispose<List<AvailableSlot>>((ref) {
+final availableSlotsProvider = FutureProvider.autoDispose<List<AvailableSlot>>((
+  ref,
+) {
   final date = ref.watch(agendaSelectedDateProvider);
   return ref.watch(academyApiProvider).availableSlots(_iso(date));
 });
 
-final myAppointmentsProvider = FutureProvider.autoDispose<List<ScheduledAppointment>>((ref) {
-  return ref.watch(academyApiProvider).myAppointments();
-});
+final myAppointmentsProvider =
+    FutureProvider.autoDispose<List<ScheduledAppointment>>((ref) {
+      return ref.watch(academyApiProvider).myAppointments();
+    });
 
-final myWorkoutPlansProvider = FutureProvider.autoDispose<List<WorkoutPlanDto>>((ref) {
-  return ref.watch(academyApiProvider).myWorkoutPlans();
-});
+final myWorkoutPlansProvider = FutureProvider.autoDispose<List<WorkoutPlanDto>>(
+  (ref) {
+    return ref.watch(academyApiProvider).myWorkoutPlans();
+  },
+);
 
 final noticesProvider = FutureProvider.autoDispose<List<NoticeDto>>((ref) {
   return ref.watch(academyApiProvider).notices();
 });
 
-final myProfileProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) {
+final myProfileProvider = FutureProvider.autoDispose<Map<String, dynamic>>((
+  ref,
+) {
   return ref.watch(academyApiProvider).myProfile();
 });
 

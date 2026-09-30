@@ -49,7 +49,6 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
   final _alturaCtrl = TextEditingController();
   DateTime? _nascimento;
   String? _departamentoId;
-  StudentType _tipoAluno = StudentType.civil;
   final Set<String> _objetivosSelecionados = {};
   bool _obscureSenha = true;
   bool _obscureConfirma = true;
@@ -252,7 +251,6 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
         weightKg: _parseDouble(_pesoCtrl.text),
         heightCm: _parseDouble(_alturaCtrl.text),
         objetivos: _objetivosSelecionados.toList(),
-        studentType: _tipoAluno,
         parQ: ParQRespostas(respostas: respostas),
         termoResponsabilidade: _termoResponsabilidade,
         termoCiencia: _termoCiencia,
@@ -461,29 +459,20 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
               onChanged: (v) => setState(() => _departamentoId = v),
             ),
             const SizedBox(height: AppTheme.space16),
-            _campoLabel('CATEGORIA', scheme),
-            SegmentedButton<StudentType>(
-              segments: const [
-                ButtonSegment(value: StudentType.civil, label: Text('Civil')),
-                ButtonSegment(
-                  value: StudentType.militar,
-                  label: Text('Militar'),
-                ),
-              ],
-              selected: {_tipoAluno},
-              onSelectionChanged: (s) => setState(() => _tipoAluno = s.first),
-            ),
-            const SizedBox(height: AppTheme.space16),
             _campoLabel('E-MAIL', scheme),
             TextFormField(
               controller: _emailCtrl,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
+              decoration: const InputDecoration(hintText: 'nome@goias.gov.br'),
               validator: (v) {
                 final value = (v ?? '').trim();
                 if (value.isEmpty) return 'Informe o e-mail';
                 if (!value.contains('@') || !value.contains('.')) {
                   return 'E-mail inválido';
+                }
+                if (!value.toLowerCase().endsWith('@goias.gov.br')) {
+                  return 'O e-mail precisa ser do domínio @goias.gov.br';
                 }
                 return null;
               },

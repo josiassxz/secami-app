@@ -12,6 +12,13 @@ class HomeShell extends ConsumerWidget {
 
   final Widget child;
 
+  /// Acima disso é "desktop": navegação vira rail lateral (em vez da barra
+  /// inferior) e o conteúdo fica centralizado com largura máxima, em vez de
+  /// esticar borda a borda numa janela larga. Mesmo corte usado pelo
+  /// Material 3 pra classe de janela "expanded" (M3 window size classes).
+  static const _desktopBreakpoint = 840.0;
+  static const _contentMaxWidth = 1100.0;
+
   static final _routes = [
     ('/routines', Icons.list_alt_outlined, Icons.list_alt, 'Treinos'),
     ('/library', Icons.menu_book_outlined, Icons.menu_book, 'Biblioteca'),
@@ -32,17 +39,62 @@ class HomeShell extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final syncAsync = ref.watch(syncStatusProvider);
+    final syncBanner = syncAsync.maybeWhen(
+      data: (s) => _SyncBanner(
+        status: s,
+        // Toque no banner de erro tenta sincronizar de novo na hora.
+        onRetry: () => ref.read(syncEngineProvider).runOnce(),
+      ),
+      orElse: () => const SizedBox.shrink(),
+    );
+    final isDesktop = MediaQuery.sizeOf(context).width >= _desktopBreakpoint;
+
+    if (isDesktop) {
+      return Scaffold(
+        body: Column(
+          children: [
+            syncBanner,
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  NavigationRail(
+                    selectedIndex: _currentIndex(context),
+                    onDestinationSelected: (i) => context.go(_routes[i].$1),
+                    labelType: NavigationRailLabelType.all,
+                    destinations: [
+                      for (final r in _routes)
+                        NavigationRailDestination(
+                          icon: Icon(r.$2),
+                          selectedIcon: Icon(r.$3),
+                          label: Text(r.$4),
+                        ),
+                    ],
+                  ),
+                  const VerticalDivider(width: 1),
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(
+                          maxWidth: _contentMaxWidth,
+                        ),
+                        child: child,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return Scaffold(
       body: Column(
         children: [
-          syncAsync.maybeWhen(
-            data: (s) => _SyncBanner(
-              status: s,
-              // Toque no banner de erro tenta sincronizar de novo na hora.
-              onRetry: () => ref.read(syncEngineProvider).runOnce(),
-            ),
-            orElse: () => const SizedBox.shrink(),
-          ),
+          syncBanner,
           Expanded(child: child),
         ],
       ),

@@ -22,15 +22,24 @@ class SecamiUser {
   bool get isProfessor => hasRole('professor');
   bool get isAluno => hasRole('aluno');
 
+  /// Perfil "Instrutor" da interface = papel `professor` do backend (o nome
+  /// do papel é legado; na tela o termo é sempre "Instrutor").
+  bool get isInstrutor => hasRole('professor');
+
+  /// Instrutor que NÃO é aluno: não tem cadastro de aluno no backend, então
+  /// agenda, ficha própria, perfil de aluno e "Meu treinador" não se aplicam
+  /// (as rotas `/me/student`, `/me/appointments` etc. não existem pra ele).
+  bool get isSomenteInstrutor => isInstrutor && !isAluno;
+
   factory SecamiUser.fromJson(Map<String, dynamic> j) => SecamiUser(
-        id: j['id'] as String,
-        samAccountName: (j['samAccountName'] as String?) ?? '',
-        nome: (j['nome'] as String?) ?? '',
-        email: (j['email'] as String?) ?? '',
-        roles: ((j['roles'] as List?) ?? const [])
-            .map((e) => e.toString())
-            .toList(),
-      );
+    id: j['id'] as String,
+    samAccountName: (j['samAccountName'] as String?) ?? '',
+    nome: (j['nome'] as String?) ?? '',
+    email: (j['email'] as String?) ?? '',
+    roles: ((j['roles'] as List?) ?? const [])
+        .map((e) => e.toString())
+        .toList(),
+  );
 }
 
 /// Autenticacao local por e-mail/senha → JWT (SPEC §12, revisado — LDAP
@@ -42,11 +51,13 @@ class RestAuthService {
 
   /// Login por e-mail + senha. Guarda os tokens.
   Future<SecamiUser> login(String email, String password) async {
-    final data = await _api.post(
-      '/auth/login',
-      auth: false,
-      body: {'email': email.trim(), 'password': password},
-    ) as Map<String, dynamic>;
+    final data =
+        await _api.post(
+              '/auth/login',
+              auth: false,
+              body: {'email': email.trim(), 'password': password},
+            )
+            as Map<String, dynamic>;
     await _api.saveTokens(
       data['accessToken'] as String,
       data['refreshToken'] as String,

@@ -10,9 +10,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:reps/core/network/api_client.dart';
 import 'package:reps/features/academy/data/academy_api.dart';
 import 'package:reps/features/academy/data/academy_providers.dart';
 import 'package:reps/features/academy/presentation/minha_agenda_screen.dart';
+
+/// Substitui só `book()` — os demais métodos não são exercitados pelo fluxo
+/// de confirmação testado aqui. `ApiClient()` passado ao super nunca é usado
+/// (book() é sobrescrito), só existe pra satisfazer o construtor.
+class _FakeAcademyApi extends AcademyApi {
+  _FakeAcademyApi() : super(ApiClient());
+
+  int bookCalls = 0;
+
+  @override
+  Future<ScheduledAppointment> book(String date, String slotStart) async {
+    bookCalls++;
+    return ScheduledAppointment(
+      id: 'novo',
+      date: date,
+      slotStart: slotStart,
+      slotEnd: slotStart,
+      status: 'agendado',
+    );
+  }
+}
 
 const _slotDisponivel = AvailableSlot(
   slotStart: '08:00',
@@ -178,5 +200,78 @@ void main() {
       find.textContaining('Não foi possível carregar os horários'),
       findsOneWidget,
     );
+  });
+
+  testWidgets('toque em Agendar mostra modal de confirmação com o horário', (
+    tester,
+  ) async {
+    useTallViewport(tester);
+    final fakeApi = _FakeAcademyApi();
+    await pumpAgenda(
+      tester,
+      overrides: [
+        availableSlotsProvider.overrideWith(
+          (ref) => Future.value(const [_slotDisponivel]),
+        ),
+        myAppointmentsProvider.overrideWith((ref) => Future.value(const [])),
+        academyApiProvider.overrideWithValue(fakeApi),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Agendar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Confirmar agendamento?'), findsOneWidget);
+    expect(find.text('Agendar o horário 08:00 – 09:00?'), findsOneWidget);
+    expect(fakeApi.bookCalls, 0); // ainda não confirmou.
+  });
+
+  testWidgets('toque em "Não" fecha o modal sem agendar', (tester) async {
+    useTallViewport(tester);
+    final fakeApi = _FakeAcademyApi();
+    await pumpAgenda(
+      tester,
+      overrides: [
+        availableSlotsProvider.overrideWith(
+          (ref) => Future.value(const [_slotDisponivel]),
+        ),
+        myAppointmentsProvider.overrideWith((ref) => Future.value(const [])),
+        academyApiProvider.overrideWithValue(fakeApi),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Agendar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(TextButton, 'Não'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Confirmar agendamento?'), findsNothing);
+    expect(fakeApi.bookCalls, 0);
+  });
+
+  testWidgets('toque em "Sim" confirma e agenda de verdade', (tester) async {
+    useTallViewport(tester);
+    final fakeApi = _FakeAcademyApi();
+    await pumpAgenda(
+      tester,
+      overrides: [
+        availableSlotsProvider.overrideWith(
+          (ref) => Future.value(const [_slotDisponivel]),
+        ),
+        myAppointmentsProvider.overrideWith((ref) => Future.value(const [])),
+        academyApiProvider.overrideWithValue(fakeApi),
+      ],
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Agendar'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Sim'));
+    await tester.pumpAndSettle();
+
+    expect(fakeApi.bookCalls, 1);
+    expect(find.text('Agendado com sucesso!'), findsOneWidget);
   });
 }

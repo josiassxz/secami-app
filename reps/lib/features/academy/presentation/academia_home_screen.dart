@@ -1,28 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/app_theme.dart';
+import '../../auth/data/rest_auth_service.dart';
 
-/// Hub da Academia (aluno): agenda, ficha, avisos e perfil. SPEC §10.4.
+/// Atalho do hub: rota, ícone e rótulo.
+typedef AcademiaHubItem = (String route, IconData icon, String label);
+
+const _itemInstrutor = (
+  '/instrutor/alunos',
+  Icons.groups_outlined,
+  'Alunos e Fichas',
+);
+const _itemAvisos = ('/academia/avisos', Icons.campaign_outlined, 'Avisos');
+
+/// Atalhos do hub conforme os papéis do usuário logado:
+/// - `aluno`: agenda, ficha, avisos e perfil;
+/// - `professor` (na interface, "Instrutor"): alunos e fichas + avisos;
+/// - os dois: atalho do instrutor primeiro, depois os de aluno;
+/// - nenhum (admin/recepção no app): só avisos.
+///
+/// As telas de aluno dependem de um cadastro de aluno no backend
+/// (`/me/student`, `/me/appointments`, `/me/workout-plans`), que quem é só
+/// instrutor não tem — por isso nem aparecem pra ele.
+List<AcademiaHubItem> academiaHubItems(SecamiUser? user) {
+  final aluno = user?.isAluno ?? false;
+  final instrutor = user?.isInstrutor ?? false;
+  return [
+    if (instrutor) _itemInstrutor,
+    if (aluno) ...const [
+      ('/academia/agenda', Icons.calendar_month_outlined, 'Minha Agenda'),
+      ('/academia/treino', Icons.assignment_outlined, 'Meu Treino'),
+    ],
+    _itemAvisos,
+    if (aluno) ('/academia/perfil', Icons.person_outline, 'Meu Perfil'),
+  ];
+}
+
+/// Hub da Academia: atalhos por papel (aluno e/ou instrutor). SPEC §10.4.
 ///
 /// Grade de acesso rápido (cards verde-limão + selo dourado) — referência
 /// visual de app institucional trazida pelo usuário.
-class AcademiaHomeScreen extends StatefulWidget {
+class AcademiaHomeScreen extends ConsumerStatefulWidget {
   const AcademiaHomeScreen({super.key});
 
   @override
-  State<AcademiaHomeScreen> createState() => _AcademiaHomeScreenState();
+  ConsumerState<AcademiaHomeScreen> createState() => _AcademiaHomeScreenState();
 }
 
-class _AcademiaHomeScreenState extends State<AcademiaHomeScreen>
+class _AcademiaHomeScreenState extends ConsumerState<AcademiaHomeScreen>
     with SingleTickerProviderStateMixin {
-  static const _items = [
-    ('/academia/agenda', Icons.calendar_month_outlined, 'Minha Agenda'),
-    ('/academia/treino', Icons.assignment_outlined, 'Meu Treino'),
-    ('/academia/avisos', Icons.campaign_outlined, 'Avisos'),
-    ('/academia/perfil', Icons.person_outline, 'Meu Perfil'),
-  ];
-
   late final AnimationController _entrance;
 
   @override
@@ -42,25 +70,34 @@ class _AcademiaHomeScreenState extends State<AcademiaHomeScreen>
 
   @override
   Widget build(BuildContext context) {
+    final userAsync = ref.watch(secamiCurrentUserProvider);
+    // O router só chega aqui com a sessão já resolvida; o spinner cobre
+    // apenas o caso raro de a tela montar antes disso.
+    final carregando = userAsync.isLoading && !userAsync.hasValue;
+    final items = academiaHubItems(userAsync.valueOrNull);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Academia')),
-      body: GridView.count(
-        padding: const EdgeInsets.all(AppTheme.space16),
-        crossAxisCount: 2,
-        mainAxisSpacing: AppTheme.space16,
-        crossAxisSpacing: AppTheme.space16,
-        childAspectRatio: 1.05,
-        children: [
-          for (final (index, item) in _items.indexed)
-            _QuickTile(
-              route: item.$1,
-              icon: item.$2,
-              label: item.$3,
-              index: index,
-              entrance: _entrance,
+      body: carregando
+          ? const Center(child: CircularProgressIndicator())
+          : GridView.count(
+              padding: const EdgeInsets.all(AppTheme.space16),
+              crossAxisCount: 2,
+              mainAxisSpacing: AppTheme.space16,
+              crossAxisSpacing: AppTheme.space16,
+              childAspectRatio: 1.05,
+              children: [
+                for (final (index, item) in items.indexed)
+                  _QuickTile(
+                    key: ValueKey(item.$1),
+                    route: item.$1,
+                    icon: item.$2,
+                    label: item.$3,
+                    index: index,
+                    entrance: _entrance,
+                  ),
+              ],
             ),
-        ],
-      ),
     );
   }
 }
@@ -72,6 +109,7 @@ class _QuickTile extends StatefulWidget {
     required this.label,
     required this.index,
     required this.entrance,
+    super.key,
   });
 
   final String route;

@@ -69,18 +69,16 @@ class RestQueryBuilder implements Future<List<Map<String, dynamic>>> {
   Future<List<Map<String, dynamic>>> _fetch() async {
     if (table == 'exercises') {
       final data = await _api.get('/exercises') as List;
-      return data
-          .map((e) {
-            final m = e as Map<String, dynamic>;
-            final escopo = m['escopo'] as String?;
-            return <String, dynamic>{
-              'id': m['id'],
-              'slug': m['slug'],
-              // null = biblioteca global (mesmo contrato de `criado_por` do legado).
-              'criado_por': escopo == 'global' ? null : (m['id'] as String?),
-            };
-          })
-          .toList();
+      return data.map((e) {
+        final m = e as Map<String, dynamic>;
+        final escopo = m['escopo'] as String?;
+        return <String, dynamic>{
+          'id': m['id'],
+          'slug': m['slug'],
+          // null = biblioteca global (mesmo contrato de `criado_por` do legado).
+          'criado_por': escopo == 'global' ? null : (m['id'] as String?),
+        };
+      }).toList();
     }
     final path = _since == null
         ? '/sync/$table'
@@ -98,24 +96,22 @@ class RestQueryBuilder implements Future<List<Map<String, dynamic>>> {
   Future<List<Map<String, dynamic>>> catchError(
     Function onError, {
     bool Function(Object error)? test,
-  }) =>
-      _fetch().catchError(onError, test: test);
+  }) => _fetch().catchError(onError, test: test);
 
   @override
   Future<R> then<R>(
     FutureOr<R> Function(List<Map<String, dynamic>> value) onValue, {
     Function? onError,
-  }) =>
-      _fetch().then(onValue, onError: onError);
+  }) => _fetch().then(onValue, onError: onError);
 
   @override
   Future<List<Map<String, dynamic>>> timeout(
     Duration timeLimit, {
     FutureOr<List<Map<String, dynamic>>> Function()? onTimeout,
-  }) =>
-      _fetch().timeout(timeLimit, onTimeout: onTimeout);
+  }) => _fetch().timeout(timeLimit, onTimeout: onTimeout);
 
   @override
-  Future<List<Map<String, dynamic>>> whenComplete(FutureOr<void> Function() action) =>
-      _fetch().whenComplete(action);
+  Future<List<Map<String, dynamic>>> whenComplete(
+    FutureOr<void> Function() action,
+  ) => _fetch().whenComplete(action);
 }

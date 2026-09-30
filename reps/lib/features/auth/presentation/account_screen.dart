@@ -8,6 +8,7 @@ import '../../../core/config/supabase_client.dart';
 import '../../../core/logging/observability.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/auth_providers.dart';
+import '../../../core/network/erro_amigavel.dart';
 
 class AccountScreen extends ConsumerStatefulWidget {
   const AccountScreen({super.key});
@@ -82,9 +83,16 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     } on Object catch (e, st) {
       await Observability.captureError(e, st, hint: 'update_name');
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erro: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            mensagemDeErro(
+              e,
+              fallback: 'Não foi possível salvar. Tente novamente.',
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _savingNome = false);
     }
@@ -114,9 +122,16 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     } on Object catch (e, st) {
       await Observability.captureError(e, st, hint: 'update_email');
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erro: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            mensagemDeErro(
+              e,
+              fallback: 'Não foi possível salvar. Tente novamente.',
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _savingEmail = false);
     }
@@ -150,17 +165,28 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Senha atualizada.')));
-    } on AuthException catch (e) {
+    } on AuthException {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Senha atual incorreta ou erro: ${e.message}')),
+        const SnackBar(
+          content: Text(
+            'Senha atual incorreta ou não foi possível alterar a senha.',
+          ),
+        ),
       );
     } on Object catch (e, st) {
       await Observability.captureError(e, st, hint: 'update_password');
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Erro: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            mensagemDeErro(
+              e,
+              fallback: 'Não foi possível salvar. Tente novamente.',
+            ),
+          ),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _savingSenha = false);
     }

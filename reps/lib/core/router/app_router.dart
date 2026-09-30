@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kReleaseMode;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -27,6 +28,9 @@ import '../../features/history/presentation/exercise_history_screen.dart';
 import '../../features/history/presentation/history_screen.dart';
 import '../../features/history/presentation/session_detail_screen.dart';
 import '../../features/insights/presentation/weekly_volume_screen.dart';
+import '../../features/instructor/presentation/alunos_instrutor_screen.dart';
+import '../../features/instructor/presentation/ficha_editor_screen.dart';
+import '../../features/instructor/presentation/fichas_aluno_screen.dart';
 import '../../features/library/presentation/library_screen.dart';
 import '../../features/recommender/presentation/questionario_screen.dart';
 import '../../features/records/presentation/records_screen.dart';
@@ -36,6 +40,7 @@ import '../../features/settings/presentation/delete_account_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/workout/presentation/workout_screen.dart';
 import 'home_shell.dart';
+import 'secami_access.dart';
 
 /// Adapter Riverpod -> Listenable para o GoRouter atualizar quando a sessao
 /// muda (ex.: depois do deep link de confirmacao de email).
@@ -77,12 +82,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Text('Tela nao encontrada / erro de navegacao.'),
-              const SizedBox(height: 8),
-              Text(
-                'rota: ${state.uri}\n${state.error}',
-                style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12),
-              ),
+              const Text('Não encontramos esta tela.'),
+              // Detalhe técnico (rota/erro) só em desenvolvimento — o usuário
+              // final nunca vê caminho interno nem stack.
+              if (!kReleaseMode) ...[
+                const SizedBox(height: 8),
+                Text(
+                  'rota: ${state.uri}\n${state.error}',
+                  style: TextStyle(
+                    color: scheme.onSurfaceVariant,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               FilledButton(
                 onPressed: () => context.go('/routines'),
@@ -93,33 +105,22 @@ final routerProvider = Provider<GoRouter>((ref) {
         ),
       );
     },
-    redirect: (context, state) {
+    redirect: (context, state) async {
       final loc = state.matchedLocation;
 
       if (Env.hasRestApi) {
-        // Modo SECAMI: login LDAP obrigatorio, sem modo convidado (SPEC
-        // §12.4 — todos autenticam via AD). Enquanto a sessao ainda esta
-        // sendo restaurada (FutureProvider em loading), currentUserProvider
-        // reporta null e pode haver um flash breve para /sign-in antes do
-        // redirect de volta assim que o token salvo resolver.
-        final isAuthed = ref.read(currentUserProvider) != null;
-        if (!isAuthed) {
-          // /cadastro (auto-cadastro publico de aluno) tambem nao exige
-          // sessao, igual /sign-in.
-          const rotasPublicas = {'/sign-in', '/cadastro'};
-          return rotasPublicas.contains(loc) ? null : '/sign-in';
-        }
-        const semSentidoLogado = {
-          '/',
-          '/sign-in',
-          '/sign-up',
-          '/forgot-password',
-          '/cadastro',
-        };
-        if (semSentidoLogado.contains(loc)) {
-          return '/routines';
-        }
-        return null;
+        // Modo SECAMI: login local obrigatorio, sem modo convidado (SPEC
+        // §12.4). Espera a sessao salva (token no SharedPreferences)
+        // resolver ANTES de decidir — ref.read(...future) so espera de
+        // verdade na carga inicial da pagina (refresh do navegador); depois
+        // que resolve uma vez, retorna na hora. Sem isso, um refresh lia
+        // currentUserProvider ainda em loading (null) e derrubava pro
+        // /sign-in mesmo com uma sessao valida salva.
+        final secamiUser = await ref.read(secamiCurrentUserProvider.future);
+        // Sem sessão → /sign-in (ou /cadastro, público). Logado: sai das
+        // telas de entrada e respeita o papel — telas de aluno só para
+        // `aluno`, telas do instrutor só para `professor` (secami_access).
+        return secamiRedirect(secamiUser, loc);
       }
 
       // ---- modo legado (Supabase + convidado) ----
@@ -188,6 +189,35 @@ final routerProvider = Provider<GoRouter>((ref) {
         GoRoute(
           path: '/academia/perfil',
           builder: (_, _) => const MeuPerfilScreen(),
+        ),
+        // Perfil Instrutor (papel `professor`): alunos e fichas de treino.
+        // Também fora do ShellRoute — o FAB "Nova ficha" e o botão "Salvar
+        // ficha" ficam no rodapé, exatamente onde a bottom nav os cobriria.
+        GoRoute(
+          path: '/instrutor/alunos',
+          builder: (_, _) => const AlunosInstrutorScreen(),
+        ),
+        GoRoute(
+          path: '/instrutor/aluno/:id',
+          builder: (_, state) => FichasAlunoScreen(
+            studentId: state.pathParameters['id']!,
+            // `extra` some num refresh do navegador (web): a tela cai no
+            // nome que vier das próprias fichas.
+            studentName: state.extra is String ? state.extra as String : null,
+          ),
+        ),
+        GoRoute(
+          path: '/instrutor/aluno/:id/ficha',
+          builder: (_, state) {
+            final extra = state.extra;
+            return FichaEditorScreen(
+              studentId: state.pathParameters['id']!,
+              // Sem `extra` (refresh no web), `?plano=<id>` ainda diz qual
+              // ficha editar; sem os dois, é uma ficha nova.
+              planId: state.uri.queryParameters['plano'],
+              args: extra is FichaEditorArgs ? extra : null,
+            );
+          },
         ),
       ],
       GoRoute(

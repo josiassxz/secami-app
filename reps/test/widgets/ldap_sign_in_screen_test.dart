@@ -7,31 +7,52 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:reps/core/network/api_client.dart';
 import 'package:reps/features/auth/data/rest_auth_service.dart';
 import 'package:reps/features/auth/presentation/ldap_sign_in_screen.dart';
 
-/// Imita o `toString()` de ApiException (só a mensagem, sem prefixo
-/// "Exception:") — é o que o backend realmente lança, e é o que
-/// `_humanize()` da tela repassa direto pro usuário.
-class _FakeApiException implements Exception {
-  _FakeApiException(this.message);
-  final String message;
-  @override
-  String toString() => message;
-}
-
 /// Fake mínimo: só `login` tem comportamento customizado (falha). Os demais
-/// métodos não são exercitados pelo fluxo de erro testado aqui.
+/// métodos não são exercitados pelo fluxo de erro testado aqui. Usa a
+/// ApiException real (não uma imitação) — `_humanize()` da tela agora
+/// distingue por tipo, não só pelo texto de `toString()`.
 class _FailingRestAuthService implements RestAuthService {
   @override
   Future<SecamiUser> login(String username, String password) =>
-      Future<SecamiUser>.error(_FakeApiException('E-mail ou senha inválidos.'));
+      Future<SecamiUser>.error(ApiException(422, 'E-mail ou senha inválidos.'));
 
   @override
   Future<SecamiUser> me() => throw UnimplementedError();
 
   @override
   Future<SecamiUser?> currentUserOrNull() async => null;
+
+  @override
+  Future<void> logout() async {}
+}
+
+/// Fake de login bem-sucedido: a sessão resolve para um usuário com [roles].
+class _OkRestAuthService implements RestAuthService {
+  _OkRestAuthService(this.roles);
+
+  final List<String> roles;
+
+  SecamiUser get _user => SecamiUser(
+    id: 'u1',
+    samAccountName: 'fulano',
+    nome: 'Fulano de Tal',
+    email: 'fulano@goias.gov.br',
+    roles: roles,
+  );
+
+  @override
+  Future<SecamiUser> login(String username, String password) async => _user;
+
+  @override
+  Future<SecamiUser> me() async => _user;
+
+  @override
+  Future<SecamiUser?> currentUserOrNull() async => _user;
 
   @override
   Future<void> logout() async {}
@@ -81,7 +102,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'ENTRAR'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Informe o e-mail'), findsOneWidget);
+    expect(find.text('Informe o usuário ou e-mail'), findsOneWidget);
     expect(find.text('Informe a senha'), findsOneWidget);
   });
 
@@ -103,5 +124,64 @@ void main() {
     expect(find.text('E-mail ou senha inválidos.'), findsOneWidget);
     // Sem navegação em caso de erro: o formulário continua na tela.
     expect(find.text('ENTRAR'), findsOneWidget);
+  });
+
+  group('tela de entrada pós-login', () {
+    Future<void> entrarCom(WidgetTester tester, List<String> roles) async {
+      final router = GoRouter(
+        initialLocation: '/sign-in',
+        routes: [
+          GoRoute(
+            path: '/sign-in',
+            builder: (_, _) => const LdapSignInScreen(),
+          ),
+          GoRoute(
+            path: '/routines',
+            builder: (_, _) => const Scaffold(body: Text('tela treinos')),
+          ),
+          GoRoute(
+            path: '/academia',
+            builder: (_, _) => const Scaffold(body: Text('tela academia')),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            restAuthServiceProvider.overrideWithValue(
+              _OkRestAuthService(roles),
+            ),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final fields = find.byType(TextFormField);
+      await tester.enterText(fields.at(0), 'fulano');
+      await tester.enterText(fields.at(1), 'secami123');
+      await tester.tap(find.widgetWithText(FilledButton, 'ENTRAR'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('aluno cai em Treinos', (tester) async {
+      await entrarCom(tester, ['aluno']);
+
+      expect(find.text('tela treinos'), findsOneWidget);
+    });
+
+    testWidgets('quem é só instrutor cai na Academia', (tester) async {
+      await entrarCom(tester, ['professor']);
+
+      expect(find.text('tela academia'), findsOneWidget);
+      expect(find.text('tela treinos'), findsNothing);
+    });
+
+    testWidgets('instrutor que também é aluno cai em Treinos', (tester) async {
+      await entrarCom(tester, ['professor', 'aluno']);
+
+      expect(find.text('tela treinos'), findsOneWidget);
+    });
   });
 }

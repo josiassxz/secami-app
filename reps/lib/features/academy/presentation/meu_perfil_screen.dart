@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/academy_api.dart';
 import '../data/academy_providers.dart';
+import '../../../core/network/erro_amigavel.dart';
 
 /// Perfil do aluno: dados pessoais, peso/altura/objetivo editáveis, status
 /// do atestado. Upload de foto fica para uma fase futura (SPEC §13.5) — a
@@ -63,9 +64,13 @@ class _MeuPerfilScreenState extends ConsumerState<MeuPerfilScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Não foi possível salvar: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              mensagemDeErro(e, fallback: 'Não foi possível salvar o perfil.'),
+            ),
+          ),
+        );
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -89,7 +94,13 @@ class _MeuPerfilScreenState extends ConsumerState<MeuPerfilScreen> {
               children: [
                 Icon(Icons.error_outline, size: 40, color: scheme.error),
                 const SizedBox(height: AppTheme.space12),
-                Text('Erro: $e', textAlign: TextAlign.center),
+                Text(
+                  mensagemDeErro(
+                    e,
+                    fallback: 'Não foi possível carregar seu perfil.',
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ],
             ),
           ),
