@@ -2,10 +2,12 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { mensagemDeErro } from "@/lib/erros";
+import { toast } from "@/lib/toast";
 import { PageHeader } from "@/components/PageHeader";
 import { Modal } from "@/components/Modal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge, Button, Card, Input, Label, Table, TableSkeleton, TBody, TD, TH, THead, TR } from "@/components/ui";
-import { AlertCircle, Pencil, Plus } from "lucide-react";
+import { AlertCircle, Pencil, Plus, Trash2 } from "lucide-react";
 
 const empty = { slotStart: "", slotEnd: "", maxCapacity: 40, civilRestricted: false, blocked: false, blockReason: "" };
 
@@ -26,6 +28,22 @@ export default function SlotConfig() {
   });
 
   const [form, setForm] = useState<any>(empty);
+  const [excluir, setExcluir] = useState<any>(null);
+
+  // O backend recusa (409) se o horário ainda tiver agendamento ativo de hoje
+  // em diante — a mensagem dele explica o que fazer.
+  const remover = useMutation({
+    mutationFn: (s: any) => api(`/slot-configs/${s.id}`, { method: "DELETE" }),
+    onSuccess: (_d, s) => {
+      qc.invalidateQueries({ queryKey: ["slots"] });
+      setExcluir(null);
+      toast("success", `Horário ${s.slotStart}–${s.slotEnd} excluído.`);
+    },
+    onError: (e) => {
+      setExcluir(null);
+      toast("error", mensagemDeErro(e, "Não foi possível excluir o horário."));
+    },
+  });
 
   function openNew() { setEdit(null); setErr(null); setForm(empty); setOpen(true); }
   function openEdit(s: any) { setEdit(s); setErr(null); setForm({ ...s, blockReason: s.blockReason || "" }); setOpen(true); }
@@ -56,14 +74,24 @@ export default function SlotConfig() {
                     </div>
                   </TD>
                   <TD className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      aria-label={`Editar horário ${s.slotStart}–${s.slotEnd}`}
-                      onClick={() => openEdit(s)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Editar horário ${s.slotStart}–${s.slotEnd}`}
+                        onClick={() => openEdit(s)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Excluir horário ${s.slotStart}–${s.slotEnd}`}
+                        onClick={() => setExcluir(s)}
+                      >
+                        <Trash2 className="h-4 w-4 text-danger" />
+                      </Button>
+                    </div>
                   </TD>
                 </TR>
               ))}
@@ -74,6 +102,15 @@ export default function SlotConfig() {
           </Table>
         )}
       </Card>
+
+      <ConfirmDialog
+        open={!!excluir}
+        onClose={() => setExcluir(null)}
+        onConfirm={() => excluir && remover.mutate(excluir)}
+        loading={remover.isPending}
+        title={`Excluir o horário ${excluir?.slotStart ?? ""}–${excluir?.slotEnd ?? ""}?`}
+        message="O horário deixa de aparecer para agendamento. Agendamentos que já aconteceram continuam no histórico e nos relatórios. Se ainda houver agendamentos ativos nele, a exclusão é recusada."
+      />
 
       <Modal open={open} onClose={() => setOpen(false)} title={edit ? `Editar horário ${edit.slotStart}–${edit.slotEnd}` : "Novo horário"}
         footer={<>

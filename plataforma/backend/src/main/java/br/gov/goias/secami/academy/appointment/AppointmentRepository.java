@@ -41,6 +41,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
                            @Param("date") LocalDate date,
                            @Param("slotStart") String slotStart);
 
+    /** Agendamentos ainda ativos (agendado/confirmado) num horário, de {@code hoje}
+     *  em diante — impedem excluir a configuração desse horário. */
+    @Query("""
+            select count(a) from Appointment a
+            where a.slotStart = :slotStart and a.date >= :hoje
+              and a.deletedAt is null and a.status in ('agendado', 'confirmado')
+            """)
+    long countAtivosNoHorarioAPartirDe(@Param("slotStart") String slotStart, @Param("hoje") LocalDate hoje);
+
     /** Ocupação de civis num slot (aplica o cap de capacidade). SPEC §9.4. */
     @Query("""
             select count(a) from Appointment a

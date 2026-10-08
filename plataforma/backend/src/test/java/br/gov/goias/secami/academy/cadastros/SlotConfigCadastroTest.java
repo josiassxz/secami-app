@@ -13,6 +13,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -169,6 +170,73 @@ class SlotConfigCadastroTest extends AbstractIntegrationTest {
     void alunoNaoPodeCriarSlot() throws Exception {
         String token = loginAs("aluno");
         postSlot(token, "17:00", "18:00", 20, false, false, null).andExpect(status().isForbidden());
+    }
+
+    // ---- Exclusão ----
+
+    @Autowired br.gov.goias.secami.academy.appointment.AppointmentRepository appointments;
+    @Autowired br.gov.goias.secami.academy.student.StudentRepository students;
+
+    private void agendamento(String slotStart, java.time.LocalDate data, String status) {
+        br.gov.goias.secami.academy.student.Student aluno = new br.gov.goias.secami.academy.student.Student();
+        aluno.setFullName("Aluno Exclusão " + java.util.UUID.randomUUID());
+        aluno.setCpf(CpfTestFactory.next());
+        aluno = students.save(aluno);
+        br.gov.goias.secami.academy.appointment.Appointment a = new br.gov.goias.secami.academy.appointment.Appointment();
+        a.setStudent(aluno);
+        a.setDate(data);
+        a.setSlotStart(slotStart);
+        a.setSlotEnd("00:00");
+        a.setStatus(status);
+        appointments.save(a);
+    }
+
+    private static java.time.LocalDate hoje() {
+        return java.time.LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo"));
+    }
+
+    @Test
+    void excluirSlotSemAgendamentos_removeDaLista() throws Exception {
+        SlotConfig s = saveSlot("04:10", "04:50", 20, false, false, null);
+        mockMvc.perform(authed(delete("/slot-configs/" + s.getId()), loginAs("gerente")))
+                .andExpect(status().isOk());
+        assertThat(slots.findById(s.getId())).isEmpty();
+    }
+
+    @Test
+    void excluirSlotComAgendamentoAtivoFuturo_retorna409EMantem() throws Exception {
+        SlotConfig s = saveSlot("04:20", "04:50", 20, false, false, null);
+        agendamento("04:20", hoje().plusDays(1), "agendado");
+        mockMvc.perform(authed(delete("/slot-configs/" + s.getId()), loginAs("admin")))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("1 agendamento ativo")));
+        assertThat(slots.findById(s.getId())).isPresent();
+    }
+
+    @Test
+    void excluirSlotSoComAgendamentosPassadosOuCancelados_funciona() throws Exception {
+        SlotConfig s = saveSlot("04:30", "04:50", 20, false, false, null);
+        agendamento("04:30", hoje().minusDays(3), "confirmado");
+        agendamento("04:30", hoje().plusDays(2), "cancelado");
+        mockMvc.perform(authed(delete("/slot-configs/" + s.getId()), loginAs("admin")))
+                .andExpect(status().isOk());
+        assertThat(slots.findById(s.getId())).isEmpty();
+    }
+
+    @Test
+    void excluirSlotInexistente_retorna404() throws Exception {
+        mockMvc.perform(authed(delete("/slot-configs/" + java.util.UUID.randomUUID()), loginAs("admin")))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void recepcaoEInstrutorNaoPodemExcluirSlot() throws Exception {
+        SlotConfig s = saveSlot("04:40", "04:50", 20, false, false, null);
+        mockMvc.perform(authed(delete("/slot-configs/" + s.getId()), loginAs("recepcao")))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(authed(delete("/slot-configs/" + s.getId()), loginAs("professor")))
+                .andExpect(status().isForbidden());
+        assertThat(slots.findById(s.getId())).isPresent();
     }
 
     private ResultActions postSlot(String token, String slotStart, String slotEnd, Integer maxCapacity,

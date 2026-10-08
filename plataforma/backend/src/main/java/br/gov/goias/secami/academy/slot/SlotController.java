@@ -19,10 +19,16 @@ public class SlotController {
 
     private final SlotConfigRepository slots;
     private final BlockedDateRepository blocked;
+    private final br.gov.goias.secami.academy.appointment.AppointmentRepository appointments;
+    private final java.time.ZoneId zone;
 
-    public SlotController(SlotConfigRepository slots, BlockedDateRepository blocked) {
+    public SlotController(SlotConfigRepository slots, BlockedDateRepository blocked,
+                          br.gov.goias.secami.academy.appointment.AppointmentRepository appointments,
+                          br.gov.goias.secami.config.SecamiProperties props) {
         this.slots = slots;
         this.blocked = blocked;
+        this.appointments = appointments;
+        this.zone = java.time.ZoneId.of(props.getTimezone());
     }
 
     // ---- Slot config ----
@@ -62,6 +68,28 @@ public class SlotController {
         if (req.blocked() != null) s.setBlocked(req.blocked());
         s.setBlockReason(req.blockReason());
         return SlotConfigResponse.from(slots.save(s));
+    }
+
+    /**
+     * Exclui a configuração de um horário (ex.: janela criada por engano ou que
+     * a academia não oferece mais). Recusa se ainda houver agendamento ativo
+     * nele de hoje em diante — esses agendamentos ficariam sem horário. Os
+     * agendamentos passados não atrapalham: guardam o horário como texto e
+     * continuam nos relatórios.
+     */
+    @DeleteMapping("/slot-configs/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
+    public void deleteSlot(@PathVariable UUID id) {
+        SlotConfig s = slots.findById(id)
+                .orElseThrow(() -> new NotFoundException("Horário não encontrado."));
+        long ativos = appointments.countAtivosNoHorarioAPartirDe(s.getSlotStart(), LocalDate.now(zone));
+        if (ativos > 0) {
+            throw new ConflictException("O horário " + s.getSlotStart() + " ainda tem " + ativos
+                    + (ativos == 1 ? " agendamento ativo" : " agendamentos ativos")
+                    + " de hoje em diante. Cancele ou remaneje antes de excluir — ou marque o horário"
+                    + " como bloqueado para não receber novos agendamentos.");
+        }
+        slots.delete(s);
     }
 
     private static void validarJanela(SlotConfigUpsert req) {
