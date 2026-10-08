@@ -1,5 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
+import type { ResumoAtestados } from "@/pages/Atestados";
 import { useAuth } from "@/lib/auth";
 import { PageHeader } from "@/components/PageHeader";
 import {
@@ -28,6 +30,9 @@ import {
   Megaphone,
   BarChart3,
   Activity,
+  FileClock,
+  FileCheck2,
+  ShieldAlert,
 } from "lucide-react";
 
 const QUICK_LINKS = [
@@ -117,6 +122,13 @@ export default function Dashboard() {
     enabled: hasRole("admin", "recepcao", "professor"),
   });
   const notices = useQuery({ queryKey: ["notices-active"], queryFn: () => api(`/notices/active`) });
+  // Atestados (só alunos civis): mesma queryKey do menu e da tela de Atestados.
+  const veAtestados = hasRole("admin", "gerente", "recepcao");
+  const atestados = useQuery({
+    queryKey: ["atestados-resumo"],
+    queryFn: () => api<ResumoAtestados>("/admin/atestados/resumo"),
+    enabled: veAtestados,
+  });
 
   const apptsHoje: any[] = appts.data?.content ?? [];
   const apptList = apptsHoje.filter((a: any) => a.status !== "cancelado");
@@ -153,6 +165,25 @@ export default function Dashboard() {
           <StatCard icon={AlertTriangle} label="Faltas hoje" accent="danger" loading={appts.isLoading} value={faltas} />
         </div>
       </section>
+
+      {veAtestados && (
+        <section className="mt-8">
+          <SectionLabel>Atestados médicos</SectionLabel>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Link to="/atestados?aba=vencendo" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50" aria-label="Ver atestados que vencem em 30 dias">
+              <StatCard icon={FileClock} label="Vencem em 30 dias" accent="gold" loading={atestados.isLoading} value={atestados.data?.vencendo ?? "—"} />
+            </Link>
+            <Link to="/atestados?aba=bloqueados" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50" aria-label="Ver alunos bloqueados por atestado vencido">
+              <StatCard icon={ShieldAlert} label="Bloqueados por atestado vencido" accent="danger" loading={atestados.isLoading} value={atestados.data?.bloqueados ?? "—"} />
+            </Link>
+            {hasRole("admin", "gerente") && (
+              <Link to="/atestados?aba=pendentes" className="rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/50" aria-label="Ver atestados aguardando validação">
+                <StatCard icon={FileCheck2} label="Aguardando validação" loading={atestados.isLoading} value={atestados.data?.pendentes ?? "—"} />
+              </Link>
+            )}
+          </div>
+        </section>
+      )}
 
       <div className="mt-8 grid gap-6 xl:grid-cols-3">
         {/* Ocupação por horário */}

@@ -131,6 +131,7 @@ public class RegistrationService {
         s.setAtestadoData(req.atestadoEmissaoData());
         s.setStatusCadastro(Student.STATUS_PENDENTE);
         s.setActive(true);
+        s.setCadastradoEm(java.time.LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")));
         return students.save(s);
     }
 

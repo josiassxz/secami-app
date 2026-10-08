@@ -143,6 +143,15 @@ public class Student {
     @Column(name = "legacy_id", unique = true)
     private String legacyId;
 
+    /** Data original do cadastro (base antiga: criação lá; plataforma: o
+     *  cadastro aqui). Base do vencimento do atestado quando não há data dele. */
+    @Column(name = "cadastrado_em")
+    private LocalDate cadastradoEm;
+
+    /** Bloqueado automaticamente por atestado vencido (≠ bloqueio manual). */
+    @Column(name = "bloqueio_atestado", nullable = false)
+    private boolean bloqueioAtestado = false;
+
     /** UID da pessoa correspondente no Accelero (catraca) — achado por CPF. */
     @Column(name = "accelero_pessoa_id")
     private String acceleroPessoaId;
@@ -162,8 +171,26 @@ public class Student {
     @Column(name = "deleted_at")
     private OffsetDateTime deletedAt;
 
-    /** Atestado válido = existe e tem no máximo 1 ano (regra Civil). SPEC §9.4. */
+    /** A regra do atestado (validade de 1 ano, aviso e bloqueio) só vale pra
+     *  aluno civil — militar e instrutor ficam de fora. */
+    public boolean sujeitoAoAtestado() {
+        return studentType == null || TIPO_CIVIL.equals(studentType);
+    }
+
+    /** Data de onde conta a validade: a do atestado; sem ela, a do cadastro original. */
+    public LocalDate baseDoAtestado() {
+        return atestadoData != null ? atestadoData : cadastradoEm;
+    }
+
+    /** Último dia em que o atestado vale (base + 1 ano); nulo se não há base. */
+    public LocalDate vencimentoAtestado() {
+        LocalDate base = baseDoAtestado();
+        return base == null ? null : base.plusYears(1);
+    }
+
+    /** Atestado válido hoje (o dia do vencimento ainda vale). SPEC §9.4. */
     public boolean atestadoValido(LocalDate hoje) {
-        return atestadoData != null && !atestadoData.isBefore(hoje.minusYears(1));
+        LocalDate vencimento = vencimentoAtestado();
+        return vencimento != null && !hoje.isAfter(vencimento);
     }
 }

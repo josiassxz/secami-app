@@ -63,6 +63,7 @@ public class StudentService {
     @Transactional
     public Student create(UpsertRequest req) {
         Student s = new Student();
+        s.setCadastradoEm(java.time.LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")));
         applyStaff(s, req, true);
         return students.save(s);
     }

@@ -41,6 +41,15 @@ public interface AppointmentRepository extends JpaRepository<Appointment, UUID> 
                            @Param("date") LocalDate date,
                            @Param("slotStart") String slotStart);
 
+    /** Agendamentos ativos do aluno de {@code hoje} em diante (cancelados no bloqueio por atestado). */
+    @Query("""
+            select a from Appointment a
+            where a.student.id = :studentId and a.date >= :hoje
+              and a.deletedAt is null and a.status in ('agendado', 'confirmado')
+            """)
+    List<Appointment> findAtivosDoAlunoAPartirDe(@Param("studentId") java.util.UUID studentId,
+                                                 @Param("hoje") LocalDate hoje);
+
     /** Agendamentos ainda ativos (agendado/confirmado) num horário, de {@code hoje}
      *  em diante — impedem excluir a configuração desse horário. */
     @Query("""

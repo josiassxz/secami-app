@@ -4,12 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/academy_api.dart';
 import '../data/academy_providers.dart';
+import '../data/atestado_api.dart';
 import '../../../core/network/erro_amigavel.dart';
+import 'atestado_widgets.dart';
 
 /// Perfil do aluno: dados pessoais, peso/altura/objetivo editáveis, status
-/// do atestado. Upload de foto fica para uma fase futura (SPEC §13.5) — a
-/// foto é pré-requisito para agendar (reconhecimento facial da catraca) e
-/// hoje é cadastrada pela recepção/admin.
+/// do atestado (com atalho pra enviar um novo). Upload de foto fica para uma
+/// fase futura (SPEC §13.5) — a foto é pré-requisito para agendar
+/// (reconhecimento facial da catraca) e hoje é cadastrada pela
+/// recepção/admin.
 class MeuPerfilScreen extends ConsumerStatefulWidget {
   const MeuPerfilScreen({super.key});
 
@@ -80,6 +83,7 @@ class _MeuPerfilScreenState extends ConsumerState<MeuPerfilScreen> {
   @override
   Widget build(BuildContext context) {
     final profileAsync = ref.watch(myProfileProvider);
+    final atestadoAsync = ref.watch(atestadoStatusProvider);
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return Scaffold(
@@ -109,6 +113,16 @@ class _MeuPerfilScreenState extends ConsumerState<MeuPerfilScreen> {
           _fill(p);
           final atestadoValido = p['atestadoValido'] == true;
           final studentType = p['studentType']?.toString() ?? 'Civil';
+          // Cartão do atestado vem de `/me/atestado` (só quando a regra
+          // vale pro aluno). Se essa consulta falhar, cai no resumo antigo
+          // do perfil (`atestadoValido`), que vale só pra civis.
+          final Widget? atestadoCard = atestadoAsync.when(
+            data: (s) => s.aplicavel ? AtestadoResumoCard(status: s) : null,
+            loading: () => null,
+            error: (_, _) => studentType == 'Civil'
+                ? _AtestadoResumoAntigo(valido: atestadoValido)
+                : null,
+          );
           return ListView(
             padding: const EdgeInsets.all(AppTheme.space16),
             children: [
@@ -144,28 +158,10 @@ class _MeuPerfilScreenState extends ConsumerState<MeuPerfilScreen> {
                 ],
               ),
               const SizedBox(height: AppTheme.space24),
-              if (studentType == 'Civil')
-                Card(
-                  color: atestadoValido ? null : scheme.errorContainer,
-                  margin: EdgeInsets.zero,
-                  child: ListTile(
-                    leading: Icon(
-                      atestadoValido
-                          ? Icons.check_circle_outline
-                          : Icons.warning_amber,
-                      color: atestadoValido ? scheme.primary : scheme.error,
-                    ),
-                    title: Text(
-                      atestadoValido
-                          ? 'Atestado médico válido'
-                          : 'Atestado ausente ou vencido',
-                    ),
-                    subtitle: const Text(
-                      'Obrigatório para civis agendarem horários (validade de 1 ano).',
-                    ),
-                  ),
-                ),
-              const SizedBox(height: AppTheme.space24),
+              if (atestadoCard != null) ...[
+                atestadoCard,
+                const SizedBox(height: AppTheme.space24),
+              ],
               Text(
                 'DADOS PESSOAIS',
                 style: context.uppercaseLabel(
@@ -252,6 +248,35 @@ class _MeuPerfilScreenState extends ConsumerState<MeuPerfilScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+}
+
+/// Resumo do atestado vindo do próprio perfil (`atestadoValido`) — só
+/// aparece quando a consulta de `/me/atestado` falha.
+class _AtestadoResumoAntigo extends StatelessWidget {
+  const _AtestadoResumoAntigo({required this.valido});
+
+  final bool valido;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Card(
+      color: valido ? null : scheme.errorContainer,
+      margin: EdgeInsets.zero,
+      child: ListTile(
+        leading: Icon(
+          valido ? Icons.check_circle_outline : Icons.warning_amber,
+          color: valido ? scheme.primary : scheme.error,
+        ),
+        title: Text(
+          valido ? 'Atestado médico válido' : 'Atestado ausente ou vencido',
+        ),
+        subtitle: const Text(
+          'Obrigatório para civis agendarem horários (validade de 1 ano).',
+        ),
       ),
     );
   }

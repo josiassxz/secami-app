@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 
 import '../config/env.dart';
 import '../../features/academy/presentation/academia_home_screen.dart';
+import '../../features/academy/presentation/atestado_screen.dart';
 import '../../features/academy/presentation/avisos_janela.dart';
 import '../../features/academy/presentation/avisos_screen.dart';
 import '../../features/academy/presentation/meu_perfil_screen.dart';
@@ -193,6 +194,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         GoRoute(
           path: '/academia/perfil',
           builder: (_, _) => const MeuPerfilScreen(),
+        ),
+        // Envio de atestado médico novo (aluno): aberta pela janela do
+        // atestado ao entrar no app, pelo Meu Perfil e pela Minha Agenda.
+        GoRoute(
+          path: '/academia/atestado',
+          builder: (_, _) => const AtestadoScreen(),
         ),
         // Perfil Instrutor (papel `professor`): alunos e fichas de treino.
         // Também fora do ShellRoute — o FAB "Nova ficha" e o botão "Salvar

@@ -68,6 +68,7 @@ void main() {
       '/academia/agenda',
       '/academia/treino',
       '/academia/perfil',
+      '/academia/atestado',
       '/coach/treinador',
     ];
 
@@ -106,6 +107,15 @@ void main() {
         expect(secamiRedirect(ambos, loc), isNull, reason: loc);
       }
     });
+  });
+
+  test('envio de atestado: só aluno; sem sessão vai pro login', () {
+    expect(rotasSomenteAluno, contains('/academia/atestado'));
+    expect(secamiRedirect(aluno, '/academia/atestado'), isNull);
+    expect(secamiRedirect(ambos, '/academia/atestado'), isNull);
+    expect(secamiRedirect(instrutor, '/academia/atestado'), '/academia');
+    expect(secamiRedirect(admin, '/academia/atestado'), '/academia');
+    expect(secamiRedirect(null, '/academia/atestado'), '/sign-in');
   });
 
   test('telas comuns ficam abertas pra qualquer papel', () {

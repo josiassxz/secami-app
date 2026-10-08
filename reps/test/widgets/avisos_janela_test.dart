@@ -7,9 +7,12 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:reps/features/academy/data/academy_api.dart';
+import 'package:reps/features/academy/data/atestado_api.dart';
 import 'package:reps/features/academy/data/avisos_api.dart';
 import 'package:reps/features/academy/presentation/avisos_janela.dart';
 import 'package:reps/features/auth/data/rest_auth_service.dart';
+
+import '../support/fake_atestado_api.dart';
 
 class _FakeAvisosApi implements AvisosApi {
   _FakeAvisosApi(this.avisos, {this.falha = false});
@@ -57,6 +60,9 @@ ProviderContainer _container(
 }) => ProviderContainer(
   overrides: [
     avisosApiProvider.overrideWithValue(api),
+    // A janela do atestado (antes dos avisos) fica fora destes testes: a
+    // regra não se aplica a este aluno. Ver atestado_janela_test.dart.
+    atestadoApiProvider.overrideWithValue(FakeAtestadoApi()),
     secamiCurrentUserProvider.overrideWith((ref) async => usuario),
   ],
 );

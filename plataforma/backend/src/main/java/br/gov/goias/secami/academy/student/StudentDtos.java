@@ -18,22 +18,23 @@ public final class StudentDtos {
             UUID departmentId, String departmentName, String phone, String email,
             LocalDate birthDate, BigDecimal weightKg, BigDecimal heightCm, String goal,
             UUID photoId, String atestadoNumero, LocalDate atestadoData,
-            boolean active, String situacao, boolean atestadoValido, Integer diasParaVencimentoAtestado) {
+            boolean active, String situacao, boolean atestadoValido, Integer diasParaVencimentoAtestado,
+            LocalDate vencimentoAtestado, LocalDate cadastradoEm, boolean bloqueioAtestado) {
 
         public static Response from(Student s, boolean maskCpf) {
             String cpf = maskCpf ? Cpf.mask(s.getCpf()) : Cpf.format(s.getCpf());
-            Integer dias = null;
-            if (s.getAtestadoData() != null) {
-                LocalDate vencimento = s.getAtestadoData().plusYears(1);
-                dias = (int) ChronoUnit.DAYS.between(LocalDate.now(), vencimento);
-            }
+            // Mesma regra do bloqueio: base = data do atestado ou, sem ela, a do cadastro original.
+            LocalDate hoje = LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo"));
+            LocalDate vencimento = s.vencimentoAtestado();
+            Integer dias = vencimento == null ? null : (int) ChronoUnit.DAYS.between(hoje, vencimento);
             return new Response(
                     s.getId(), s.getFullName(), cpf, s.getMatricula(), s.getStudentType(),
                     s.getDepartment() != null ? s.getDepartment().getId() : null,
                     s.getDepartment() != null ? s.getDepartment().getName() : null,
                     s.getPhone(), s.getEmail(), s.getBirthDate(), s.getWeightKg(), s.getHeightCm(),
                     s.getGoal(), s.getPhotoId(), s.getAtestadoNumero(), s.getAtestadoData(),
-                    s.isActive(), s.getSituacao(), s.atestadoValido(LocalDate.now()), dias);
+                    s.isActive(), s.getSituacao(), s.atestadoValido(hoje), dias,
+                    vencimento, s.getCadastradoEm(), s.isBloqueioAtestado());
         }
     }
 

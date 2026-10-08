@@ -7,12 +7,13 @@ import '../../features/auth/data/rest_auth_service.dart';
 /// Admin/recepção podem logar no app, mas não têm telas próprias aqui.
 
 /// Rotas que só fazem sentido pra quem tem cadastro de aluno — dependem de
-/// `/me/student`, `/me/appointments`, `/me/workout-plans` e do vínculo com
-/// treinador, que o backend só resolve para o papel `aluno`.
+/// `/me/student`, `/me/appointments`, `/me/workout-plans`, `/me/atestado` e
+/// do vínculo com treinador, que o backend só resolve para o papel `aluno`.
 const rotasSomenteAluno = {
   '/academia/agenda',
   '/academia/treino',
   '/academia/perfil',
+  '/academia/atestado',
   '/coach/treinador',
 };
 

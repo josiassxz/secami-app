@@ -222,9 +222,57 @@ public class MigrationService {
         s.setAtestadoData(dateVal(str(rec, "atestado_data")));
         s.setActive(boolVal(rec, "active", true));
         s.setLegacyId(str(rec, "id"));
+        s.setCadastradoEm(dateVal(str(rec, "created_date")));
         String depName = str(rec, "department");
         if (depName != null) s.setDepartment(byName.get(norm(depName)));
         return s;
+    }
+
+    // ---- Data original de cadastro (base do vencimento do atestado) ----
+
+    /** Resultado do preenchimento de {@code cadastrado_em} a partir do legado. */
+    public record ResultadoDataCadastro(boolean simulacao, int lidos, int atualizados, int semMudanca,
+                                        int naoEncontrados, int semData) {}
+
+    /**
+     * Preenche {@code student.cadastrado_em} com a data de criação do registro
+     * no sistema antigo (coluna created_date da exportação). Casa por
+     * legacy_id e, se não achar, por CPF (recadastro). Fica sempre com a data
+     * MAIS ANTIGA conhecida; não mexe em nenhum outro campo. Idempotente.
+     */
+    public ResultadoDataCadastro preencherDataDeCadastro(Path dir, boolean simular) {
+        Path file = dir.resolve("Student_export.csv");
+        int lidos = 0, atualizados = 0, semMudanca = 0, naoEncontrados = 0, semData = 0;
+        CSVFormat fmt = CSVFormat.DEFAULT.builder()
+                .setHeader().setSkipHeaderRecord(true).setIgnoreEmptyLines(true).build();
+        try (Reader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8);
+             CSVParser parser = CSVParser.parse(reader, fmt)) {
+            for (CSVRecord rec : parser) {
+                lidos++;
+                if (hasCol(rec, "is_sample") && boolVal(rec, "is_sample", false)) continue;
+                LocalDate data = dateVal(str(rec, "created_date"));
+                if (data == null) { semData++; continue; }
+                String legacy = str(rec, "id");
+                Student s = legacy == null ? null : students.findByLegacyId(legacy).orElse(null);
+                if (s == null) {
+                    String cpf = Cpf.normalize(str(rec, "cpf"));
+                    s = cpf == null ? null : students.findByCpf(cpf).orElse(null);
+                }
+                if (s == null) { naoEncontrados++; continue; }
+                if (s.getCadastradoEm() != null && !data.isBefore(s.getCadastradoEm())) { semMudanca++; continue; }
+                if (!simular) {
+                    s.setCadastradoEm(data);
+                    students.save(s);
+                }
+                atualizados++;
+            }
+        } catch (java.io.IOException e) {
+            throw new br.gov.goias.secami.common.error.DomainExceptions.BusinessException(
+                    "Não foi possível ler " + file.getFileName() + ": " + e.getMessage());
+        }
+        log.info("Data de cadastro do legado{}: lidos={} atualizados={} semMudanca={} naoEncontrados={} semData={}",
+                simular ? " (SIMULAÇÃO)" : "", lidos, atualizados, semMudanca, naoEncontrados, semData);
+        return new ResultadoDataCadastro(simular, lidos, atualizados, semMudanca, naoEncontrados, semData);
     }
 
     // ---- Atualização incremental dos alunos (nova exportação do legado) ----

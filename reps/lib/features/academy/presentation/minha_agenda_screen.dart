@@ -6,7 +6,9 @@ import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/academy_api.dart';
 import '../data/academy_providers.dart';
+import '../data/atestado_api.dart';
 import '../../../core/network/erro_amigavel.dart';
+import 'atestado_widgets.dart';
 
 /// Agendamento de horários pelo aluno (SPEC §9.4 / §10.4). Todas as regras
 /// (janela de 48h, foto, atestado, capacidade) são validadas pelo backend —
@@ -19,6 +21,9 @@ class MinhaAgendaScreen extends ConsumerWidget {
     final selectedDate = ref.watch(agendaSelectedDateProvider);
     final slotsAsync = ref.watch(availableSlotsProvider);
     final apptsAsync = ref.watch(myAppointmentsProvider);
+    // Só a faixa de bloqueio depende disto; falha ou demora não mostra nada.
+    final atestado = ref.watch(atestadoStatusProvider).valueOrNull;
+    final bloqueado = (atestado?.aplicavel ?? false) && atestado!.bloqueado;
     final df = DateFormat('EEEE, d MMM', 'pt_BR');
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -29,10 +34,15 @@ class MinhaAgendaScreen extends ConsumerWidget {
         onRefresh: () async {
           ref.invalidate(availableSlotsProvider);
           ref.invalidate(myAppointmentsProvider);
+          ref.invalidate(atestadoStatusProvider);
         },
         child: ListView(
           padding: const EdgeInsets.all(AppTheme.space16),
           children: [
+            if (bloqueado) ...[
+              AtestadoBloqueadoBanner(status: atestado),
+              const SizedBox(height: AppTheme.space16),
+            ],
             Card(
               margin: EdgeInsets.zero,
               child: ListTile(

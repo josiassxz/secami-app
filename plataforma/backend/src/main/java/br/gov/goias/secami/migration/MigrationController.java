@@ -56,6 +56,16 @@ public class MigrationController {
         return service.atualizarAlunos(resolveDir(dir), baselineDir, simular);
     }
 
+    /** Preenche a data original de cadastro (base do vencimento do atestado
+     *  quando não há data dele) a partir da exportação do legado. */
+    @PostMapping("/admin/migration/data-cadastro")
+    @PreAuthorize("hasRole('ADMIN')")
+    public MigrationService.ResultadoDataCadastro dataCadastro(
+            @RequestParam(value = "dir", required = false) String dir,
+            @RequestParam(defaultValue = "true") boolean simular) {
+        return service.preencherDataDeCadastro(resolveDir(dir), simular);
+    }
+
     private Path resolveDir(String dir) {
         String target = (dir != null && !dir.isBlank()) ? dir : defaultDir;
         if (target == null || target.isBlank()) {

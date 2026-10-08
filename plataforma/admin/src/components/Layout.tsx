@@ -20,6 +20,7 @@ import {
   Building2,
   Megaphone,
   BarChart3,
+  FileCheck2,
   LogOut,
   Sun,
   Moon,
@@ -39,6 +40,18 @@ function usePendingRegistrationsCount(enabled: boolean) {
   return data?.length ?? 0;
 }
 
+/** Atestados aguardando validação, pro badge no menu (mesma queryKey do painel
+ *  e da tela de Atestados — aprovar/recusar lá atualiza aqui). */
+function useAtestadosPendentesCount(enabled: boolean) {
+  const { data } = useQuery({
+    queryKey: ["atestados-resumo"],
+    queryFn: () => api<{ pendentes: number }>("/admin/atestados/resumo"),
+    enabled,
+    refetchInterval: 60_000,
+  });
+  return data?.pendentes ?? 0;
+}
+
 type NavItem = { to: string; label: string; icon: any; roles: string[] };
 type NavGroup = { title: string; items: NavItem[] };
 
@@ -55,6 +68,7 @@ const GROUPS: NavGroup[] = [
     items: [
       { to: "/alunos", label: "Alunos", icon: Users, roles: ["admin", "gerente", "recepcao", "professor"] },
       { to: "/cadastros-pendentes", label: "Cadastros Pendentes", icon: UserCheck, roles: ["admin", "gerente"] },
+      { to: "/atestados", label: "Atestados", icon: FileCheck2, roles: ["admin", "gerente", "recepcao"] },
       { to: "/agenda", label: "Agenda", icon: CalendarDays, roles: ["admin", "gerente", "recepcao", "professor"] },
       { to: "/checkin", label: "Check-in", icon: CheckSquare, roles: ["admin", "recepcao", "professor"] },
     ],
@@ -94,6 +108,7 @@ export default function Layout() {
   const navigate = useNavigate();
   const { dark, toggle } = useTheme();
   const pendingCount = usePendingRegistrationsCount(hasRole("admin", "gerente"));
+  const atestadosPendentes = useAtestadosPendentesCount(hasRole("admin", "gerente"));
 
   const hoje = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -143,6 +158,11 @@ export default function Layout() {
                     >
                       <item.icon className="h-4 w-4 shrink-0" />
                       <span className="flex-1">{item.label}</span>
+                      {item.to === "/atestados" && atestadosPendentes > 0 && (
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1.5 text-[11px] font-bold text-gold-fg">
+                          {atestadosPendentes}
+                        </span>
+                      )}
                       {item.to === "/cadastros-pendentes" && pendingCount > 0 && (
                         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-gold px-1.5 text-[11px] font-bold text-gold-fg">
                           {pendingCount}

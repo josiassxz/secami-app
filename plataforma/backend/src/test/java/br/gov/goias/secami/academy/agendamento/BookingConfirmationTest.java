@@ -66,7 +66,7 @@ class BookingConfirmationTest extends SchedulingTestSupport {
 
         bookAsStudent(token, amanha(), "08:00")
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("Atestado médico ausente ou vencido (validade de 1 ano)."));
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.startsWith("Atestado médico ausente ou vencido (validade de 1 ano).")));
     }
 
     @Test
@@ -80,7 +80,7 @@ class BookingConfirmationTest extends SchedulingTestSupport {
 
         bookAsStudent(token, amanha(), "08:00")
                 .andExpect(status().isUnprocessableEntity())
-                .andExpect(jsonPath("$.message").value("Atestado médico ausente ou vencido (validade de 1 ano)."));
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.startsWith("Atestado médico ausente ou vencido (validade de 1 ano).")));
     }
 
     @Test

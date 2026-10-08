@@ -117,6 +117,7 @@ void main() {
       '/academia/agenda',
       '/academia/treino',
       '/academia/perfil',
+      '/academia/atestado',
       '/coach/treinador',
     ]) {
       router.go(rota);
@@ -124,6 +125,14 @@ void main() {
       expect(rotaAtual(router), '/academia', reason: rota);
       expect(find.text('Alunos e Fichas'), findsOneWidget, reason: rota);
     }
+
+    // A tela de envio de atestado existe no router (fora do shell) — o
+    // bloqueio acima é do papel, não rota faltando.
+    final atestado = router.configuration.findMatch(
+      Uri.parse('/academia/atestado'),
+    );
+    expect(atestado.isError, isFalse);
+    expect(atestado.last.matchedLocation, '/academia/atestado');
 
     // Avisos é de todos os papéis.
     router.go('/academia/avisos');

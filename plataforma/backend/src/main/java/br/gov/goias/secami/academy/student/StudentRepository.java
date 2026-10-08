@@ -62,13 +62,7 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
     /** Alunos com CPF — candidatos da atualização de e-mail a partir do AD. */
     java.util.List<Student> findByCpfIsNotNullAndDeletedAtIsNull();
 
-    /** Alunos ATIVOS com atestado vencido (mais de 1 ano) — para job de auto-inativação. */
-    @Query("""
-        select s from Student s
-        where s.situacao = 'ATIVO'
-          and s.deletedAt is null
-          and s.atestadoData is not null
-          and s.atestadoData < :limite
-        """)
-    java.util.List<Student> findComAtestadoVencido(@Param("limite") java.time.LocalDate limite);
+    /** Alunos aprovados de um tipo (ex.: civis — os sujeitos à regra do atestado). */
+    @EntityGraph(attributePaths = "department")
+    java.util.List<Student> findByDeletedAtIsNullAndStatusCadastroAndStudentType(String statusCadastro, String studentType);
 }

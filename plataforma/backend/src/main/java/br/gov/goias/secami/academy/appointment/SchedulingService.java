@@ -132,7 +132,11 @@ public class SchedulingService {
         // deste sistema; exigir isso bloquearia todo mundo, já que nem o
         // cadastro público nem a migração do legado preenchem esse campo.
         if (civil && !student.atestadoValido(hoje)) {
-            throw new BusinessException("Atestado médico ausente ou vencido (validade de 1 ano).");
+            throw new BusinessException("Atestado médico ausente ou vencido (validade de 1 ano). "
+                    + "Envie um novo atestado pelo aplicativo para a academia validar.");
+        }
+        if (!staff && Student.SITUACAO_BLOQUEADO.equals(student.getSituacao())) {
+            throw new BusinessException("Seu acesso está bloqueado. Procure a administração da academia.");
         }
 
         if (!staff) {

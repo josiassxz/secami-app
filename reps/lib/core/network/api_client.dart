@@ -36,6 +36,9 @@ class ApiClient {
   /// rede (mensagem amigável).
   static const _timeout = Duration(seconds: 30);
 
+  /// Upload (PDF de até 10MB) em rede móvel lenta passa fácil dos 30s.
+  static const _uploadTimeout = Duration(minutes: 2);
+
   static const _kAccess = 'secami.access';
   static const _kRefresh = 'secami.refresh';
 
@@ -156,10 +159,7 @@ class ApiClient {
       // Falha de rede (sem internet, servidor fora do ar, bloqueio de mixed
       // content, timeout etc.) — nunca repassa a exceção técnica bruta
       // (ex.: "ClientException: Failed to fetch") pro usuário.
-      throw ApiException(
-        0,
-        'Não foi possível conectar ao servidor. Verifique sua internet e tente novamente.',
-      );
+      throw ApiException(0, _mensagemSemConexao);
     }
 
     if (res.statusCode == 401 && auth && retry && await _tryRefresh()) {
@@ -167,6 +167,48 @@ class ApiClient {
     }
     return _parse(res);
   }
+
+  /// `POST multipart/form-data` autenticado (ex.: envio de PDF), com o mesmo
+  /// tratamento das outras chamadas: token Bearer, uma nova tentativa depois
+  /// do refresh em 401 e erro sempre como [ApiException] com mensagem pronta.
+  ///
+  /// [partes] monta as partes a cada tentativa: um `MultipartFile` só pode
+  /// ser enviado uma vez, então o reenvio pós-refresh precisa de partes novas.
+  Future<dynamic> postMultipart(
+    String path,
+    List<http.MultipartFile> Function() partes,
+  ) => _sendMultipart(path, partes, retry: true);
+
+  Future<dynamic> _sendMultipart(
+    String path,
+    List<http.MultipartFile> Function() partes, {
+    required bool retry,
+  }) async {
+    final request = http.MultipartRequest('POST', Uri.parse('$_base$path'));
+    final token = await accessToken;
+    if (token != null) request.headers['Authorization'] = 'Bearer $token';
+
+    http.Response res;
+    try {
+      request.files.addAll(partes());
+      res = await _client
+          .send(request)
+          .then(http.Response.fromStream)
+          .timeout(_uploadTimeout);
+    } catch (_) {
+      // Mesma regra do [_send]: nada de exceção técnica crua na tela.
+      throw ApiException(0, _mensagemSemConexao);
+    }
+
+    if (res.statusCode == 401 && retry && await _tryRefresh()) {
+      return _sendMultipart(path, partes, retry: false);
+    }
+    return _parse(res);
+  }
+
+  static const _mensagemSemConexao =
+      'Não foi possível conectar ao servidor. Verifique sua internet e tente '
+      'novamente.';
 
   dynamic _parse(http.Response res) {
     final text = utf8.decode(res.bodyBytes, allowMalformed: true);
