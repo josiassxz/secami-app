@@ -16,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.text.Normalizer;
 import java.time.Duration;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -27,7 +28,8 @@ import java.util.UUID;
  * valendo, e a do governo é a alternativa.
  *
  * <p>Vínculo AD → conta local, em ordem: objectGUID já vinculado; sAMAccountName
- * já vinculado; e-mail (mail/UPN) igual ao da conta; CPF (guardado no AD, campo
+ * já vinculado; e-mail (mail/UPN) igual ao da conta; e-mail igual ao de contato
+ * do aluno (com o primeiro nome batendo); CPF (guardado no AD, campo
  * {@code description}) igual ao do aluno — este último só se o primeiro nome
  * também bater, pra um CPF digitado errado no AD nunca entregar a conta de
  * outra pessoa. Vinculada uma vez, passa a valer o objectGUID.
@@ -139,8 +141,36 @@ public class LdapAuthProvider implements AuthProvider {
         if (ad.email() != null) {
             Optional<AppUser> porEmail = users.findByEmailIgnoreCase(ad.email());
             if (porEmail.isPresent()) return porEmail;
+            Optional<AppUser> porEmailDeContato = acharPorEmailDeContato(ad);
+            if (porEmailDeContato.isPresent()) return porEmailDeContato;
         }
         return acharPorCpf(ad);
+    }
+
+    /**
+     * E-mail do AD igual ao e-mail de CONTATO do aluno — caso dos migrados da
+     * base antiga: o login ficou com o e-mail pessoal e o institucional chegou
+     * depois (planilha/AD) só no contato. Mesma trava do CPF (primeiro nome tem
+     * que bater), e e-mail repetido em mais de um aluno não vincula ninguém.
+     */
+    private Optional<AppUser> acharPorEmailDeContato(LdapUser ad) {
+        List<Student> alunos = students.findByEmailIgnoreCaseAndDeletedAtIsNull(ad.email().trim()).stream()
+                .filter(s -> s.getUserId() != null)
+                .toList();
+        if (alunos.size() != 1) {
+            if (alunos.size() > 1) {
+                log.warn("LDAP: e-mail de '{}' é contato de {} alunos — vínculo por e-mail de contato recusado.",
+                        ad.samAccountName(), alunos.size());
+            }
+            return Optional.empty();
+        }
+        Student aluno = alunos.get(0);
+        if (!mesmoPrimeiroNome(ad.nome(), aluno.getFullName())) {
+            log.warn("LDAP: e-mail de '{}' é contato do aluno {}, mas o primeiro nome difere — vínculo recusado.",
+                    ad.samAccountName(), aluno.getId());
+            return Optional.empty();
+        }
+        return users.findById(aluno.getUserId());
     }
 
     private Optional<AppUser> acharPorCpf(LdapUser ad) {

@@ -130,6 +130,70 @@ class LdapLoginIntegrationTest extends AbstractIntegrationTest {
         assertThat(users.findById(conta.getId()).orElseThrow().getLdapGuid()).isNull();
     }
 
+    /** Migrado da base antiga: login com o e-mail pessoal, institucional só no
+     *  contato do aluno e sem CPF no AD — vincula pelo e-mail de contato. */
+    @Test
+    void vinculaPeloEmailDeContatoDoAlunoQuandoOLoginUsaEmailPessoal() throws Exception {
+        AppUser conta = contaLocal("pessoal." + UUID.randomUUID() + "@gmail.com", true);
+        String emailGov = emailGov();
+        Student aluno = new Student();
+        aluno.setFullName("Fulana Rocha Silva");
+        aluno.setCpf(CpfTestFactory.next());
+        aluno.setEmail(emailGov);
+        aluno.setUserId(conta.getId());
+        students.save(aluno);
+        UUID guid = UUID.randomUUID();
+        String sam = sam();
+        when(directory.authenticate(sam, "senha-do-governo")).thenReturn(LdapAuthResult.autenticado(
+                new LdapUser(guid, sam, emailGov.toUpperCase(), "Fulana Rocha Silva", null)));
+
+        login(sam, "senha-do-governo").andExpect(status().isOk()).andExpect(jsonPath("$.accessToken").exists());
+
+        assertThat(users.findById(conta.getId()).orElseThrow().getLdapGuid()).isEqualTo(guid);
+    }
+
+    @Test
+    void recusaVinculoPorEmailDeContatoQuandoOPrimeiroNomeNaoBate() throws Exception {
+        AppUser conta = contaLocal("pessoal." + UUID.randomUUID() + "@gmail.com", true);
+        String emailGov = emailGov();
+        Student aluno = new Student();
+        aluno.setFullName("Maria Aparecida Souza");
+        aluno.setCpf(CpfTestFactory.next());
+        aluno.setEmail(emailGov);
+        aluno.setUserId(conta.getId());
+        students.save(aluno);
+        String sam = sam();
+        when(directory.authenticate(sam, "senha-do-governo")).thenReturn(LdapAuthResult.autenticado(
+                new LdapUser(UUID.randomUUID(), sam, emailGov, "Josias Silva Siqueira", null)));
+
+        login(sam, "senha-do-governo").andExpect(status().isUnprocessableEntity());
+
+        assertThat(users.findById(conta.getId()).orElseThrow().getLdapGuid()).isNull();
+    }
+
+    @Test
+    void emailDeContatoRepetidoEmDoisAlunosNaoVinculaNinguem() throws Exception {
+        String emailGov = emailGov();
+        AppUser contaA = contaLocal("pessoal." + UUID.randomUUID() + "@gmail.com", true);
+        AppUser contaB = contaLocal("pessoal." + UUID.randomUUID() + "@gmail.com", true);
+        for (AppUser conta : java.util.List.of(contaA, contaB)) {
+            Student aluno = new Student();
+            aluno.setFullName("Ana Souza " + UUID.randomUUID());
+            aluno.setCpf(CpfTestFactory.next());
+            aluno.setEmail(emailGov);
+            aluno.setUserId(conta.getId());
+            students.save(aluno);
+        }
+        String sam = sam();
+        when(directory.authenticate(sam, "senha-do-governo")).thenReturn(LdapAuthResult.autenticado(
+                new LdapUser(UUID.randomUUID(), sam, emailGov, "Ana Souza", null)));
+
+        login(sam, "senha-do-governo").andExpect(status().isUnprocessableEntity());
+
+        assertThat(users.findById(contaA.getId()).orElseThrow().getLdapGuid()).isNull();
+        assertThat(users.findById(contaB.getId()).orElseThrow().getLdapGuid()).isNull();
+    }
+
     @Test
     void primeiroNomeComparaSemAcentoNemCaixa() {
         assertThat(LdapAuthProvider.mesmoPrimeiroNome("JOSÉ da Silva", "Jose Pereira")).isTrue();

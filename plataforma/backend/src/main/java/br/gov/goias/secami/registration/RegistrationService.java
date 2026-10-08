@@ -81,7 +81,8 @@ public class RegistrationService {
         }
         String cpf = Cpf.normalize(req.cpf());
         if (cpf != null && students.findByCpf(cpf).isPresent()) {
-            throw new ConflictException("Já existe um cadastro com este CPF.");
+            throw new ConflictException("Já existe um cadastro com este CPF. Entre no aplicativo com o usuário e a "
+                    + "senha da sua conta do governo; se não conseguir, procure a administração.");
         }
         Department department = departments.findById(req.departmentId())
                 .orElseThrow(() -> new NotFoundException("Secretaria/órgão não encontrado."));

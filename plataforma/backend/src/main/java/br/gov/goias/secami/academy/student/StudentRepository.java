@@ -17,6 +17,9 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
 
     Optional<Student> findByCpf(String cpf);
 
+    /** Alunos com este e-mail de contato — vínculo do login pelo AD quando o e-mail de login é outro. */
+    java.util.List<Student> findByEmailIgnoreCaseAndDeletedAtIsNull(String email);
+
     Optional<Student> findByLegacyId(String legacyId);
 
     @EntityGraph(attributePaths = "department")
