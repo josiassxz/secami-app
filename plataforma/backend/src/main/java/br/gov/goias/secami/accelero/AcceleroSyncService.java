@@ -466,7 +466,7 @@ public class AcceleroSyncService {
                     inicioJanela.format(FORMATO_ACCELERO), fimJanela.format(FORMATO_ACCELERO));
 
             OffsetDateTime primeiraEntrada = null;
-            OffsetDateTime primeiraSaida = null;
+            List<OffsetDateTime> saidas = new ArrayList<>();
             for (EventoAcesso e : eventos) {
                 if (e.descricao() == null || !PASSAGEM_REALIZADA.equalsIgnoreCase(e.descricao().trim())) continue;
                 // Sem isso, um evento de OUTRA área do prédio (o aluno pode ter
@@ -480,10 +480,18 @@ public class AcceleroSyncService {
                 String direcao = classificarDirecao(e);
                 if ("entrada".equals(direcao) && (primeiraEntrada == null || quando.isBefore(primeiraEntrada))) {
                     primeiraEntrada = quando;
-                } else if ("saida".equals(direcao) && (primeiraSaida == null || quando.isBefore(primeiraSaida))) {
-                    primeiraSaida = quando;
+                } else if ("saida".equals(direcao)) {
+                    saidas.add(quando);
                 }
             }
+            // Saída só conta depois da entrada — caso real: num teste da catraca
+            // a saída veio 4s antes da entrada e o relatório mostrava "11:20 – 11:20".
+            OffsetDateTime referencia = appointment.getEntradaConfirmadaEm() != null
+                    ? appointment.getEntradaConfirmadaEm() : primeiraEntrada;
+            OffsetDateTime primeiraSaida = referencia == null ? null : saidas.stream()
+                    .filter(s -> s.isAfter(referencia))
+                    .min(OffsetDateTime::compareTo)
+                    .orElse(null);
 
             boolean mudou = false;
             if (appointment.getEntradaConfirmadaEm() == null && primeiraEntrada != null) {

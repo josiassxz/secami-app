@@ -62,6 +62,60 @@ class AcceleroPresencaServiceTest extends JobsTestSupport {
     }
 
     @Test
+    void entradaPelaCatracaContaComoPresencaMesmoJaMarcadoComoFalta() {
+        // O job de faltas marca 60 min depois do início; a catraca é conferida
+        // a cada 30 min — a entrada confirmada desfaz a falta.
+        Student s = createStudent("presenca-830", "aluno.presenca.830@dev.secami");
+        s.setAcceleroPessoaId("830");
+        studentRepository.save(s);
+        Appointment a = createAppointment(s, LocalDate.now().minusDays(1), LocalTime.of(9, 0), Appointment.FALTOU);
+        when(acceleroClient.listarLogEventos(eq("830"), anyString(), anyString(), anyInt())).thenReturn(
+                new PaginaEventos(List.of(
+                        new EventoAcesso("2026-01-01 08:45:00", "ACADEMIA", "ACADEMIA EXT",
+                                "Passagem efetivamente realizada", 1, "1"),
+                        new EventoAcesso("2026-01-01 10:00:00", "ACADEMIA", "ACADEMIA INT",
+                                "Passagem efetivamente realizada", 1, "1")),
+                        1));
+
+        acceleroPresenca.confirmarPresencas();
+
+        assertThat(appointmentRepository.findById(a.getId()).orElseThrow().getStatus())
+                .isEqualTo(Appointment.CONFIRMADO);
+        var checkIns = checkInRepository.findByStudentIdOrderByDateDesc(s.getId());
+        assertThat(checkIns).hasSize(1);
+        assertThat(checkIns.get(0).getDate()).isEqualTo(a.getDate());
+        assertThat(checkIns.get(0).getAppointmentId()).isEqualTo(a.getId());
+        assertThat(checkIns.get(0).getCheckInTime()).isEqualTo("08:45");
+        assertThat(checkIns.get(0).getCheckOutTime()).isEqualTo("10:00");
+    }
+
+    @Test
+    void comCheckInManualNaoDuplicaEPreencheASaidaPelaCatraca() {
+        Student s = createStudent("presenca-840", "aluno.presenca.840@dev.secami");
+        s.setAcceleroPessoaId("840");
+        studentRepository.save(s);
+        LocalDate ontem = LocalDate.now().minusDays(1);
+        Appointment a = createAppointment(s, ontem, LocalTime.of(9, 0), Appointment.CONFIRMADO);
+        createCheckIn(s, ontem, LocalTime.of(8, 50));
+        when(acceleroClient.listarLogEventos(eq("840"), anyString(), anyString(), anyInt())).thenReturn(
+                new PaginaEventos(List.of(
+                        new EventoAcesso("2026-01-01 08:45:00", "ACADEMIA", "ACADEMIA EXT",
+                                "Passagem efetivamente realizada", 1, "1"),
+                        new EventoAcesso("2026-01-01 10:00:00", "ACADEMIA", "ACADEMIA INT",
+                                "Passagem efetivamente realizada", 1, "1")),
+                        1));
+
+        acceleroPresenca.confirmarPresencas();
+
+        var checkIns = checkInRepository.findByStudentIdOrderByDateDesc(s.getId());
+        assertThat(checkIns).hasSize(1);
+        assertThat(checkIns.get(0).getCheckInTime()).isEqualTo("08:50"); // o manual fica
+        assertThat(checkIns.get(0).getCheckOutTime()).isEqualTo("10:00");
+        assertThat(appointmentRepository.findById(a.getId()).orElseThrow().getStatus())
+                .isEqualTo(Appointment.CONFIRMADO);
+    }
+
+    @Test
     void naoContaAgendamentoSemPessoaVinculada() {
         createAppointment(createStudent("sem-pessoa", "aluno.sem.pessoa@dev.secami"),
                 LocalDate.now().minusDays(1), LocalTime.of(9, 0), Appointment.CONFIRMADO);

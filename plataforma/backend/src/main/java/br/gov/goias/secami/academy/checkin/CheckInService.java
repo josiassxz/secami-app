@@ -12,12 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 /** Presença: check-in/out manual e marcação de falta. SPEC §9.5. */
@@ -25,6 +27,7 @@ import java.util.UUID;
 public class CheckInService {
 
     private static final DateTimeFormatter HHMM = DateTimeFormatter.ofPattern("HH:mm");
+    static final String NOTA_CATRACA = "Entrada registrada pela catraca";
 
     private final CheckInRepository checkins;
     private final AppointmentRepository appointments;
@@ -103,6 +106,49 @@ public class CheckInService {
             }
         }
         return checkins.save(c);
+    }
+
+    /**
+     * Entrada confirmada pela catraca conta como presença no dia: cria o
+     * check-in (se ainda não houver) com o horário real e confirma o
+     * agendamento — inclusive se o job de faltas já o tinha marcado como falta
+     * (ele marca 60 min depois do início; a catraca é conferida a cada 30 min).
+     * Idempotente. @return true se algo mudou.
+     */
+    @Transactional
+    public boolean registrarPresencaPelaCatraca(Appointment appt) {
+        OffsetDateTime entrada = appt.getEntradaConfirmadaEm();
+        if (entrada == null || Appointment.CANCELADO.equals(appt.getStatus())) return false;
+        boolean mudou = false;
+
+        Optional<CheckIn> existente = checkins.findFirstByStudentIdAndDateOrderByCheckInTimeAsc(
+                appt.getStudent().getId(), appt.getDate());
+        if (existente.isEmpty()) {
+            CheckIn c = new CheckIn();
+            c.setStudent(appt.getStudent());
+            c.setDate(appt.getDate());
+            c.setAppointmentId(appt.getId());
+            c.setCheckInTime(hora(entrada));
+            if (appt.getSaidaConfirmadaEm() != null) c.setCheckOutTime(hora(appt.getSaidaConfirmadaEm()));
+            c.setNotes(NOTA_CATRACA);
+            checkins.save(c);
+            mudou = true;
+        } else if (existente.get().getCheckOutTime() == null && appt.getSaidaConfirmadaEm() != null) {
+            existente.get().setCheckOutTime(hora(appt.getSaidaConfirmadaEm()));
+            checkins.save(existente.get());
+            mudou = true;
+        }
+
+        if (Appointment.AGENDADO.equals(appt.getStatus()) || Appointment.FALTOU.equals(appt.getStatus())) {
+            appt.setStatus(Appointment.CONFIRMADO);
+            appointments.save(appt);
+            mudou = true;
+        }
+        return mudou;
+    }
+
+    private String hora(OffsetDateTime quando) {
+        return quando.atZoneSameInstant(zone).toLocalTime().format(HHMM);
     }
 
     @Transactional

@@ -21,6 +21,8 @@ public interface CheckInRepository extends JpaRepository<CheckIn, UUID> {
 
     boolean existsByStudentIdAndDate(UUID studentId, LocalDate date);
 
+    Optional<CheckIn> findFirstByStudentIdAndDateOrderByCheckInTimeAsc(UUID studentId, LocalDate date);
+
     List<CheckIn> findByStudentIdOrderByDateDesc(UUID studentId);
 
     long countByStudentIdAndDate(UUID studentId, LocalDate date);

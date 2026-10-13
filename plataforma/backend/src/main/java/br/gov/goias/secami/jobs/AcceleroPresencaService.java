@@ -2,6 +2,7 @@ package br.gov.goias.secami.jobs;
 
 import br.gov.goias.secami.academy.appointment.Appointment;
 import br.gov.goias.secami.academy.appointment.AppointmentRepository;
+import br.gov.goias.secami.academy.checkin.CheckInService;
 import br.gov.goias.secami.accelero.AcceleroSyncService;
 import br.gov.goias.secami.config.SecamiProperties;
 import org.slf4j.Logger;
@@ -18,7 +19,8 @@ import java.util.List;
  * Confere no Accelero (log de eventos reais da catraca) se os alunos com
  * agendamento hoje/ontem realmente entraram e/ou saíram da academia, além
  * do check-in autodeclarado — permite ver quem faltou de verdade e calcular
- * permanência real (ver AcceleroSyncService.confirmarPresenca).
+ * permanência real (ver AcceleroSyncService.confirmarPresenca). Entrada
+ * confirmada conta como presença no dia (CheckInService.registrarPresencaPelaCatraca).
  */
 @Service
 public class AcceleroPresencaService {
@@ -27,12 +29,14 @@ public class AcceleroPresencaService {
 
     private final AppointmentRepository appointments;
     private final AcceleroSyncService acceleroSync;
+    private final CheckInService checkIns;
     private final ZoneId zone;
 
     public AcceleroPresencaService(AppointmentRepository appointments, AcceleroSyncService acceleroSync,
-                                    SecamiProperties props) {
+                                    CheckInService checkIns, SecamiProperties props) {
         this.appointments = appointments;
         this.acceleroSync = acceleroSync;
+        this.checkIns = checkIns;
         this.zone = ZoneId.of(props.getTimezone());
     }
 
@@ -50,7 +54,9 @@ public class AcceleroPresencaService {
                 List.of(hoje.minusDays(1), hoje));
         int count = 0;
         for (Appointment a : candidatos) {
-            if (acceleroSync.confirmarPresenca(a)) count++;
+            boolean confirmou = acceleroSync.confirmarPresenca(a);
+            boolean presenca = checkIns.registrarPresencaPelaCatraca(a);
+            if (confirmou || presenca) count++;
         }
         return count;
     }

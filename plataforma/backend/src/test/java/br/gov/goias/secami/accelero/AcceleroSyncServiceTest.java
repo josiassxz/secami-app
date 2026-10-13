@@ -362,6 +362,28 @@ class AcceleroSyncServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void confirmarPresencaIgnoraSaidaAnteriorAEntrada() {
+        // Caso real (teste da catraca): saída 4s antes da entrada e nova entrada
+        // depois — não há saída depois da entrada, então a saída fica em branco.
+        Appointment a = agendamentoComPessoa("714", LocalDate.now().minusDays(2), "10:00");
+        when(acceleroClient.listarLogEventos(eq("714"), anyString(), anyString(), eq(1))).thenReturn(
+                new PaginaEventos(List.of(
+                        new EventoAcesso("2026-01-01 11:20:25", "ACADEMIA", "ACADEMIA INT",
+                                "Passagem efetivamente realizada", 1, "1"),
+                        new EventoAcesso("2026-01-01 11:20:29", "ACADEMIA", "ACADEMIA EXT",
+                                "Passagem efetivamente realizada", 1, "1"),
+                        new EventoAcesso("2026-01-01 11:25:11", "ACADEMIA", "ACADEMIA EXT",
+                                "Passagem efetivamente realizada", 1, "1")),
+                        1));
+
+        acceleroSync.confirmarPresenca(a);
+
+        Appointment recarregado = appointmentRepository.findById(a.getId()).orElseThrow();
+        assertThat(recarregado.getEntradaConfirmadaEm()).isNotNull();
+        assertThat(recarregado.getSaidaConfirmadaEm()).isNull();
+    }
+
+    @Test
     void confirmarPresencaIgnoraEventosDeOutrasAreasDoPredioNaMesmaJanela() {
         // Caso real: a pessoa também tem acesso a outras áreas do prédio
         // (ex.: funcionário) e passa por elas dentro da mesma janela de
