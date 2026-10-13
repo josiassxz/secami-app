@@ -63,7 +63,6 @@ public class AcceleroSyncService {
     // comentário do script Python, "dd/MM/yyyy HH:mm", estava errado; usar
     // esse formato causava "Erro pes-661" em toda chamada com datas).
     private static final DateTimeFormatter FORMATO_ACCELERO = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final String MILITAR = "Militar";
     /** Prefixo da área (areDescricao) dos leitores da academia ("ACADEMIA EXT"/
      *  "ACADEMIA INT") — usado pra confirmarPresenca não confundir com outras
      *  áreas do prédio (Atalaia, Secretariado etc.) que a mesma pessoa também
@@ -108,6 +107,62 @@ public class AcceleroSyncService {
             log.warn("Falha ao sincronizar aluno {} com o Accelero na aprovação: {}",
                     student.getId(), e.getMessage());
         }
+    }
+
+    /**
+     * Chamado por StudentService.update() quando o admin muda o tipo entre
+     * acesso vitalício (Militar/Instrutor) e Civil — a aprovação liberava a
+     * catraca, a edição não. Virar Militar/Instrutor libera a categoria
+     * vitalícia; voltar a Civil tira a vitalícia e libera por agendamento os
+     * horários futuros que ele já tem. Só cadastro aprovado. Nunca lança.
+     */
+    @Transactional
+    public void aoMudarTipo(Student student) {
+        if (!config.isEnabled()) return;
+        if (!Student.STATUS_APROVADO.equals(student.getStatusCadastro())) return;
+        try {
+            if (temAcessoVitalicio(student)) {
+                if (!sincronizarUm(student)) {
+                    log.warn("Aluno {} virou {}, mas não foi possível liberar a catraca agora (pessoa não "
+                            + "encontrada no Accelero pelo CPF).", student.getId(), student.getStudentType());
+                }
+            } else {
+                revogarAcessoVitalicio(student);
+                ZonedDateTime agora = ZonedDateTime.now(zone);
+                for (Appointment a : appointments.findAtivosDoAlunoAPartirDe(student.getId(), agora.toLocalDate())) {
+                    ZonedDateTime fimJanela = ZonedDateTime.of(a.getDate(), LocalTime.parse(a.getSlotStart()), zone)
+                            .plusHours(JANELA_ACESSO_HORAS);
+                    if (a.getAcceleroAcessoVinculoId() == null && fimJanela.isAfter(agora)) {
+                        liberarAcessoDoAgendamento(a);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Falha ao ajustar a catraca no Accelero pra mudança de tipo do aluno {}: {}",
+                    student.getId(), e.getMessage(), e);
+        }
+    }
+
+    /** Tira só a categoria da academia sem data (a vitalícia) — preserva as
+     *  liberações de agendamentos e qualquer outra categoria do prédio. */
+    private void revogarAcessoVitalicio(Student student) {
+        String pessoaId = student.getAcceleroPessoaId();
+        if (pessoaId == null) return;
+        String categoriaId = config.getCategoriaAcessoId();
+        Set<String> deAgendamentos = appointments.findAtivosDoAlunoAPartirDe(student.getId(), LocalDate.now(zone))
+                .stream().map(Appointment::getAcceleroAcessoVinculoId)
+                .filter(java.util.Objects::nonNull).collect(Collectors.toSet());
+        List<CategoriaVinculada> vitalicias = client.listarCategorias(pessoaId).stream()
+                .filter(c -> categoriaId.equals(c.pctId()) && !deAgendamentos.contains(c.uid()))
+                .toList();
+        if (vitalicias.isEmpty()) return;
+        for (CategoriaVinculada v : vitalicias) {
+            client.excluirCategoria(pessoaId, v.uid());
+        }
+        ressincronizarPessoa(pessoaId);
+        student.setAcceleroLiberadoEm(null);
+        students.save(student);
+        log.info("Acesso vitalício revogado no Accelero pro aluno {} (virou {}).", student.getId(), student.getStudentType());
     }
 
     /** Retry manual de um único aluno (ex.: falhou antes, CPF foi corrigido). */
@@ -204,7 +259,7 @@ public class AcceleroSyncService {
     }
 
     private static boolean temAcessoVitalicio(Student student) {
-        return MILITAR.equals(student.getStudentType()) || student.isInstrutor();
+        return student.temAcessoPermanente();
     }
 
     private String vincularPorCpf(Student student) {

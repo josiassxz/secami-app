@@ -72,12 +72,18 @@ public class StudentService {
     public Student update(UUID id, UpsertRequest req) {
         Student s = get(id);
         boolean eraInstrutor = s.isInstrutor();
+        boolean tinhaAcessoPermanente = s.temAcessoPermanente();
         applyStaff(s, req, false);
         Student salvo = students.save(s);
         // Só mexe nos papéis do login quando o perfil muda de fato (aluno ↔
         // instrutor) — editar outros campos nunca altera papel de ninguém.
         if (eraInstrutor != salvo.isInstrutor()) {
             perfis.sincronizarPapeis(salvo);
+        }
+        // Catraca: Civil ↔ Militar/Instrutor muda de "por agendamento" pra
+        // vitalícia (e vice-versa) — best-effort, nunca impede a edição.
+        if (tinhaAcessoPermanente != salvo.temAcessoPermanente()) {
+            acceleroSync.aoMudarTipo(salvo);
         }
         return salvo;
     }

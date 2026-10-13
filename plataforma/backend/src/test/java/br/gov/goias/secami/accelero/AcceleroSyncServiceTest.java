@@ -14,10 +14,12 @@ import br.gov.goias.secami.accelero.AcceleroDtos.PessoaEncontrada;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -25,6 +27,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
  * Regra de negócio da liberação da catraca ao aprovar um cadastro: existe
@@ -292,6 +297,70 @@ class AcceleroSyncServiceTest extends AbstractIntegrationTest {
 
         verify(acceleroClient, never()).listarCategorias(anyString());
         verify(acceleroClient, never()).excluirCategoria(anyString(), anyString());
+    }
+
+    // ---------- mudança de tipo pela edição do aluno (admin) ----------
+
+    private void editarTipo(Student s, String tipo) throws Exception {
+        mockMvc.perform(put("/students/" + s.getId())
+                        .header("Authorization", "Bearer " + loginAs("admin"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                Map.of("fullName", s.getFullName(), "cpf", s.getCpf(), "studentType", tipo))))
+                .andExpect(status().isOk());
+    }
+
+    /** Caso real: aluno civil já aprovado virou instrutor pela edição e a
+     *  catraca continuava só por agendamento. */
+    @Test
+    void edicaoDeCivilParaInstrutorLiberaCategoriaVitalicia() throws Exception {
+        Student s = aprovado(Student.TIPO_CIVIL);
+        s.setAcceleroPessoaId("901");
+        studentRepository.save(s);
+        semCategoriasAindaVinculadas();
+
+        editarTipo(s, Student.TIPO_INSTRUTOR);
+
+        verify(acceleroClient).adicionarCategoria("901", ACESSO, "", "");
+        assertThat(studentRepository.findById(s.getId()).orElseThrow().getAcceleroLiberadoEm()).isNotNull();
+    }
+
+    @Test
+    void edicaoDeMilitarParaCivilTiraSoAVitaliciaELiberaOsAgendamentosFuturos() throws Exception {
+        Student s = aprovado(Student.TIPO_MILITAR);
+        s.setAcceleroPessoaId("902");
+        studentRepository.save(s);
+        Appointment futuro = new Appointment();
+        futuro.setStudent(s);
+        futuro.setDate(LocalDate.now().plusDays(2));
+        futuro.setSlotStart("10:00");
+        futuro.setSlotEnd("11:00");
+        appointmentRepository.save(futuro);
+        CategoriaVinculada predio = new CategoriaVinculada("uid-predio", "999", "ATALAIA");
+        when(acceleroClient.listarCategorias("902")).thenReturn(
+                List.of(new CategoriaVinculada("uid-vitalicia", ACESSO, "ENTRADA/SAIDA ACADEMIA"), predio),
+                List.of(predio),
+                List.of(predio, new CategoriaVinculada("uid-agenda", ACESSO, "ENTRADA/SAIDA ACADEMIA")));
+
+        editarTipo(s, Student.TIPO_CIVIL);
+
+        verify(acceleroClient).excluirCategoria("902", "uid-vitalicia");
+        verify(acceleroClient, never()).excluirCategoria("902", "uid-predio"); // outras áreas do prédio ficam
+        verify(acceleroClient).adicionarCategoria(eq("902"), eq(ACESSO), argThat(d -> !d.isEmpty()), anyString());
+        assertThat(appointmentRepository.findById(futuro.getId()).orElseThrow().getAcceleroAcessoVinculoId())
+                .isEqualTo("uid-agenda");
+        assertThat(studentRepository.findById(s.getId()).orElseThrow().getAcceleroLiberadoEm()).isNull();
+    }
+
+    @Test
+    void edicaoSemMudarOTipoNaoMexeNaCatraca() throws Exception {
+        Student s = aprovado(Student.TIPO_INSTRUTOR);
+        s.setAcceleroPessoaId("903");
+        studentRepository.save(s);
+
+        editarTipo(s, Student.TIPO_MILITAR); // os dois têm acesso vitalício
+
+        verifyNoInteractions(acceleroClient);
     }
 
     // ---------- confirmarPresenca (job de confirmação de entrada/saída real) ----------

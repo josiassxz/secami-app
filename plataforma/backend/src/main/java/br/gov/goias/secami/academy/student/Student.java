@@ -56,6 +56,11 @@ public class Student {
         return TIPO_INSTRUTOR.equals(studentType);
     }
 
+    /** Militar e instrutor têm a catraca liberada sem agendamento (vitalícia). */
+    public boolean temAcessoPermanente() {
+        return TIPO_MILITAR.equals(studentType) || isInstrutor();
+    }
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
     private Department department;
