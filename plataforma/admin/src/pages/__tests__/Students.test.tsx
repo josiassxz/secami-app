@@ -1,19 +1,21 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import Students from "@/pages/Students";
-import { api } from "@/lib/api";
+import { api, downloadMedia } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { renderWithProviders } from "./render-with-providers";
 import { ApiError } from "@/lib/erros";
 
 vi.mock("@/lib/api", () => ({
   api: vi.fn(),
+  downloadMedia: vi.fn(),
 }));
 vi.mock("@/lib/auth", () => ({
   useAuth: vi.fn(),
 }));
 
 const apiMock = vi.mocked(api);
+const downloadMediaMock = vi.mocked(downloadMedia);
 const useAuthMock = vi.mocked(useAuth);
 
 function mockAuth(roles: string[]) {
@@ -126,6 +128,23 @@ describe("Students - listagem", () => {
     // A tela não deve exibir um CPF completo (11 dígitos corridos, ou formatado sem máscara).
     expect(within(table).queryByText(/\b\d{11}\b/)).not.toBeInTheDocument();
     expect(within(table).queryByText(/^\d{3}\.\d{3}\.\d{3}-\d{2}$/)).not.toBeInTheDocument();
+  });
+  it("mostra o ícone do atestado só para quem tem PDF e abre o arquivo vigente", async () => {
+    mockAuth(["recepcao"]);
+    setupApi({ list: page({ content: [{ ...STUDENTS[0], atestadoArquivoId: "m1" }, STUDENTS[1]] }) });
+    downloadMediaMock.mockResolvedValue(new Blob(["%PDF-1.4"], { type: "application/pdf" }));
+    const createObjectURL = vi.fn(() => "blob:atestado");
+    Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() });
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    renderWithProviders(<Students />);
+
+    const table = await screen.findByRole("table");
+    expect(within(table).queryByRole("button", { name: "Ver atestado de Beto Lima" })).not.toBeInTheDocument();
+    fireEvent.click(within(table).getByRole("button", { name: "Ver atestado de Ana Souza" }));
+
+    await waitFor(() => expect(open).toHaveBeenCalledWith("blob:atestado", "_blank", "noopener,noreferrer"));
+    expect(downloadMediaMock).toHaveBeenCalledWith("m1");
+    open.mockRestore();
   });
 });
 

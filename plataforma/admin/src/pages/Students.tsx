@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api } from "@/lib/api";
+import { api, downloadMedia } from "@/lib/api";
 import { mensagemDeErro } from "@/lib/erros";
+import { toast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
 import { tomDoTipo } from "@/lib/papeis";
 import { PageHeader } from "@/components/PageHeader";
@@ -12,7 +13,7 @@ import {
   Table, TableSkeleton, TBody, TD, TH, THead, TR,
 } from "@/components/ui";
 import {
-  AlertCircle, ChevronLeft, ChevronRight, Eye, Pencil,
+  AlertCircle, ChevronLeft, ChevronRight, Eye, FileText, Pencil,
   Plus, Search, Trash2, UserX,
 } from "lucide-react";
 
@@ -24,6 +25,7 @@ type Student = {
   atestadoNumero?: string; atestadoData?: string;
   active: boolean; situacao: string;
   atestadoValido: boolean; diasParaVencimentoAtestado?: number | null;
+  atestadoArquivoId?: string | null;
 };
 
 const emptyForm = {
@@ -67,6 +69,7 @@ export default function Students() {
   const [detailStudent, setDetailStudent] = useState<Student | null>(null);
   const [detailFrom, setDetailFrom] = useState("");
   const [detailTo, setDetailTo] = useState("");
+  const [abrindoAtestado, setAbrindoAtestado] = useState<string | null>(null);
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedQ(q), SEARCH_DEBOUNCE_MS);
@@ -93,6 +96,32 @@ export default function Students() {
     queryFn: () => api(`/students/${detailStudent!.id}/appointments?from=${detailFrom}&to=${detailTo}`),
     enabled: !!detailStudent && !!detailFrom && !!detailTo,
   });
+
+  /** Abre o PDF do atestado vigente (o do cadastro ou o último aprovado), como na aprovação. */
+  async function verAtestado(s: Student) {
+    if (!s.atestadoArquivoId) return;
+    setAbrindoAtestado(s.id);
+    try {
+      const blob = await downloadMedia(s.atestadoArquivoId);
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank", "noopener,noreferrer");
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+    } catch (e) {
+      toast("error", mensagemDeErro(e, "Não foi possível abrir o atestado."));
+    } finally {
+      setAbrindoAtestado(null);
+    }
+  }
+
+  function botaoAtestado(s: Student) {
+    if (!s.atestadoArquivoId) return null;
+    return (
+      <Button variant="ghost" size="sm" aria-label={`Ver atestado de ${s.fullName}`} title="Ver atestado (PDF)"
+        loading={abrindoAtestado === s.id} onClick={() => verAtestado(s)}>
+        <FileText className="h-4 w-4" />
+      </Button>
+    );
+  }
 
   const save = useMutation({
     mutationFn: (body: any) =>
@@ -199,7 +228,7 @@ export default function Students() {
                         <TD className="tabular-nums text-content-soft">{s.cpf}</TD>
                         <TD><Badge tone={tomDoTipo(s.studentType)}>{s.studentType}</Badge></TD>
                         <TD className="text-content-soft">{s.departmentName || "—"}</TD>
-                        <TD><Badge tone={at.tone}>{at.text}</Badge></TD>
+                        <TD><div className="flex items-center gap-1"><Badge tone={at.tone}>{at.text}</Badge>{botaoAtestado(s)}</div></TD>
                         <TD>
                           {canEdit ? (
                             <Select className="w-28" value={s.situacao} onChange={(e) => changeSituacao.mutate({ id: s.id, situacao: e.target.value })}>
@@ -241,8 +270,9 @@ export default function Students() {
                     </div>
                     <div className="flex items-center justify-between gap-3 pl-11">
                       <span className="truncate text-xs text-content-soft">{s.departmentName || "Sem secretaria"}</span>
-                      <div className="flex shrink-0 gap-1.5">
+                      <div className="flex shrink-0 items-center gap-1.5">
                         <Badge tone={at.tone}>{at.text}</Badge>
+                        {botaoAtestado(s)}
                         <Badge tone={s.situacao === "ATIVO" ? "confirmado" : s.situacao === "BLOQUEADO" ? "warning" : "cancelado"}>
                           {s.situacao === "ATIVO" ? "ativo" : s.situacao === "BLOQUEADO" ? "bloqueado" : "inativo"}
                         </Badge>

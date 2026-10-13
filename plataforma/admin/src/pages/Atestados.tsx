@@ -101,6 +101,8 @@ export default function Atestados() {
     qc.invalidateQueries({ queryKey: ["atestados-pendentes"] });
     qc.invalidateQueries({ queryKey: ["atestados-resumo"] });
     qc.invalidateQueries({ queryKey: ["atestados-alunos"] });
+    // Aprovar troca o PDF vigente do aluno (ícone na listagem de alunos).
+    qc.invalidateQueries({ queryKey: ["students"] });
   }
 
   const aprovar = useMutation({

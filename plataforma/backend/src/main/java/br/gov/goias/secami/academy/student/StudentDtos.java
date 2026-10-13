@@ -19,7 +19,8 @@ public final class StudentDtos {
             LocalDate birthDate, BigDecimal weightKg, BigDecimal heightCm, String goal,
             UUID photoId, String atestadoNumero, LocalDate atestadoData,
             boolean active, String situacao, boolean atestadoValido, Integer diasParaVencimentoAtestado,
-            LocalDate vencimentoAtestado, LocalDate cadastradoEm, boolean bloqueioAtestado) {
+            LocalDate vencimentoAtestado, LocalDate cadastradoEm, boolean bloqueioAtestado,
+            UUID atestadoArquivoId) {
 
         public static Response from(Student s, boolean maskCpf) {
             String cpf = maskCpf ? Cpf.mask(s.getCpf()) : Cpf.format(s.getCpf());
@@ -34,7 +35,9 @@ public final class StudentDtos {
                     s.getPhone(), s.getEmail(), s.getBirthDate(), s.getWeightKg(), s.getHeightCm(),
                     s.getGoal(), s.getPhotoId(), s.getAtestadoNumero(), s.getAtestadoData(),
                     s.isActive(), s.getSituacao(), s.atestadoValido(hoje), dias,
-                    vencimento, s.getCadastradoEm(), s.isBloqueioAtestado());
+                    vencimento, s.getCadastradoEm(), s.isBloqueioAtestado(),
+                    // PDF do atestado vigente: o do cadastro ou, depois, o último aprovado.
+                    s.getAtestadoArquivoId());
         }
     }
 
