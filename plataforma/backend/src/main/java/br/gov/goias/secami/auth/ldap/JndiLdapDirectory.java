@@ -27,6 +27,7 @@ import java.util.Hashtable;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -128,6 +129,12 @@ public class JndiLdapDirectory implements LdapDirectory {
         } finally {
             fechar(ctx);
         }
+    }
+
+    @Override
+    public Optional<LdapUser> buscarPorEmail(String email) {
+        if (email == null || !email.contains("@")) return Optional.empty();
+        return Optional.ofNullable(buscar(email.trim())).map(Entrada::usuario);
     }
 
     private record Entrada(String dn, LdapUser usuario) {}

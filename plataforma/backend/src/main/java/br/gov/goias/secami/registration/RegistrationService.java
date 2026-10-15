@@ -142,7 +142,7 @@ public class RegistrationService {
     }
 
     /**
-     * @param studentType categoria do aluno (Civil ou Militar) — ignorada pro instrutor
+     * @param studentType categoria do aluno (Civil, Militar ou VIP) — ignorada pro instrutor
      * @param perfil      {@code aluno} (padrão quando nulo/vazio) ou {@code instrutor}
      */
     @Transactional
@@ -153,8 +153,8 @@ public class RegistrationService {
         if (!instrutor && !RegistrationDtos.AprovarRequest.PERFIL_ALUNO.equals(perfilNormalizado)) {
             throw new BusinessException("Perfil inválido — use aluno ou instrutor.");
         }
-        if (!instrutor && !Set.of(Student.TIPO_CIVIL, Student.TIPO_MILITAR).contains(studentType)) {
-            throw new BusinessException("Categoria inválida — use Civil ou Militar.");
+        if (!instrutor && !Set.of(Student.TIPO_CIVIL, Student.TIPO_MILITAR, Student.TIPO_VIP).contains(studentType)) {
+            throw new BusinessException("Categoria inválida — use Civil, Militar ou VIP.");
         }
         Student s = pendente(studentId);
         s.setStudentType(instrutor ? Student.TIPO_INSTRUTOR : studentType);

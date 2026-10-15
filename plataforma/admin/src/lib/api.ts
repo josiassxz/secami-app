@@ -184,7 +184,7 @@ export type PendingRegistration = {
   cpf: string;
   email: string;
   phone: string;
-  studentType: "Civil" | "Militar" | "Instrutor";
+  studentType: "Civil" | "Militar" | "VIP" | "Instrutor";
   birthDate: string;
   weightKg: number | null;
   heightCm: number | null;

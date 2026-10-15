@@ -45,7 +45,7 @@ public final class StudentDtos {
             @NotBlank(message = "Informe o nome completo.") String fullName,
             @ValidCpf String cpf,
             String matricula,
-            String studentType,     // Civil | Militar | Instrutor
+            String studentType,     // Civil | Militar | VIP | Instrutor
             UUID departmentId,
             String phone,
             String email,

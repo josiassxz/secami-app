@@ -352,6 +352,24 @@ class AcceleroSyncServiceTest extends AbstractIntegrationTest {
         assertThat(studentRepository.findById(s.getId()).orElseThrow().getAcceleroLiberadoEm()).isNull();
     }
 
+    /** VIP tem as mesmas regras do Militar: catraca liberada sempre. */
+    @Test
+    void vipLiberaCategoriaVitaliciaNaAprovacaoENaEdicao() throws Exception {
+        Student aprovadoVip = aprovado(Student.TIPO_VIP);
+        when(acceleroClient.pesquisarPessoas(aprovadoVip.getCpf()))
+                .thenReturn(List.of(new PessoaEncontrada("950", "Vip", aprovadoVip.getCpf())));
+        semCategoriasAindaVinculadas();
+        acceleroSync.aoAprovar(aprovadoVip);
+        verify(acceleroClient).adicionarCategoria("950", ACESSO, "", "");
+
+        Student civil = aprovado(Student.TIPO_CIVIL);
+        civil.setAcceleroPessoaId("951");
+        studentRepository.save(civil);
+        editarTipo(civil, Student.TIPO_VIP);
+        verify(acceleroClient).adicionarCategoria("951", ACESSO, "", "");
+        assertThat(studentRepository.findById(civil.getId()).orElseThrow().sujeitoAoAtestado()).isFalse();
+    }
+
     @Test
     void edicaoSemMudarOTipoNaoMexeNaCatraca() throws Exception {
         Student s = aprovado(Student.TIPO_INSTRUTOR);

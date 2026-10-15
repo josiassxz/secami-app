@@ -15,5 +15,6 @@ export function rotuloPapel(papel: string): string {
 /** Tom do selo de tipo de cadastro na lista de alunos. */
 export function tomDoTipo(tipo: string): string {
   if (tipo === "Instrutor") return "success";
+  if (tipo === "VIP") return "vip";
   return tipo === "Militar" ? "warning" : "info";
 }

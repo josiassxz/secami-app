@@ -118,6 +118,15 @@ class RegistrationIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void cadastroComEmailDeTerceirizado_fornecedores_eAceito() throws Exception {
+        String email = "terceirizado." + UUID.randomUUID() + "@fornecedores.goias.gov.br";
+        mockMvc.perform(cadastroRequest(dadosValidos(email, CpfTestFactory.next())))
+                .andExpect(status().isCreated());
+
+        assertThat(users.findByEmailIgnoreCase(email)).isPresent();
+    }
+
+    @Test
     void cadastroComEmailForaDoDominioGoias_retorna400() throws Exception {
         ObjectNode dados = dadosValidos("fora.do.dominio@gmail.com", CpfTestFactory.next());
         mockMvc.perform(cadastroRequest(dados))

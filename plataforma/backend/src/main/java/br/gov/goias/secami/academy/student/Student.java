@@ -17,7 +17,7 @@ import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.UUID;
 
-/** Cadastro de pessoa da academia: aluno (Civil ou Militar) ou instrutor. SPEC §8.2. */
+/** Cadastro de pessoa da academia: aluno (Civil, Militar ou VIP) ou instrutor. SPEC §8.2. */
 @Entity
 @Table(name = "student")
 @Getter
@@ -43,22 +43,24 @@ public class Student {
 
     public static final String TIPO_CIVIL = "Civil";
     public static final String TIPO_MILITAR = "Militar";
+    /** Mesmas regras do Militar (catraca sempre liberada, fora da regra do atestado). */
+    public static final String TIPO_VIP = "VIP";
     /** Perfil de instrutor (prescreve fichas de treino) — não é aluno: não
      *  agenda horário; o login dele tem o papel 'professor' em vez de 'aluno'. */
     public static final String TIPO_INSTRUTOR = "Instrutor";
     public static final java.util.Set<String> TIPOS =
-            java.util.Set.of(TIPO_CIVIL, TIPO_MILITAR, TIPO_INSTRUTOR);
+            java.util.Set.of(TIPO_CIVIL, TIPO_MILITAR, TIPO_VIP, TIPO_INSTRUTOR);
 
     @Column(name = "student_type", nullable = false)
-    private String studentType = TIPO_CIVIL;  // Civil | Militar | Instrutor
+    private String studentType = TIPO_CIVIL;  // Civil | Militar | VIP | Instrutor
 
     public boolean isInstrutor() {
         return TIPO_INSTRUTOR.equals(studentType);
     }
 
-    /** Militar e instrutor têm a catraca liberada sem agendamento (vitalícia). */
+    /** Militar, VIP e instrutor têm a catraca liberada sem agendamento (vitalícia). */
     public boolean temAcessoPermanente() {
-        return TIPO_MILITAR.equals(studentType) || isInstrutor();
+        return TIPO_MILITAR.equals(studentType) || TIPO_VIP.equals(studentType) || isInstrutor();
     }
 
     @ManyToOne(fetch = FetchType.LAZY)

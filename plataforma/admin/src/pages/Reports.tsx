@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { tomDoTipo } from "@/lib/papeis";
 import { cn, formatDate } from "@/lib/utils";
 import { PageHeader } from "@/components/PageHeader";
 import {
@@ -243,7 +244,7 @@ export default function Reports() {
                     </div>
                   </TD>
                   <TD>
-                    <Badge tone={a.studentType === "Militar" ? "warning" : "info"}>{a.studentType}</Badge>
+                    <Badge tone={tomDoTipo(a.studentType)}>{a.studentType}</Badge>
                   </TD>
                   <TD className="font-semibold tabular-nums">{a.slotStart}</TD>
                   <TD><Badge tone={a.status}>{a.status}</Badge></TD>

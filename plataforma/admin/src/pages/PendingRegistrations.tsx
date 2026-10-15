@@ -258,6 +258,7 @@ export default function PendingRegistrations() {
                         <optgroup label="Aluno">
                           <option value="Civil">Aluno · Civil</option>
                           <option value="Militar">Aluno · Militar</option>
+                          <option value="VIP">Aluno · VIP</option>
                         </optgroup>
                         <option value={PERFIL_INSTRUTOR}>Instrutor</option>
                       </Select>

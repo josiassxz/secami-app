@@ -56,6 +56,8 @@ export default function Students() {
   const qc = useQueryClient();
   const canEdit = hasRole("admin", "gerente");
   const isAdmin = hasRole("admin");
+  // Histórico de agendamentos: só quem a API libera (instrutor não vê agenda de aluno).
+  const podeVerHistorico = hasRole("admin", "gerente", "recepcao");
 
   const [q, setQ] = useState("");
   const [perfil, setPerfil] = useState(""); // "" = todos | "aluno" | "instrutor"
@@ -94,7 +96,7 @@ export default function Students() {
   const detailHistory = useQuery({
     queryKey: ["student-history", detailStudent?.id, detailFrom, detailTo],
     queryFn: () => api(`/students/${detailStudent!.id}/appointments?from=${detailFrom}&to=${detailTo}`),
-    enabled: !!detailStudent && !!detailFrom && !!detailTo,
+    enabled: podeVerHistorico && !!detailStudent && !!detailFrom && !!detailTo,
   });
 
   /** Abre o PDF do atestado vigente (o do cadastro ou o último aprovado), como na aprovação. */
@@ -242,7 +244,7 @@ export default function Students() {
                         </TD>
                         <TD className="text-right">
                           <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="sm" aria-label={`Detalhes de ${s.fullName}`} onClick={() => setDetailStudent(s)}><Eye className="h-4 w-4" /></Button>
+                            {podeVerHistorico && <Button variant="ghost" size="sm" aria-label={`Detalhes de ${s.fullName}`} onClick={() => setDetailStudent(s)}><Eye className="h-4 w-4" /></Button>}
                             {canEdit && <Button variant="ghost" size="sm" aria-label={`Editar ${s.fullName}`} onClick={() => openEdit(s)}><Pencil className="h-4 w-4" /></Button>}
                             {isAdmin && <Button variant="ghost" size="sm" aria-label={`Excluir ${s.fullName}`} onClick={() => setConfirmTarget(s)}><Trash2 className="h-4 w-4 text-danger" /></Button>}
                           </div>
@@ -279,7 +281,7 @@ export default function Students() {
                       </div>
                     </div>
                     <div className="flex justify-end gap-2 pl-11">
-                      <Button variant="outline" size="sm" onClick={() => setDetailStudent(s)}><Eye className="mr-1 h-3 w-3" /> Detalhes</Button>
+                      {podeVerHistorico && <Button variant="outline" size="sm" onClick={() => setDetailStudent(s)}><Eye className="mr-1 h-3 w-3" /> Detalhes</Button>}
                       {canEdit && <Button variant="outline" size="sm" onClick={() => openEdit(s)}><Pencil className="mr-1 h-3 w-3" /> Editar</Button>}
                       {isAdmin && <Button variant="outline" size="sm" className="text-danger" onClick={() => setConfirmTarget(s)}><Trash2 className="mr-1 h-3 w-3" /> Excluir</Button>}
                     </div>
@@ -321,7 +323,7 @@ export default function Students() {
               <div><Label htmlFor="sm">Matrícula</Label><Input id="sm" value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label htmlFor="st">Tipo</Label><Select id="st" value={form.studentType} onChange={(e) => setForm({ ...form, studentType: e.target.value })}><option value="Civil">Civil</option><option value="Militar">Militar</option><option value="Instrutor">Instrutor</option></Select>{form.studentType === "Instrutor" && (<p className="mt-1 text-xs text-content-soft">Instrutor prescreve as fichas de treino e não agenda horário.</p>)}</div>
+              <div><Label htmlFor="st">Tipo</Label><Select id="st" value={form.studentType} onChange={(e) => setForm({ ...form, studentType: e.target.value })}><option value="Civil">Civil</option><option value="Militar">Militar</option><option value="VIP">VIP</option><option value="Instrutor">Instrutor</option></Select>{form.studentType === "Instrutor" && (<p className="mt-1 text-xs text-content-soft">Instrutor prescreve as fichas de treino e não agenda horário.</p>)}{form.studentType === "VIP" && (<p className="mt-1 text-xs text-content-soft">VIP tem as mesmas regras do Militar: catraca sempre liberada.</p>)}</div>
               <div><Label htmlFor="sb">Data de nascimento</Label><Input id="sb" type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} /></div>
             </div>
           </div>

@@ -3,6 +3,7 @@ package br.gov.goias.secami.auth.ldap;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /** Acesso ao diretório (AD): busca o usuário e confere a senha. Interface
  *  separada da implementação JNDI pra dar pra testar o vínculo/regras sem
@@ -19,4 +20,9 @@ public interface LdapDirectory {
      *  CPFs sem conta no AD simplesmente não aparecem no mapa.
      *  @throws LdapUnavailableException se o AD estiver inacessível. */
     Map<String, List<LdapUser>> buscarPorCpfs(Collection<String> cpfs);
+
+    /** A conta ativa do AD com este e-mail (mail ou UPN); vazio se não houver
+     *  nenhuma (ou se mais de uma casar).
+     *  @throws LdapUnavailableException se o AD estiver inacessível. */
+    Optional<LdapUser> buscarPorEmail(String email);
 }

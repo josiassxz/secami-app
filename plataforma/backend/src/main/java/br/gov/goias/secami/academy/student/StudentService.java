@@ -5,6 +5,7 @@ import br.gov.goias.secami.academy.department.DepartmentRepository;
 import br.gov.goias.secami.academy.student.StudentDtos.MeUpdateRequest;
 import br.gov.goias.secami.academy.student.StudentDtos.UpsertRequest;
 import br.gov.goias.secami.accelero.AcceleroSyncService;
+import br.gov.goias.secami.auth.ldap.EmailNoAd;
 import br.gov.goias.secami.common.Cpf;
 import br.gov.goias.secami.common.error.DomainExceptions.ConflictException;
 import br.gov.goias.secami.common.error.DomainExceptions.NotFoundException;
@@ -23,13 +24,15 @@ public class StudentService {
     private final DepartmentRepository departments;
     private final AcceleroSyncService acceleroSync;
     private final StudentPerfilService perfis;
+    private final EmailNoAd emailNoAd;
 
     public StudentService(StudentRepository students, DepartmentRepository departments,
-                           AcceleroSyncService acceleroSync, StudentPerfilService perfis) {
+                           AcceleroSyncService acceleroSync, StudentPerfilService perfis, EmailNoAd emailNoAd) {
         this.students = students;
         this.departments = departments;
         this.acceleroSync = acceleroSync;
         this.perfis = perfis;
+        this.emailNoAd = emailNoAd;
     }
 
     /**
@@ -73,7 +76,23 @@ public class StudentService {
         Student s = get(id);
         boolean eraInstrutor = s.isInstrutor();
         boolean tinhaAcessoPermanente = s.temAcessoPermanente();
+        // O e-mail de contato liga o login pelo governo à conta: trocado pelo
+        // admin, só vale se existir no AD (e for da mesma pessoa). Conferido
+        // antes de mexer no cadastro, pra uma recusa não deixar nada pela metade.
+        String emailConferido = null;
+        String emailAnterior = s.getEmail() == null ? "" : s.getEmail().trim();
+        if (req.email() != null && !req.email().isBlank() && !req.email().trim().equalsIgnoreCase(emailAnterior)) {
+            emailConferido = emailNoAd.conferir(req.email(), req.fullName().trim());
+            String email = emailConferido;
+            students.findByEmailIgnoreCaseAndDeletedAtIsNull(email).stream()
+                    .filter(outro -> !outro.getId().equals(s.getId()))
+                    .findAny()
+                    .ifPresent(outro -> {
+                        throw new ConflictException("Este e-mail já está no cadastro de " + outro.getFullName() + ".");
+                    });
+        }
         applyStaff(s, req, false);
+        if (emailConferido != null) s.setEmail(emailConferido);
         Student salvo = students.save(s);
         // Só mexe nos papéis do login quando o perfil muda de fato (aluno ↔
         // instrutor) — editar outros campos nunca altera papel de ninguém.
@@ -135,7 +154,7 @@ public class StudentService {
         if (req.studentType() != null) {
             if (!Student.TIPOS.contains(req.studentType())) {
                 throw new br.gov.goias.secami.common.error.DomainExceptions.BusinessException(
-                        "Tipo inválido — use Civil, Militar ou Instrutor.");
+                        "Tipo inválido — use Civil, Militar, VIP ou Instrutor.");
             }
             s.setStudentType(req.studentType());
         }

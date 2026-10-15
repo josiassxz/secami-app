@@ -28,8 +28,8 @@ public final class RegistrationDtos {
             @NotBlank(message = "Informe o WhatsApp para contato.") String whatsapp,
             @NotNull(message = "Selecione a secretaria/órgão.") UUID departmentId,
             @NotBlank @Email(message = "Informe um e-mail válido.")
-            @Pattern(regexp = "(?i)^[^@\\s]+@goias\\.gov\\.br$",
-                    message = "O e-mail precisa ser do domínio @goias.gov.br.")
+            @Pattern(regexp = "(?i)^[^@\\s]+@(fornecedores\\.)?goias\\.gov\\.br$",
+                    message = "O e-mail precisa ser @goias.gov.br ou @fornecedores.goias.gov.br.")
             String email,
             /** Opcional: o login é pela conta do governo (AD/LDAP), então o
              *  formulário não pede mais senha. Se vier, vale como senha local. */
@@ -94,7 +94,7 @@ public final class RegistrationDtos {
         }
 
         @com.fasterxml.jackson.annotation.JsonIgnore
-        @AssertTrue(message = "Selecione a categoria (Civil ou Militar).")
+        @AssertTrue(message = "Selecione a categoria (Civil, Militar ou VIP).")
         public boolean isCategoriaInformada() {
             return instrutor() || (studentType != null && !studentType.isBlank());
         }

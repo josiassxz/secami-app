@@ -12,6 +12,12 @@ class EmailInstitucionalTest {
     }
 
     @Test
+    void aceitaTambemOEmailDeTerceirizado() {
+        assertThat(EmailInstitucional.normalizar(" Fulano@Fornecedores.goias.gov.br")).contains("fulano@fornecedores.goias.gov.br");
+        assertThat(EmailInstitucional.normalizar("fulano@outro.goias.gov.br")).isEmpty();
+    }
+
+    @Test
     void rejeitaOutrosDominiosEValoresVazios() {
         assertThat(EmailInstitucional.normalizar("fulano@gmail.com")).isEmpty();
         assertThat(EmailInstitucional.normalizar("fulano@sub.goias.gov.br.evil.com")).isEmpty();

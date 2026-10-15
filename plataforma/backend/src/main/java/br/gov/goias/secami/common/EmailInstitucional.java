@@ -1,20 +1,23 @@
 package br.gov.goias.secami.common;
 
+import java.util.List;
 import java.util.Optional;
 
-/** Regra do e-mail institucional (@goias.gov.br) — em um lugar só. */
+/** Regra do e-mail institucional (@goias.gov.br e, dos terceirizados,
+ *  @fornecedores.goias.gov.br) — em um lugar só. */
 public final class EmailInstitucional {
 
-    public static final String DOMINIO = "@goias.gov.br";
+    public static final List<String> DOMINIOS = List.of("@goias.gov.br", "@fornecedores.goias.gov.br");
 
     private EmailInstitucional() {}
 
     /** @return o e-mail normalizado (minúsculas, sem espaços) se for do domínio
-     *  institucional; vazio se nulo/vazio/de outro domínio. */
+     *  institucional (servidor ou terceirizado); vazio se nulo/vazio/de outro domínio. */
     public static Optional<String> normalizar(String email) {
         if (email == null || email.isBlank()) return Optional.empty();
         String n = email.trim().toLowerCase();
-        return n.endsWith(DOMINIO) && n.length() > DOMINIO.length() ? Optional.of(n) : Optional.empty();
+        boolean aceito = DOMINIOS.stream().anyMatch(d -> n.endsWith(d) && n.length() > d.length());
+        return aceito ? Optional.of(n) : Optional.empty();
     }
 
     /** E-mail do governo em sentido amplo: @goias.gov.br ou um subdomínio dele
