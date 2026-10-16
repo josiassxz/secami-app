@@ -371,6 +371,30 @@ class AcceleroSyncServiceTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void liberarVitalicioPorCpfsSoAdicionaPraQuemNaoTemESimulacaoNaoMexe() {
+        String semCategoria = CpfTestFactory.next(), comCategoria = CpfTestFactory.next(), foraDoAccelero = CpfTestFactory.next();
+        when(acceleroClient.pesquisarPessoas(semCategoria)).thenReturn(List.of(new PessoaEncontrada("960", "Sem Categoria", semCategoria)));
+        when(acceleroClient.pesquisarPessoas(comCategoria)).thenReturn(List.of(new PessoaEncontrada("961", "Com Categoria", comCategoria)));
+        when(acceleroClient.pesquisarPessoas(foraDoAccelero)).thenReturn(List.of());
+        when(acceleroClient.listarCategorias("960")).thenReturn(List.of());
+        when(acceleroClient.listarCategorias("961")).thenReturn(List.of(new CategoriaVinculada("u", ACESSO, "ENTRADA/SAIDA ACADEMIA")));
+        List<String> cpfs = List.of(semCategoria, comCategoria, foraDoAccelero, "123", semCategoria);
+
+        var simulado = acceleroSync.liberarVitalicioPorCpfs(cpfs, true);
+        assertThat(simulado.liberados()).hasSize(1);
+        verify(acceleroClient, never()).adicionarCategoria(anyString(), anyString(), anyString(), anyString());
+
+        var real = acceleroSync.liberarVitalicioPorCpfs(cpfs, false);
+        assertThat(real.total()).isEqualTo(3);
+        assertThat(real.liberados()).hasSize(1);
+        assertThat(real.jaTinham()).hasSize(1);
+        assertThat(real.naoEncontrados()).hasSize(1);
+        assertThat(real.invalidos()).containsExactly("123");
+        verify(acceleroClient).adicionarCategoria("960", ACESSO, "", "");
+        verify(acceleroClient, never()).adicionarCategoria(eq("961"), anyString(), anyString(), anyString());
+    }
+
+    @Test
     void edicaoSemMudarOTipoNaoMexeNaCatraca() throws Exception {
         Student s = aprovado(Student.TIPO_INSTRUTOR);
         s.setAcceleroPessoaId("903");

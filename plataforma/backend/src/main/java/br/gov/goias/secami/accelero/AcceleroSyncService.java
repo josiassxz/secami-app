@@ -165,6 +165,59 @@ public class AcceleroSyncService {
         log.info("Acesso vitalício revogado no Accelero pro aluno {} (virou {}).", student.getId(), student.getStudentType());
     }
 
+    public record ResultadoLiberacao(boolean simulado, int total, List<String> liberados, List<String> jaTinham,
+                                     List<String> naoEncontrados, List<String> ambiguos, List<String> invalidos,
+                                     List<String> erros) {}
+
+    /**
+     * Libera a categoria vitalícia da academia direto no Accelero, por CPF —
+     * pra listas externas (ex.: militares da SECAMI), sem depender de cadastro
+     * aqui. Só adiciona pra quem ainda não tem a categoria; idempotente.
+     * Cada item do relatório: "CPF mascarado — nome no Accelero".
+     */
+    public ResultadoLiberacao liberarVitalicioPorCpfs(List<String> cpfs, boolean simular) {
+        if (!config.isEnabled()) {
+            throw new IllegalStateException("Integração com o Accelero está desligada (secami.accelero.enabled).");
+        }
+        String categoriaId = config.getCategoriaAcessoId();
+        List<String> liberados = new ArrayList<>(), jaTinham = new ArrayList<>(), naoEncontrados = new ArrayList<>(),
+                ambiguos = new ArrayList<>(), invalidos = new ArrayList<>(), erros = new ArrayList<>();
+        Set<String> vistos = new java.util.LinkedHashSet<>();
+        for (String bruto : cpfs) {
+            String cpf = br.gov.goias.secami.common.Cpf.normalize(bruto);
+            if (cpf == null || !br.gov.goias.secami.common.Cpf.isValid(cpf)) {
+                invalidos.add(String.valueOf(bruto));
+                continue;
+            }
+            if (!vistos.add(cpf)) continue;
+            String rotulo = br.gov.goias.secami.common.Cpf.mask(cpf);
+            try {
+                List<PessoaEncontrada> achados = client.pesquisarPessoas(cpf).stream()
+                        .filter(p -> p.cpf() == null || cpf.equals(somenteDigitos(p.cpf())))
+                        .toList();
+                if (achados.isEmpty()) { naoEncontrados.add(rotulo); continue; }
+                if (achados.size() > 1) { ambiguos.add(rotulo); continue; }
+                PessoaEncontrada pessoa = achados.get(0);
+                rotulo = rotulo + " — " + pessoa.nome();
+                boolean tem = client.listarCategorias(pessoa.uid()).stream()
+                        .anyMatch(c -> categoriaId.equals(c.pctId()));
+                if (tem) { jaTinham.add(rotulo); continue; }
+                if (!simular) {
+                    client.adicionarCategoria(pessoa.uid(), categoriaId, "", "");
+                    ressincronizarPessoa(pessoa.uid());
+                    log.info("Categoria {} liberada (vitalícia) direto no Accelero pra pessoa {} (lista por CPF).",
+                            categoriaId, pessoa.uid());
+                }
+                liberados.add(rotulo);
+            } catch (Exception e) {
+                erros.add(rotulo + " — " + e.getMessage());
+                log.warn("Falha ao liberar a categoria no Accelero pra {}: {}", rotulo, e.getMessage());
+            }
+        }
+        return new ResultadoLiberacao(simular, vistos.size(), liberados, jaTinham, naoEncontrados, ambiguos,
+                invalidos, erros);
+    }
+
     /** Retry manual de um único aluno (ex.: falhou antes, CPF foi corrigido). */
     @Transactional
     public boolean ressincronizar(Student student) {

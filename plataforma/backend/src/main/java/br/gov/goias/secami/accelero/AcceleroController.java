@@ -59,4 +59,15 @@ public class AcceleroController {
         resposta.put("acceleroPessoaId", student.getAcceleroPessoaId());
         return resposta;
     }
+
+    /** Libera a categoria vitalícia da academia, direto no Accelero, pra uma
+     *  lista de CPFs (ex.: planilha de militares) — inclusive quem não tem
+     *  cadastro aqui. {@code simular=true} (padrão) só relata. */
+    @PostMapping("/admin/accelero/liberar-vitalicio")
+    @PreAuthorize("hasRole('ADMIN')")
+    public AcceleroSyncService.ResultadoLiberacao liberarVitalicio(
+            @RequestBody java.util.List<String> cpfs,
+            @RequestParam(defaultValue = "true") boolean simular) {
+        return sync.liberarVitalicioPorCpfs(cpfs, simular);
+    }
 }
