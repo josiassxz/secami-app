@@ -42,7 +42,7 @@ class AcceleroPresencaServiceTest extends JobsTestSupport {
 
     @Test
     void confirmaEntradaESaidaDeAgendamentoDoDiaComPessoaVinculada() {
-        // Data/hora bem no passado — a janela (20min antes até 5h depois) já
+        // Data/hora bem no passado — a janela (20min antes até 2h depois) já
         // começou há muito, não depende do horário em que o teste rodar.
         Appointment a = agendamentoComPessoa("810", LocalDate.now().minusDays(1), LocalTime.of(9, 0));
         when(acceleroClient.listarLogEventos(eq("810"), anyString(), anyString(), anyInt())).thenReturn(

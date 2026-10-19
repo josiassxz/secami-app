@@ -60,7 +60,7 @@ public class JobsController {
     }
 
     /** Remove do Accelero o acesso dinâmico do civil cuja janela (20min antes
-     *  até 5h depois do início do agendamento) já expirou. */
+     *  até 2h depois do início do agendamento) já expirou. */
     @PostMapping("/remover-acessos-expirados")
     public Map<String, Object> removerAcessosExpirados() {
         int n = acceleroExpiracao.removerAcessosExpirados();

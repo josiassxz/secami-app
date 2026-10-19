@@ -41,8 +41,8 @@ import java.util.stream.Collectors;
  * saída juntas. Militar recebe ela vitalícia na aprovação. Civil não recebe
  * nada na aprovação — a categoria é liberada de forma dinâmica a cada
  * agendamento confirmado (ver {@link #aoAgendar}), de 20min antes do horário
- * marcado, sempre por uma janela fixa de 5h a partir do início marcado
- * (treino + banho etc.) — e revogada se o agendamento for cancelado (ver
+ * marcado, sempre por uma janela fixa de 2h a partir do início marcado
+ * (treino + banho) — e revogada se o agendamento for cancelado (ver
  * {@link #aoCancelar}) ou removida pelo job de limpeza depois que a janela
  * expira, mesmo sem cancelamento (ver {@link #aoExpirarAcesso}).
  *
@@ -72,7 +72,7 @@ public class AcceleroSyncService {
     private static final long MARGEM_ANTECEDENCIA_MINUTOS = 20;
     /** Janela total liberada a partir do INÍCIO marcado (não do fim do slot) —
      *  cobre treino + banho etc., sempre fixa, independente da duração do slot. */
-    private static final long JANELA_ACESSO_HORAS = 5;
+    private static final long JANELA_ACESSO_HORAS = 2;
 
     private final AcceleroClient client;
     private final SecamiProperties.Accelero config;
@@ -472,7 +472,7 @@ public class AcceleroSyncService {
         String categoriaId = config.getCategoriaAcessoId();
 
         // Janela sempre a partir do INÍCIO marcado, não do fim do slot: 20min
-        // antes (chegar cedo) até 5h depois (treino + banho etc.), fixo,
+        // antes (chegar cedo) até 2h depois (treino + banho), fixo,
         // independente de quanto dura o horário reservado.
         ZonedDateTime inicioMarcado = ZonedDateTime.of(appointment.getDate(),
                 LocalTime.parse(appointment.getSlotStart()), zone);
@@ -554,7 +554,7 @@ public class AcceleroSyncService {
 
     /** Chamado pelo job de confirmação de presença (AcceleroPresencaService,
      *  a cada 30min) — consulta o log de eventos reais da catraca dentro da
-     *  janela liberada do agendamento (20min antes até 5h depois do início)
+     *  janela liberada do agendamento (20min antes até 2h depois do início)
      *  pra confirmar se o aluno realmente entrou e/ou saiu, além do
      *  check-in autodeclarado. Idempotente: só preenche o que ainda está
      *  em branco. Nunca lança. @return true se algo foi confirmado agora. */

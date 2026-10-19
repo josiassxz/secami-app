@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Acesso dinâmico no Accelero por agendamento (Civil): liberado 20min antes
- * do horário marcado até 5h depois do início, ao agendar; revogado ao
+ * do horário marcado até 2h depois do início, ao agendar; revogado ao
  * cancelar. Militar não dispara nada aqui (já tem acesso vitalício desde a
  * aprovação).
  *
@@ -46,7 +46,7 @@ class AcceleroSchedulingIntegrationTest extends SchedulingTestSupport {
     }
 
     @Test
-    void agendarComoCivilLiberaAcessoDe20MinAntesAte5hDepoisDoInicio() throws Exception {
+    void agendarComoCivilLiberaAcessoDe20MinAntesAte2hDepoisDoInicio() throws Exception {
         Student s = civilPronto("456");
         UUID userId = newAlunoUser("civil.entrada");
         s.setUserId(userId);
@@ -65,7 +65,7 @@ class AcceleroSchedulingIntegrationTest extends SchedulingTestSupport {
         verify(acceleroClient).adicionarCategoria(eq("456"), eq(ACESSO), inicioCap.capture(), fimCap.capture());
 
         assertThat(inicioCap.getValue()).contains("09:40"); // 20min antes de 10:00
-        assertThat(fimCap.getValue()).contains("15:00"); // 5h depois do início marcado (10:00), não do slotEnd
+        assertThat(fimCap.getValue()).contains("12:00"); // 2h depois do início marcado (10:00), não do slotEnd
         verify(acceleroClient).desassociarIdentificador("456", "id-1", 1); // ressincroniza depois da categoria
     }
 

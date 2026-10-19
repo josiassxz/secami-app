@@ -18,7 +18,7 @@ import static org.mockito.Mockito.verify;
 
 /**
  * Job de limpeza que remove do Accelero o acesso dinâmico do civil (ver
- * AcceleroSyncService) depois que a janela liberada (20min antes até 5h
+ * AcceleroSyncService) depois que a janela liberada (20min antes até 2h
  * depois do início) expira, mesmo sem cancelamento — o agendamento
  * simplesmente aconteceu e passou.
  */

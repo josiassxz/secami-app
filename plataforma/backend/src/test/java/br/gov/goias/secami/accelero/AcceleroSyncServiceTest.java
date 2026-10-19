@@ -421,7 +421,7 @@ class AcceleroSyncServiceTest extends AbstractIntegrationTest {
 
     @Test
     void confirmarPresencaMarcaEntradaESaidaComEventosReais() {
-        // Data/hora bem no passado — a janela (20min antes até 5h depois) já
+        // Data/hora bem no passado — a janela (20min antes até 2h depois) já
         // começou há muito, não depende do horário em que o teste rodar.
         Appointment a = agendamentoComPessoa("710", LocalDate.now().minusDays(2), "10:00");
         when(acceleroClient.listarLogEventos(eq("710"), anyString(), anyString(), eq(1))).thenReturn(
