@@ -494,6 +494,31 @@ class AcceleroSyncServiceTest extends AbstractIntegrationTest {
         assertThat(recarregado.getSaidaConfirmadaEm()).isNull();
     }
 
+    /** Caso real (relatório de 19/10/2026): na saída o braço não gira — só
+     *  "Acesso autorizado pelo servidor" seguido de "Acesso não realizado". */
+    @Test
+    void confirmarPresencaContaIdentificacaoAutorizadaNaSaidaDaAcademia() {
+        Appointment a = agendamentoComPessoa("715", LocalDate.now().minusDays(2), "10:00");
+        when(acceleroClient.listarLogEventos(eq("715"), anyString(), anyString(), eq(1))).thenReturn(
+                new PaginaEventos(List.of(
+                        new EventoAcesso("2026-01-01 09:55:00", "ACADEMIA", "ACADEMIA EXT",
+                                "Passagem efetivamente realizada", 1, "1"),
+                        new EventoAcesso("2026-01-01 10:40:00", "CAT ATALAIA", "ATALAIA INT",
+                                "Acesso autorizado pelo servidor", 1, "1"),
+                        new EventoAcesso("2026-01-01 11:16:20", "ACADEMIA", "ACADEMIA INT",
+                                "Acesso autorizado pelo servidor", 1, "1"),
+                        new EventoAcesso("2026-01-01 11:16:24", "ACADEMIA", "ACADEMIA INT",
+                                "Acesso não realizado", 1, "1")),
+                        1));
+
+        acceleroSync.confirmarPresenca(a);
+
+        Appointment r = appointmentRepository.findById(a.getId()).orElseThrow();
+        assertThat(r.getSaidaConfirmadaEm()).isNotNull();
+        assertThat(r.getSaidaConfirmadaEm().atZoneSameInstant(java.time.ZoneId.of("America/Sao_Paulo")).toLocalTime())
+                .isEqualTo(java.time.LocalTime.of(11, 16, 20));
+    }
+
     @Test
     void confirmarPresencaIgnoraEventosDeOutrasAreasDoPredioNaMesmaJanela() {
         // Caso real: a pessoa também tem acesso a outras áreas do prédio

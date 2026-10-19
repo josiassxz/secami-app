@@ -56,6 +56,11 @@ public class AcceleroSyncService {
 
     private static final Logger log = LoggerFactory.getLogger(AcceleroSyncService.class);
     private static final String PASSAGEM_REALIZADA = "Passagem efetivamente realizada";
+    /** Na saída da academia o braço da catraca não gira (sai por fora/liberado):
+     *  o Accelero só registra a identificação ("Acesso autorizado pelo servidor")
+     *  seguida de "Acesso não realizado" — confirmado com o relatório real de
+     *  19/10/2026. Então, na saída, a identificação autorizada já vale como saída. */
+    private static final String ACESSO_AUTORIZADO = "Acesso autorizado pelo servidor";
     private static final DateTimeFormatter FORMATO_LOG_EVENTOS =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     // Formato exato exigido pelo Accelero pra lpcDateStart/lpcDateEnd —
@@ -534,7 +539,7 @@ public class AcceleroSyncService {
         List<EventoAcesso> todos = buscarTodosOsEventos(pessoaId, inicioStr, fimStr);
 
         return todos.stream()
-                .filter(e -> e.descricao() != null && PASSAGEM_REALIZADA.equalsIgnoreCase(e.descricao().trim()))
+                .filter(this::ehPassagem)
                 .map(e -> new Passagem(e.dataHora(), classificarDirecao(e), e.controlador(), e.area()))
                 .toList();
     }
@@ -578,7 +583,7 @@ public class AcceleroSyncService {
             OffsetDateTime primeiraEntrada = null;
             List<OffsetDateTime> saidas = new ArrayList<>();
             for (EventoAcesso e : eventos) {
-                if (e.descricao() == null || !PASSAGEM_REALIZADA.equalsIgnoreCase(e.descricao().trim())) continue;
+                if (!ehPassagem(e)) continue;
                 // Sem isso, um evento de OUTRA área do prédio (o aluno pode ter
                 // acesso mais amplo, ex.: funcionário) dentro da mesma janela de
                 // horário seria confundido com entrada/saída da academia —
@@ -623,6 +628,16 @@ public class AcceleroSyncService {
                     appointment.getId(), e.getMessage(), e);
             return false;
         }
+    }
+
+    /** Entrada: só passagem efetivamente realizada. Saída: também a identificação
+     *  autorizada na leitora de saída (ver ACESSO_AUTORIZADO). */
+    private boolean ehPassagem(EventoAcesso e) {
+        if (e.descricao() == null) return false;
+        String d = e.descricao().trim();
+        if (PASSAGEM_REALIZADA.equalsIgnoreCase(d)) return true;
+        return ACESSO_AUTORIZADO.equalsIgnoreCase(d) && "saida".equals(classificarDirecao(e))
+                && e.area() != null && e.area().trim().toUpperCase().startsWith(AREA_ACADEMIA);
     }
 
     /** Horas que a catraca fica liberada pro civil a partir do horário marcado. */
