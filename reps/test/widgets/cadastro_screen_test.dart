@@ -130,6 +130,30 @@ void main() {
     expect(find.text('PASSO 1 DE 4'), findsOneWidget);
   });
 
+  testWidgets('aceita e-mail @fornecedores e recusa domínio pessoal', (
+    tester,
+  ) async {
+    await pumpScreen(
+      tester,
+      overrides: [
+        cadastroServiceProvider.overrideWithValue(_FakeCadastroService()),
+      ],
+    );
+    await tester.pumpAndSettle();
+    final campoEmail = find.widgetWithText(TextFormField, 'nome@goias.gov.br');
+    const erro = 'Use o e-mail @goias.gov.br ou @fornecedores.goias.gov.br';
+
+    await tester.enterText(campoEmail, 'fulano@gmail.com');
+    await tester.tap(find.widgetWithText(FilledButton, 'Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text(erro), findsOneWidget);
+
+    await tester.enterText(campoEmail, 'fulano@fornecedores.goias.gov.br');
+    await tester.tap(find.widgetWithText(FilledButton, 'Continuar'));
+    await tester.pumpAndSettle();
+    expect(find.text(erro), findsNothing);
+  });
+
   testWidgets('carrega e exibe as secretarias/orgaos no combo', (tester) async {
     await pumpScreen(
       tester,

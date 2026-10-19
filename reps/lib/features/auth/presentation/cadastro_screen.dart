@@ -464,8 +464,12 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
                 if (!value.contains('@') || !value.contains('.')) {
                   return 'E-mail inválido';
                 }
-                if (!value.toLowerCase().endsWith('@goias.gov.br')) {
-                  return 'O e-mail precisa ser do domínio @goias.gov.br';
+                // Servidores (@goias.gov.br) e terceirizados
+                // (@fornecedores.goias.gov.br) — mesma regra do servidor.
+                final email = value.toLowerCase();
+                if (!email.endsWith('@goias.gov.br') &&
+                    !email.endsWith('@fornecedores.goias.gov.br')) {
+                  return 'Use o e-mail @goias.gov.br ou @fornecedores.goias.gov.br';
                 }
                 return null;
               },
