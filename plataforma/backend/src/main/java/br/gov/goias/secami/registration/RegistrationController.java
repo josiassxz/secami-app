@@ -47,6 +47,15 @@ public class RegistrationController {
         return new CadastroResponse(s.getId(), s.getStatusCadastro());
     }
 
+    /** Público: quem foi recusado reenvia o atestado (identidade conferida
+     *  com usuário/senha do login) e volta pra fila de aprovação. */
+    @PostMapping(value = "/cadastro/reenvio", consumes = "multipart/form-data")
+    public CadastroResponse reenviar(@RequestPart("dados") @Valid RegistrationDtos.ReenvioRequest dados,
+                                      @RequestPart("atestado") MultipartFile atestado) {
+        Student s = service.reenviarAtestado(dados, atestado);
+        return new CadastroResponse(s.getId(), s.getStatusCadastro());
+    }
+
     @GetMapping("/admin/cadastros/pendentes")
     @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
     public List<PendenteResponse> pendentes() {

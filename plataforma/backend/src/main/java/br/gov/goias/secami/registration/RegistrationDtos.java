@@ -72,6 +72,17 @@ public final class RegistrationDtos {
         }
     }
 
+    /** Reenvio do atestado por quem teve o cadastro recusado: a conta ainda
+     *  está desativada, então a identidade é conferida com o mesmo
+     *  usuário/senha do login (conta do governo ou senha local). */
+    public record ReenvioRequest(
+            @NotBlank(message = "Informe o usuário ou e-mail.") String identificador,
+            @NotBlank(message = "Informe a senha.") String senha,
+            @NotBlank(message = "Informe o nome do médico.") String medicoNome,
+            @NotBlank(message = "Informe o CRM do médico.") String medicoCrm,
+            @NotBlank(message = "Informe a UF do CRM.") String medicoCrmUf,
+            @NotNull(message = "Informe a data de emissão do atestado.") LocalDate atestadoEmissaoData) {}
+
     public record RejeitarRequest(@NotBlank(message = "Informe o motivo da recusa.") String motivo) {}
 
     /** Cria login pra um aluno sem conta (ex.: migrado do legado). */

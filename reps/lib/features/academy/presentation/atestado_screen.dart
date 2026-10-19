@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/network/api_client.dart';
 import '../../../core/network/erro_amigavel.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../auth/domain/cadastro_models.dart' show ufsBrasil;
 import '../data/atestado_api.dart';
+import 'atestado_form_campos.dart';
 import 'atestado_widgets.dart';
 
 /// Largura máxima do conteúdo: é uma tela cheia (fora do `HomeShell`), então
@@ -49,49 +48,21 @@ class _AtestadoScreenState extends ConsumerState<AtestadoScreen> {
   }
 
   Future<void> _selecionarData() async {
-    final agora = DateTime.now();
-    final hoje = DateTime(agora.year, agora.month, agora.day);
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _emissao ?? hoje,
-      // Atestado com mais de 1 ano não é aceito (regra do backend).
-      firstDate: DateTime(hoje.year, hoje.month, hoje.day - 365),
-      lastDate: hoje,
-      helpText: 'Data de emissão do atestado',
+    final picked = await selecionarDataEmissaoAtestado(
+      context,
+      atual: _emissao,
     );
     if (picked != null && mounted) setState(() => _emissao = picked);
   }
 
   Future<void> _selecionarArquivo() async {
     setState(() => _erroArquivo = null);
-    final ArquivoPdf? arquivo;
-    try {
-      arquivo = await ref.read(selecionarPdfProvider)();
-    } on ArquivoIlegivelException {
-      if (mounted) {
-        setState(
-          () => _erroArquivo = 'Não foi possível ler o arquivo selecionado.',
-        );
-      }
-      return;
-    } on Object {
-      if (mounted) {
-        setState(
-          () => _erroArquivo = 'Não foi possível abrir o seletor de arquivos.',
-        );
-      }
-      return;
-    }
-    if (arquivo == null || !mounted) return;
-    if (!arquivo.nome.toLowerCase().endsWith('.pdf')) {
-      setState(() => _erroArquivo = 'Selecione um arquivo em PDF.');
-      return;
-    }
-    if (arquivo.tamanho > maxAtestadoBytes) {
-      setState(() => _erroArquivo = 'O arquivo deve ter no máximo 10MB.');
-      return;
-    }
-    setState(() => _arquivo = arquivo);
+    final escolha = await escolherPdfAtestado(ref.read(selecionarPdfProvider));
+    if (!mounted) return;
+    setState(() {
+      _erroArquivo = escolha.erro;
+      if (escolha.arquivo != null) _arquivo = escolha.arquivo;
+    });
   }
 
   Future<void> _enviar() async {
@@ -218,17 +189,6 @@ class _AtestadoScreenState extends ConsumerState<AtestadoScreen> {
     );
   }
 
-  Widget _rotulo(String texto) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppTheme.space8),
-      child: Text(
-        texto,
-        style: AppTheme.label(11, color: scheme.onSurfaceVariant),
-      ),
-    );
-  }
-
   Widget _formulario() {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -248,8 +208,8 @@ class _AtestadoScreenState extends ConsumerState<AtestadoScreen> {
             ),
           ),
           const SizedBox(height: AppTheme.space20),
-          _rotulo('DATA DE EMISSÃO'),
-          _CampoData(
+          const RotuloCampoAtestado('DATA DE EMISSÃO'),
+          CampoDataAtestado(
             data: _emissao,
             erro: _tentouEnviar && _emissao == null
                 ? 'Informe a data de emissão do atestado.'
@@ -257,67 +217,16 @@ class _AtestadoScreenState extends ConsumerState<AtestadoScreen> {
             onTap: _enviando ? null : _selecionarData,
           ),
           const SizedBox(height: AppTheme.space16),
-          _rotulo('NOME DO MÉDICO'),
-          TextFormField(
-            key: const ValueKey('atestado-medico-nome'),
-            controller: _medicoNomeCtrl,
+          CamposMedicoAtestado(
+            nomeController: _medicoNomeCtrl,
+            crmController: _medicoCrmCtrl,
+            uf: _uf,
             enabled: !_enviando,
-            textCapitalization: TextCapitalization.words,
-            validator: (v) => (v == null || v.trim().isEmpty)
-                ? 'Informe o nome do médico'
-                : null,
-          ),
-          const SizedBox(height: AppTheme.space16),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 2,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _rotulo('CRM'),
-                    TextFormField(
-                      key: const ValueKey('atestado-medico-crm'),
-                      controller: _medicoCrmCtrl,
-                      enabled: !_enviando,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Informe o CRM'
-                          : null,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: AppTheme.space12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    _rotulo('UF'),
-                    DropdownButtonFormField<String>(
-                      key: const ValueKey('atestado-medico-uf'),
-                      initialValue: _uf,
-                      isExpanded: true,
-                      decoration: const InputDecoration(hintText: 'UF'),
-                      items: [
-                        for (final uf in ufsBrasil)
-                          DropdownMenuItem(value: uf, child: Text(uf)),
-                      ],
-                      onChanged: _enviando
-                          ? null
-                          : (v) => setState(() => _uf = v),
-                      validator: (v) => v == null ? 'Selecione' : null,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+            onUfChanged: (v) => setState(() => _uf = v),
           ),
           const SizedBox(height: AppTheme.space20),
-          _rotulo('ATESTADO MÉDICO (PDF, até 10MB)'),
-          _CampoArquivo(
+          const RotuloCampoAtestado('ATESTADO MÉDICO (PDF, até 10MB)'),
+          CampoArquivoAtestado(
             arquivo: _arquivo,
             erro:
                 _erroArquivo ??
@@ -329,135 +238,12 @@ class _AtestadoScreenState extends ConsumerState<AtestadoScreen> {
           ),
           if (_erroEnvio != null) ...[
             const SizedBox(height: AppTheme.space20),
-            _ErroBanner(mensagem: _erroEnvio!),
+            ErroBannerAtestado(mensagem: _erroEnvio!),
           ],
           const SizedBox(height: AppTheme.space24),
-          FilledButton(
-            onPressed: _enviando ? null : _enviar,
-            child: _enviando
-                ? const SizedBox(
-                    height: 22,
-                    width: 22,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppTheme.onLimeAccent,
-                    ),
-                  )
-                : const Text('Enviar atestado'),
-          ),
+          BotaoEnviarAtestado(enviando: _enviando, onPressed: _enviar),
         ],
       ),
-    );
-  }
-}
-
-class _CampoData extends StatelessWidget {
-  const _CampoData({required this.data, required this.erro, this.onTap});
-
-  final DateTime? data;
-  final String? erro;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final texto = data == null ? null : formatarData(data!);
-    return InkWell(
-      key: const ValueKey('atestado-data-emissao'),
-      borderRadius: BorderRadius.circular(AppTheme.radiusLg),
-      onTap: onTap,
-      child: InputDecorator(
-        decoration: InputDecoration(
-          errorText: erro,
-          suffixIcon: Icon(
-            Icons.calendar_today_outlined,
-            size: 18,
-            color: scheme.onSurfaceVariant,
-          ),
-        ),
-        child: Text(
-          texto ?? 'Toque para selecionar',
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: texto == null
-                ? scheme.onSurfaceVariant.withValues(alpha: 0.6)
-                : scheme.onSurface,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CampoArquivo extends StatelessWidget {
-  const _CampoArquivo({
-    required this.arquivo,
-    required this.erro,
-    this.onSelecionar,
-    this.onRemover,
-  });
-
-  final ArquivoPdf? arquivo;
-  final String? erro;
-  final VoidCallback? onSelecionar;
-  final VoidCallback? onRemover;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final escolhido = arquivo;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        if (escolhido == null)
-          OutlinedButton.icon(
-            onPressed: onSelecionar,
-            icon: const Icon(Icons.upload_file_outlined),
-            label: const Text('Selecionar arquivo PDF'),
-          )
-        else
-          Container(
-            padding: const EdgeInsets.all(AppTheme.space12),
-            decoration: BoxDecoration(
-              color: scheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-              border: Border.all(color: scheme.outline),
-            ),
-            child: Row(
-              children: [
-                Icon(Icons.picture_as_pdf_outlined, color: scheme.primary),
-                const SizedBox(width: AppTheme.space12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        escolhido.nome,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      Text(
-                        '${(escolhido.tamanho / 1024).ceil()} KB',
-                        style: AppTheme.label(
-                          11,
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  tooltip: 'Remover arquivo',
-                  onPressed: onRemover,
-                ),
-              ],
-            ),
-          ),
-        if (erro != null) ...[
-          const SizedBox(height: AppTheme.space8),
-          Text(erro!, style: TextStyle(color: scheme.error, fontSize: 12)),
-        ],
-      ],
     );
   }
 }
@@ -623,41 +409,6 @@ class _Mensagem extends StatelessWidget {
           Icon(icone, size: 40, color: scheme.onSurfaceVariant),
           const SizedBox(height: AppTheme.space12),
           Text(texto, textAlign: TextAlign.center),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErroBanner extends StatelessWidget {
-  const _ErroBanner({required this.mensagem});
-
-  final String mensagem;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.all(AppTheme.space12),
-      decoration: BoxDecoration(
-        color: scheme.errorContainer.withValues(alpha: 0.15),
-        border: Border.all(color: scheme.error),
-        borderRadius: BorderRadius.circular(AppTheme.radiusMd),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(Icons.error_outline, size: 18, color: scheme.error),
-          const SizedBox(width: AppTheme.space8),
-          Expanded(
-            child: Text(
-              mensagem,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: scheme.error,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
         ],
       ),
     );

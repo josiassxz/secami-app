@@ -30,6 +30,7 @@ public class SecurityConfig {
             "/auth/**",
             "/cadastro",                // POST — auto-cadastro público (pendente de aprovação)
             "/cadastro/departamentos",   // GET — combo do formulário de cadastro
+            "/cadastro/reenvio",         // POST — recusado reenvia o atestado (confere usuário/senha)
             "/api/health",
             "/actuator/health",
             "/actuator/info",

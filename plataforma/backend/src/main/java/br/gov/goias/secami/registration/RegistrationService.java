@@ -7,6 +7,7 @@ import br.gov.goias.secami.academy.media.MediaStorageService;
 import br.gov.goias.secami.academy.student.Student;
 import br.gov.goias.secami.academy.student.StudentPerfilService;
 import br.gov.goias.secami.academy.student.StudentRepository;
+import br.gov.goias.secami.auth.AuthProvider;
 import br.gov.goias.secami.accelero.AcceleroSyncService;
 import br.gov.goias.secami.common.Cpf;
 import br.gov.goias.secami.common.error.DomainExceptions.BusinessException;
@@ -16,6 +17,7 @@ import br.gov.goias.secami.identity.AppUser;
 import br.gov.goias.secami.identity.AppUserRepository;
 import br.gov.goias.secami.identity.Roles;
 import br.gov.goias.secami.registration.RegistrationDtos.CadastroRequest;
+import br.gov.goias.secami.registration.RegistrationDtos.ReenvioRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -49,11 +52,13 @@ public class RegistrationService {
     private final PasswordEncoder encoder;
     private final AcceleroSyncService acceleroSync;
     private final StudentPerfilService perfis;
+    private final List<AuthProvider> authProviders;
 
     public RegistrationService(StudentRepository students, AppUserRepository users,
                                 DepartmentRepository departments, MediaStorageService storage,
                                 PasswordEncoder encoder, AcceleroSyncService acceleroSync,
-                                StudentPerfilService perfis) {
+                                StudentPerfilService perfis, List<AuthProvider> authProviders) {
+        this.authProviders = authProviders;
         this.students = students;
         this.users = users;
         this.departments = departments;
@@ -76,10 +81,19 @@ public class RegistrationService {
         }
 
         String email = req.email().trim().toLowerCase();
+        String cpf = Cpf.normalize(req.cpf());
+        // Recusado antes (ex.: atestado): não recadastra — reenvia o atestado pelo login.
+        boolean recusado = users.findByEmailIgnoreCase(email).flatMap(u -> students.findByUserId(u.getId()))
+                .or(() -> cpf == null ? Optional.empty() : students.findByCpf(cpf))
+                .filter(s -> Student.STATUS_REJEITADO.equals(s.getStatusCadastro()))
+                .isPresent();
+        if (recusado) {
+            throw new ConflictException("Você já tem um cadastro, que foi recusado. Entre no aplicativo com seu "
+                    + "usuário e senha do governo para enviar um novo atestado.");
+        }
         if (users.findByEmailIgnoreCase(email).isPresent()) {
             throw new ConflictException("Já existe um cadastro com este e-mail.");
         }
-        String cpf = Cpf.normalize(req.cpf());
         if (cpf != null && students.findByCpf(cpf).isPresent()) {
             throw new ConflictException("Já existe um cadastro com este CPF. Entre no aplicativo com o usuário e a "
                     + "senha da sua conta do governo; se não conseguir, procure a administração.");
@@ -169,6 +183,53 @@ public class RegistrationService {
         // impede a aprovação (ver AcceleroSyncService.aoAprovar).
         acceleroSync.aoAprovar(s);
         return s;
+    }
+
+    /**
+     * Quem teve o cadastro recusado (ex.: atestado ilegível) envia um novo
+     * atestado: confere usuário/senha como no login, troca o atestado e volta
+     * o cadastro pra "pendente" — ele reaparece na fila de aprovação.
+     */
+    @Transactional
+    public Student reenviarAtestado(ReenvioRequest req, MultipartFile atestado) {
+        String identificador = req.identificador().trim();
+        UUID userId = authProviders.stream()
+                .map(p -> p.authenticate(identificador, req.senha()))
+                .flatMap(Optional::stream)
+                .findFirst()
+                .orElseThrow(() -> new BusinessException("E-mail/usuário ou senha inválidos."));
+        Student s = students.findByUserId(userId)
+                .filter(x -> x.getDeletedAt() == null)
+                .orElseThrow(() -> new NotFoundException("Cadastro não encontrado."));
+        if (Student.STATUS_PENDENTE.equals(s.getStatusCadastro())) {
+            throw new BusinessException("Seu cadastro já está em análise. Aguarde a aprovação.");
+        }
+        if (!Student.STATUS_REJEITADO.equals(s.getStatusCadastro())) {
+            throw new BusinessException("Seu cadastro já foi aprovado. Entre normalmente no aplicativo.");
+        }
+        if (atestado == null || atestado.isEmpty()) {
+            throw new BusinessException("O atestado médico em PDF é obrigatório.");
+        }
+        if (!"application/pdf".equalsIgnoreCase(atestado.getContentType())) {
+            throw new BusinessException("O atestado médico precisa ser um arquivo PDF.");
+        }
+        LocalDate hoje = LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo"));
+        if (req.atestadoEmissaoData().isAfter(hoje)) {
+            throw new BusinessException("A data de emissão não pode ser no futuro.");
+        }
+        if (req.atestadoEmissaoData().plusYears(1).isBefore(hoje)) {
+            throw new BusinessException("Este atestado tem mais de 1 ano e já está vencido. Envie um atestado recente.");
+        }
+        Media media = storage.save(atestado, Media.TIPO_ATESTADO_MEDICO);
+        s.setMedicoNome(req.medicoNome().trim());
+        s.setMedicoCrm(req.medicoCrm().trim());
+        s.setMedicoCrmUf(req.medicoCrmUf());
+        s.setAtestadoEmissaoData(req.atestadoEmissaoData());
+        s.setAtestadoData(req.atestadoEmissaoData());
+        s.setAtestadoArquivoId(media.getId());
+        s.setStatusCadastro(Student.STATUS_PENDENTE);
+        s.setMotivoRejeicao(null);
+        return students.save(s);
     }
 
     @Transactional

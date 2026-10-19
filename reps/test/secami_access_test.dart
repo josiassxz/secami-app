@@ -39,6 +39,7 @@ void main() {
     test('rotas públicas abrem; o resto vai pro login', () {
       expect(secamiRedirect(null, '/sign-in'), isNull);
       expect(secamiRedirect(null, '/cadastro'), isNull);
+      expect(secamiRedirect(null, '/cadastro/reenvio'), isNull);
       expect(secamiRedirect(null, '/'), '/sign-in');
       expect(secamiRedirect(null, '/routines'), '/sign-in');
       expect(secamiRedirect(null, '/instrutor/alunos'), '/sign-in');
@@ -55,7 +56,13 @@ void main() {
     });
 
     test('logado nas telas de entrada é levado pra tela inicial do papel', () {
-      for (final loc in ['/', '/sign-in', '/sign-up', '/cadastro']) {
+      for (final loc in [
+        '/',
+        '/sign-in',
+        '/sign-up',
+        '/cadastro',
+        '/cadastro/reenvio',
+      ]) {
         expect(secamiRedirect(instrutor, loc), '/academia', reason: loc);
         expect(secamiRedirect(aluno, loc), '/routines', reason: loc);
       }

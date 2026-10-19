@@ -7,6 +7,7 @@ import '../../../core/network/api_client.dart';
 import '../../../core/router/secami_access.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/rest_auth_service.dart';
+import 'reenvio_atestado_screen.dart';
 
 /// Login por usuário-ou-e-mail + senha: senha local do cadastro OU a do
 /// governo (AD/LDAP, decidido no backend — SPEC §12).
@@ -28,6 +29,10 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
   bool _obscure = true;
   String? _error;
 
+  /// Credenciais do login que voltou "cadastro recusado": só em memória,
+  /// pra tela de reenvio de atestado identificar o aluno.
+  ReenvioAtestadoArgs? _reenvio;
+
   @override
   void dispose() {
     _userCtrl.dispose();
@@ -41,6 +46,7 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
     setState(() {
       _loading = true;
       _error = null;
+      _reenvio = null;
     });
     try {
       await ref
@@ -58,10 +64,37 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
       context.go(rotaInicialSecami(user));
     } catch (e, st) {
       await Observability.captureError(e, st, hint: 'ldap_sign_in');
-      setState(() => _error = _humanize(e));
+      final erro = _humanize(e);
+      setState(() {
+        _error = erro;
+        _reenvio = cadastroRecusado(erro)
+            ? ReenvioAtestadoArgs(
+                identificador: _userCtrl.text.trim(),
+                senha: _passwordCtrl.text,
+                mensagemRecusa: erro,
+              )
+            : null;
+      });
     } finally {
       if (mounted) setState(() => _loading = false);
     }
+  }
+
+  Future<void> _abrirReenvio() async {
+    final args = _reenvio;
+    if (args == null) return;
+    final enviado = await context.push<bool>(rotaReenvioAtestado, extra: args);
+    if (enviado != true || !mounted) return;
+    // Cadastro voltou pra análise: o aviso de "recusado" não vale mais.
+    setState(() {
+      _error = null;
+      _reenvio = null;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Atestado enviado! Seu cadastro voltou para análise.'),
+      ),
+    );
   }
 
   @override
@@ -196,7 +229,29 @@ class _LdapSignInScreenState extends ConsumerState<LdapSignInScreen> {
                                           top: AppTheme.space24,
                                           bottom: AppTheme.space12,
                                         ),
-                                        child: _ErrorBanner(message: _error!),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.stretch,
+                                          children: [
+                                            _ErrorBanner(message: _error!),
+                                            if (_reenvio != null) ...[
+                                              const SizedBox(
+                                                height: AppTheme.space12,
+                                              ),
+                                              OutlinedButton.icon(
+                                                onPressed: _loading
+                                                    ? null
+                                                    : _abrirReenvio,
+                                                icon: const Icon(
+                                                  Icons.upload_file_outlined,
+                                                ),
+                                                label: const Text(
+                                                  'Enviar novo atestado',
+                                                ),
+                                              ),
+                                            ],
+                                          ],
+                                        ),
                                       ),
                               ),
                               FilledButton(
@@ -328,6 +383,11 @@ class _ErrorBanner extends StatelessWidget {
     );
   }
 }
+
+/// O login falhou porque o cadastro do aluno foi recusado (mensagem do
+/// backend) — dá pra mandar um atestado novo pela tela de reenvio.
+bool cadastroRecusado(String mensagem) =>
+    mensagem.startsWith('Seu cadastro foi recusado');
 
 String _humanize(Object e) {
   // O backend já devolve mensagens finais em pt-BR pra login/cadastro

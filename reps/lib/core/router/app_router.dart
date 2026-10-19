@@ -17,6 +17,7 @@ import '../../features/auth/presentation/ldap_sign_in_screen.dart';
 import '../../features/auth/presentation/account_screen.dart';
 import '../../features/auth/presentation/cadastro_screen.dart';
 import '../../features/auth/presentation/forgot_password_screen.dart';
+import '../../features/auth/presentation/reenvio_atestado_screen.dart';
 import '../../features/auth/presentation/sign_in_screen.dart';
 import '../../features/auth/presentation/sign_up_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
@@ -153,8 +154,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       // Auto-cadastro publico de aluno (civil/militar sem conta) — so existe
       // no modo SECAMI (backend REST tem /cadastro/*; Supabase legado nao).
-      if (Env.hasRestApi)
+      if (Env.hasRestApi) ...[
         GoRoute(path: '/cadastro', builder: (_, _) => const CadastroScreen()),
+        // Cadastro recusado: o aluno manda um atestado novo a partir do
+        // login. As credenciais vêm em `extra` (só memória); sem ele
+        // (refresh no web) a tela manda de volta pro login.
+        GoRoute(
+          path: rotaReenvioAtestado,
+          builder: (_, state) => ReenvioAtestadoScreen(
+            args: state.extra is ReenvioAtestadoArgs
+                ? state.extra as ReenvioAtestadoArgs
+                : null,
+          ),
+        ),
+      ],
       ShellRoute(
         // Avisos do admin abrem como janela ao entrar no app (só no modo
         // SECAMI; fora dele o gate não faz nada).

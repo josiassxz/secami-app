@@ -6,10 +6,10 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 
 import '../../../core/config/env.dart';
+import '../../academy/data/atestado_api.dart'
+    show ArquivoPdf, dataIso, maxAtestadoBytes;
 import '../domain/cadastro_models.dart';
 import '../domain/departamento.dart';
-
-const int _maxAtestadoBytes = 10 * 1024 * 1024; // 10MB
 
 /// Erro do fluxo de auto-cadastro, com mensagem pronta pra exibir (pt-BR —
 /// o backend ja devolve a mensagem final em `message`).
@@ -81,7 +81,7 @@ class CadastroService {
         'novamente.',
       );
     }
-    if (bytes.lengthInBytes > _maxAtestadoBytes) {
+    if (bytes.lengthInBytes > maxAtestadoBytes) {
       throw CadastroApiException(
         0,
         'O arquivo do atestado deve ter no máximo 10MB.',
@@ -120,7 +120,83 @@ class CadastroService {
     throw _errorFrom(res);
   }
 
-  CadastroApiException _errorFrom(http.Response res) {
+  /// Reenvio do atestado depois de um cadastro RECUSADO
+  /// (`POST /cadastro/reenvio`, público). O aluno ainda não tem sessão: se
+  /// identifica com o mesmo usuário/e-mail e senha que digitou no login.
+  /// `multipart/form-data` com `dados` (JSON) e `atestado` (PDF). Em sucesso
+  /// o cadastro volta pra fila de aprovação do admin.
+  Future<void> reenviarAtestado({
+    required String identificador,
+    required String senha,
+    required String medicoNome,
+    required String medicoCrm,
+    required String medicoCrmUf,
+    required DateTime emissaoData,
+    required ArquivoPdf arquivo,
+  }) async {
+    if (arquivo.tamanho > maxAtestadoBytes) {
+      throw CadastroApiException(
+        0,
+        'O arquivo do atestado deve ter no máximo 10MB.',
+      );
+    }
+    final uri = Uri.parse('$_base/cadastro/reenvio');
+    final multipart = http.MultipartRequest('POST', uri)
+      ..files.add(
+        http.MultipartFile.fromString(
+          'dados',
+          jsonEncode({
+            'identificador': identificador,
+            'senha': senha,
+            'medicoNome': medicoNome,
+            'medicoCrm': medicoCrm,
+            'medicoCrmUf': medicoCrmUf,
+            'atestadoEmissaoData': dataIso(emissaoData),
+          }),
+          contentType: MediaType('application', 'json'),
+        ),
+      )
+      ..files.add(
+        http.MultipartFile.fromBytes(
+          'atestado',
+          arquivo.bytes,
+          filename: arquivo.nome,
+          contentType: MediaType('application', 'pdf'),
+        ),
+      );
+
+    final http.StreamedResponse streamed;
+    try {
+      streamed = await _client.send(multipart);
+    } on Object {
+      throw CadastroApiException(
+        0,
+        'Sem conexão com o servidor. Verifique sua internet e tente de novo.',
+      );
+    }
+    final res = await http.Response.fromStream(streamed);
+    if (res.statusCode >= 200 && res.statusCode < 300) return;
+    throw _errorFrom(res, fallback: _fallbackReenvio);
+  }
+
+  String _fallbackReenvio(int status) {
+    switch (status) {
+      case 404:
+        return 'Cadastro não encontrado. Confira o usuário/e-mail.';
+      case 409:
+        return 'Seu cadastro já está em análise. Aguarde a aprovação.';
+      case 422:
+        return 'Não foi possível enviar o atestado com os dados informados.';
+      default:
+        return 'Não foi possível enviar o atestado agora. Tente de novo em '
+            'instantes.';
+    }
+  }
+
+  CadastroApiException _errorFrom(
+    http.Response res, {
+    String Function(int status)? fallback,
+  }) {
     final text = utf8.decode(res.bodyBytes);
     Map<String, dynamic>? data;
     if (text.isNotEmpty) {
@@ -144,7 +220,7 @@ class CadastroService {
     }
     return CadastroApiException(
       res.statusCode,
-      backendMessage ?? _fallbackMessage(res.statusCode),
+      backendMessage ?? (fallback ?? _fallbackMessage)(res.statusCode),
       fieldErrors: fieldErrors,
     );
   }

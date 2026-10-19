@@ -211,6 +211,61 @@ class RegistrationIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("CRM inválido")));
     }
 
+    private org.springframework.test.web.servlet.request.MockMultipartHttpServletRequestBuilder
+    reenvioRequest(String identificador, String senha, String emissao) throws Exception {
+        ObjectNode d = objectMapper.createObjectNode();
+        d.put("identificador", identificador);
+        d.put("senha", senha);
+        d.put("medicoNome", "Dra. Nova");
+        d.put("medicoCrm", "999");
+        d.put("medicoCrmUf", "GO");
+        d.put("atestadoEmissaoData", emissao);
+        return multipart("/cadastro/reenvio")
+                .file(new MockMultipartFile("dados", "", "application/json", objectMapper.writeValueAsBytes(d)))
+                .file(new MockMultipartFile("atestado", "novo.pdf", "application/pdf", PDF_BYTES));
+    }
+
+    /** Recusado por atestado: não some — reenvia o atestado e volta pra fila. */
+    @Test
+    void recusado_reenviaAtestadoEVoltaPraFilaDeAprovacao() throws Exception {
+        String email = "recusado." + UUID.randomUUID() + "@goias.gov.br";
+        String cpf = CpfTestFactory.next();
+        mockMvc.perform(cadastroRequest(dadosValidos(email, cpf))).andExpect(status().isCreated());
+        String tokenAdmin = loginAs("admin");
+        UUID id = students.findByCpf(cpf).orElseThrow().getId();
+        mockMvc.perform(authed(post("/admin/cadastros/" + id + "/rejeitar"), tokenAdmin)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"motivo\":\"Atestado ilegível\"}"))
+                .andExpect(status().isOk());
+        UUID arquivoAntigo = students.findById(id).orElseThrow().getAtestadoArquivoId();
+
+        // Cadastrar de novo orienta a reenviar pelo login, em vez de "já existe".
+        mockMvc.perform(cadastroRequest(dadosValidos(email, cpf)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("enviar um novo atestado")));
+        // Senha errada não reenvia.
+        mockMvc.perform(reenvioRequest(email, "errada123", java.time.LocalDate.now().toString()))
+                .andExpect(status().isUnprocessableEntity());
+
+        mockMvc.perform(reenvioRequest(email, "senha12345", java.time.LocalDate.now().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("pendente"));
+
+        var s = students.findById(id).orElseThrow();
+        assertThat(s.getStatusCadastro()).isEqualTo("pendente");
+        assertThat(s.getMotivoRejeicao()).isNull();
+        assertThat(s.getAtestadoArquivoId()).isNotEqualTo(arquivoAntigo);
+        assertThat(s.getMedicoNome()).isEqualTo("Dra. Nova");
+        String pendentes = mockMvc.perform(authed(get("/admin/cadastros/pendentes"), tokenAdmin))
+                .andReturn().getResponse().getContentAsString();
+        assertThat(pendentes).contains(id.toString());
+
+        // Já em análise: não reenvia de novo.
+        mockMvc.perform(reenvioRequest(email, "senha12345", java.time.LocalDate.now().toString()))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("em análise")));
+    }
+
     @Test
     void aprovarComCategoriaInvalida_retorna422() throws Exception {
         String email = "categoria.invalida." + UUID.randomUUID() + "@goias.gov.br";

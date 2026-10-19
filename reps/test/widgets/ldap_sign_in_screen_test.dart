@@ -11,15 +11,20 @@ import 'package:go_router/go_router.dart';
 import 'package:reps/core/network/api_client.dart';
 import 'package:reps/features/auth/data/rest_auth_service.dart';
 import 'package:reps/features/auth/presentation/ldap_sign_in_screen.dart';
+import 'package:reps/features/auth/presentation/reenvio_atestado_screen.dart';
 
 /// Fake mínimo: só `login` tem comportamento customizado (falha). Os demais
 /// métodos não são exercitados pelo fluxo de erro testado aqui. Usa a
 /// ApiException real (não uma imitação) — `_humanize()` da tela agora
 /// distingue por tipo, não só pelo texto de `toString()`.
 class _FailingRestAuthService implements RestAuthService {
+  _FailingRestAuthService([this.mensagem = 'E-mail ou senha inválidos.']);
+
+  final String mensagem;
+
   @override
   Future<SecamiUser> login(String username, String password) =>
-      Future<SecamiUser>.error(ApiException(422, 'E-mail ou senha inválidos.'));
+      Future<SecamiUser>.error(ApiException(422, mensagem));
 
   @override
   Future<SecamiUser> me() => throw UnimplementedError();
@@ -124,6 +129,114 @@ void main() {
     expect(find.text('E-mail ou senha inválidos.'), findsOneWidget);
     // Sem navegação em caso de erro: o formulário continua na tela.
     expect(find.text('ENTRAR'), findsOneWidget);
+    // Só cadastro recusado oferece o reenvio de atestado.
+    expect(find.text('Enviar novo atestado'), findsNothing);
+  });
+
+  group('cadastro recusado', () {
+    const recusado = 'Seu cadastro foi recusado: atestado ilegível';
+
+    Future<GoRouter> entrarRecusado(
+      WidgetTester tester, {
+      String mensagem = recusado,
+    }) async {
+      final router = GoRouter(
+        initialLocation: '/sign-in',
+        routes: [
+          GoRoute(
+            path: '/sign-in',
+            builder: (_, _) => const LdapSignInScreen(),
+          ),
+          GoRoute(
+            path: rotaReenvioAtestado,
+            builder: (context, state) {
+              final args = state.extra! as ReenvioAtestadoArgs;
+              return Scaffold(
+                body: Column(
+                  children: [
+                    Text('reenvio ${args.identificador} ${args.senha}'),
+                    Text('motivo ${args.mensagemRecusa}'),
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('ENVIADO'),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            restAuthServiceProvider.overrideWithValue(
+              _FailingRestAuthService(mensagem),
+            ),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final fields = find.byType(TextFormField);
+      await tester.enterText(fields.at(0), ' fulana@gmail.com ');
+      await tester.enterText(fields.at(1), 'segredo123');
+      await tester.tap(find.widgetWithText(FilledButton, 'ENTRAR'));
+      await tester.pumpAndSettle();
+      return router;
+    }
+
+    testWidgets('mostra o motivo e o botão "Enviar novo atestado"', (
+      tester,
+    ) async {
+      await entrarRecusado(tester);
+
+      expect(find.text(recusado), findsOneWidget);
+      expect(find.text('Enviar novo atestado'), findsOneWidget);
+    });
+
+    testWidgets('recusa sem motivo também oferece o reenvio', (tester) async {
+      await entrarRecusado(
+        tester,
+        mensagem:
+            'Seu cadastro foi recusado. Procure a administração da academia.',
+      );
+
+      expect(find.text('Enviar novo atestado'), findsOneWidget);
+    });
+
+    testWidgets('cadastro em análise não oferece o reenvio', (tester) async {
+      await entrarRecusado(
+        tester,
+        mensagem: 'Seu cadastro está em análise. Aguarde a aprovação.',
+      );
+
+      expect(find.text('Enviar novo atestado'), findsNothing);
+    });
+
+    testWidgets('o botão abre o reenvio com usuário, senha e motivo', (
+      tester,
+    ) async {
+      await entrarRecusado(tester);
+
+      await tester.tap(find.text('Enviar novo atestado'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('reenvio fulana@gmail.com segredo123'), findsOneWidget);
+      expect(find.text('motivo $recusado'), findsOneWidget);
+
+      // Voltando depois do envio, o aviso de "recusado" some.
+      await tester.tap(find.text('ENVIADO'));
+      await tester.pumpAndSettle();
+      expect(find.text(recusado), findsNothing);
+      expect(find.text('Enviar novo atestado'), findsNothing);
+      expect(
+        find.text('Atestado enviado! Seu cadastro voltou para análise.'),
+        findsOneWidget,
+      );
+    });
   });
 
   group('tela de entrada pós-login', () {

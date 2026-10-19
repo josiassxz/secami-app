@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:reps/features/academy/data/atestado_api.dart';
 import 'package:reps/features/auth/data/cadastro_service.dart';
 import 'package:reps/features/auth/domain/cadastro_models.dart';
 import 'package:reps/features/auth/domain/departamento.dart';
@@ -27,6 +28,17 @@ class _FakeCadastroService implements CadastroService {
 
   @override
   Future<void> enviar(CadastroRequest request, PlatformFile atestado) async {}
+
+  @override
+  Future<void> reenviarAtestado({
+    required String identificador,
+    required String senha,
+    required String medicoNome,
+    required String medicoCrm,
+    required String medicoCrmUf,
+    required DateTime emissaoData,
+    required ArquivoPdf arquivo,
+  }) async {}
 }
 
 void main() {

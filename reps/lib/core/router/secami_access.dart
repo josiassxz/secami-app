@@ -27,10 +27,12 @@ const _semSentidoLogado = {
   '/sign-up',
   '/forgot-password',
   '/cadastro',
+  '/cadastro/reenvio',
 };
 
-/// Rotas abertas sem sessão (login e auto-cadastro público de aluno).
-const _rotasPublicas = {'/sign-in', '/cadastro'};
+/// Rotas abertas sem sessão (login, auto-cadastro público de aluno e o
+/// reenvio de atestado de um cadastro recusado).
+const _rotasPublicas = {'/sign-in', '/cadastro', '/cadastro/reenvio'};
 
 /// Tela de entrada pós-login. Quem é só instrutor cai direto na Academia
 /// (onde fica "Alunos e Fichas"); os demais, no diário de treinos.
