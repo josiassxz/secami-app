@@ -76,6 +76,14 @@ function dialogo() {
   return screen.getByRole("dialog");
 }
 
+/** Escolhe o exercício no campo com busca: digita parte do nome e clica na opção. */
+function escolherExercicio(d: HTMLElement, n: number, busca: string, nome: string) {
+  const campo = within(d).getByRole("combobox", { name: `Exercício ${n}` });
+  fireEvent.focus(campo);
+  fireEvent.change(campo, { target: { value: busca } });
+  fireEvent.mouseDown(within(d).getByRole("option", { name: nome }));
+}
+
 afterEach(() => {
   apiMock.mockReset();
   useAuthMock.mockReset();
@@ -114,15 +122,21 @@ describe("Fichas de Treino - nova ficha", () => {
     // Ana já tem a ficha A: a sugestão é a próxima letra livre.
     await waitFor(() => expect((within(d).getByLabelText("Ficha") as HTMLSelectElement).value).toBe("B"));
     // Arquivado não aparece no catálogo.
+    await waitFor(() => expect(within(d).getByRole("combobox", { name: "Exercício 1" })).toHaveAttribute("placeholder", "Selecione ou digite para buscar"));
+    fireEvent.focus(within(d).getByRole("combobox", { name: "Exercício 1" }));
     await within(d).findByRole("option", { name: "Puxada alta" });
     expect(within(d).queryByRole("option", { name: "Crucifixo antigo" })).not.toBeInTheDocument();
+    // Digitar filtra pelo nome (sem acento/caixa).
+    fireEvent.change(within(d).getByRole("combobox", { name: "Exercício 1" }), { target: { value: "puxada" } });
+    expect(within(d).queryByRole("option", { name: "Supino reto" })).not.toBeInTheDocument();
+    expect(within(d).getByRole("option", { name: "Puxada alta" })).toBeInTheDocument();
 
     fireEvent.change(within(d).getByLabelText("Título"), { target: { value: "Costas e bíceps" } });
-    fireEvent.change(within(d).getByLabelText("Exercício 1"), { target: { value: "e2" } });
+    escolherExercicio(d, 1, "pux", "Puxada alta");
     fireEvent.change(within(d).getByLabelText("Repetições do exercício 1"), { target: { value: "10-12" } });
     fireEvent.change(within(d).getByLabelText("Observações do exercício 1"), { target: { value: "pegada aberta" } });
     fireEvent.click(within(d).getByRole("button", { name: /Adicionar exercício/ }));
-    fireEvent.change(within(d).getByLabelText("Exercício 2"), { target: { value: "e1" } });
+    escolherExercicio(d, 2, "SUPINO", "Supino reto");
     fireEvent.click(within(d).getByRole("button", { name: "Salvar ficha" }));
 
     await waitFor(() => expect(escritas).toHaveLength(1));
@@ -154,7 +168,9 @@ describe("Fichas de Treino - nova ficha", () => {
     expect(screen.getByText("Revise os campos destacados.")).toBeInTheDocument();
 
     fireEvent.change(within(d).getByLabelText("Título"), { target: { value: "Ficha" } });
-    fireEvent.change(within(d).getByLabelText("Exercício 1"), { target: { value: "e1" } });
+    await within(d).findByRole("combobox", { name: "Exercício 1" });
+    await waitFor(() => expect(within(d).getByRole("combobox", { name: "Exercício 1" })).toHaveAttribute("placeholder", "Selecione ou digite para buscar"));
+    escolherExercicio(d, 1, "sup", "Supino reto");
     fireEvent.change(within(d).getByLabelText("Séries do exercício 1"), { target: { value: "três" } });
     fireEvent.click(within(d).getByRole("button", { name: "Salvar ficha" }));
     expect(await within(d).findByText("Séries e descanso aceitam só números inteiros.")).toBeInTheDocument();

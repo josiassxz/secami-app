@@ -12,6 +12,7 @@ import {
 } from "@/lib/fichas";
 import { Modal } from "@/components/Modal";
 import { Avatar, Button, Input, Label, Select } from "@/components/ui";
+import { SeletorExercicio } from "@/components/SeletorExercicio";
 
 /**
  * Editor de ficha de treino (A–D) do admin — o instrutor/admin monta a ficha
@@ -412,27 +413,19 @@ export function FichaEditor({
                       {indice + 1}.
                     </span>
                     <div className="min-w-0 flex-1">
-                      <Select
-                        aria-label={`Exercício ${indice + 1}`}
-                        value={item.exerciseId && !foraDoCatalogo ? item.exerciseId : foraDoCatalogo ? SO_NOME : ""}
-                        onChange={(e) => escolherExercicio(item.chave, e.target.value)}
-                      >
-                        <option value="" disabled>
-                          {catalogo.isLoading ? "Carregando exercícios…" : "Selecione o exercício"}
-                        </option>
-                        {foraDoCatalogo && (
-                          <option value={SO_NOME}>{item.exerciseName} (fora do catálogo)</option>
-                        )}
-                        {grupos.map(([grupo, lista]) => (
-                          <optgroup key={grupo} label={grupo}>
-                            {lista.map((e) => (
-                              <option key={e.id} value={e.id}>
-                                {e.name}
-                              </option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </Select>
+                      <SeletorExercicio
+                        rotulo={`Exercício ${indice + 1}`}
+                        valor={item.exerciseId && !foraDoCatalogo ? item.exerciseId : ""}
+                        nomeAtual={
+                          foraDoCatalogo
+                            ? `${item.exerciseName} (fora do catálogo)`
+                            : exerciciosAtivos.find((e) => e.id === item.exerciseId)?.name ?? ""
+                        }
+                        grupos={grupos}
+                        carregando={catalogo.isLoading}
+                        invalido={!!erro && !item.exerciseName}
+                        onEscolher={(id) => escolherExercicio(item.chave, id)}
+                      />
                     </div>
                     <div className="flex shrink-0 items-center">
                       <Button
