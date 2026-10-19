@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
  * saída juntas. Militar recebe ela vitalícia na aprovação. Civil não recebe
  * nada na aprovação — a categoria é liberada de forma dinâmica a cada
  * agendamento confirmado (ver {@link #aoAgendar}), de 20min antes do horário
- * marcado, sempre por uma janela fixa de 2h a partir do início marcado
+ * marcado, sempre por uma janela configurável (padrão 5h) a partir do início marcado
  * (treino + banho) — e revogada se o agendamento for cancelado (ver
  * {@link #aoCancelar}) ou removida pelo job de limpeza depois que a janela
  * expira, mesmo sem cancelamento (ver {@link #aoExpirarAcesso}).
@@ -70,18 +70,20 @@ public class AcceleroSyncService {
     private static final String AREA_ACADEMIA = "ACADEMIA";
     /** Libera o acesso 20min antes do horário marcado, pro caso de o aluno chegar cedo. */
     private static final long MARGEM_ANTECEDENCIA_MINUTOS = 20;
-    /** Janela total liberada a partir do INÍCIO marcado (não do fim do slot) —
-     *  cobre treino + banho etc., sempre fixa, independente da duração do slot. */
-    private static final long JANELA_ACESSO_HORAS = 2;
+    // A janela total liberada conta a partir do INÍCIO marcado (não do fim do
+    // slot) e a duração é configurável pelo admin (Config. Horários) — ver janelaHoras().
 
     private final AcceleroClient client;
     private final SecamiProperties.Accelero config;
     private final StudentRepository students;
     private final AppointmentRepository appointments;
     private final ZoneId zone;
+    private final br.gov.goias.secami.academy.configuracao.ConfiguracaoService configuracoes;
 
     public AcceleroSyncService(AcceleroClient client, SecamiProperties props,
-                                StudentRepository students, AppointmentRepository appointments) {
+                                StudentRepository students, AppointmentRepository appointments,
+                                br.gov.goias.secami.academy.configuracao.ConfiguracaoService configuracoes) {
+        this.configuracoes = configuracoes;
         this.client = client;
         this.config = props.getAccelero();
         this.students = students;
@@ -131,7 +133,7 @@ public class AcceleroSyncService {
                 ZonedDateTime agora = ZonedDateTime.now(zone);
                 for (Appointment a : appointments.findAtivosDoAlunoAPartirDe(student.getId(), agora.toLocalDate())) {
                     ZonedDateTime fimJanela = ZonedDateTime.of(a.getDate(), LocalTime.parse(a.getSlotStart()), zone)
-                            .plusHours(JANELA_ACESSO_HORAS);
+                            .plusHours(janelaHoras());
                     if (a.getAcceleroAcessoVinculoId() == null && fimJanela.isAfter(agora)) {
                         liberarAcessoDoAgendamento(a);
                     }
@@ -472,12 +474,12 @@ public class AcceleroSyncService {
         String categoriaId = config.getCategoriaAcessoId();
 
         // Janela sempre a partir do INÍCIO marcado, não do fim do slot: 20min
-        // antes (chegar cedo) até 2h depois (treino + banho), fixo,
+        // antes (chegar cedo) até N horas depois (treino + banho), fixo,
         // independente de quanto dura o horário reservado.
         ZonedDateTime inicioMarcado = ZonedDateTime.of(appointment.getDate(),
                 LocalTime.parse(appointment.getSlotStart()), zone);
         ZonedDateTime inicio = inicioMarcado.minusMinutes(MARGEM_ANTECEDENCIA_MINUTOS);
-        ZonedDateTime fim = inicioMarcado.plusHours(JANELA_ACESSO_HORAS);
+        ZonedDateTime fim = inicioMarcado.plusHours(janelaHoras());
 
         // adicionarCategoria não devolve o UID do vínculo criado — snapshot
         // antes/depois pra identificar a linha nova (precisa pra poder
@@ -554,7 +556,7 @@ public class AcceleroSyncService {
 
     /** Chamado pelo job de confirmação de presença (AcceleroPresencaService,
      *  a cada 30min) — consulta o log de eventos reais da catraca dentro da
-     *  janela liberada do agendamento (20min antes até 2h depois do início)
+     *  janela liberada do agendamento (20min antes até N horas depois do início)
      *  pra confirmar se o aluno realmente entrou e/ou saiu, além do
      *  check-in autodeclarado. Idempotente: só preenche o que ainda está
      *  em branco. Nunca lança. @return true se algo foi confirmado agora. */
@@ -567,7 +569,7 @@ public class AcceleroSyncService {
             ZonedDateTime inicioMarcado = ZonedDateTime.of(appointment.getDate(),
                     LocalTime.parse(appointment.getSlotStart()), zone);
             ZonedDateTime inicioJanela = inicioMarcado.minusMinutes(MARGEM_ANTECEDENCIA_MINUTOS);
-            ZonedDateTime fimJanela = inicioMarcado.plusHours(JANELA_ACESSO_HORAS);
+            ZonedDateTime fimJanela = inicioMarcado.plusHours(janelaHoras());
             if (ZonedDateTime.now(zone).isBefore(inicioJanela)) return false; // ainda nem começou
 
             List<EventoAcesso> eventos = buscarTodosOsEventos(pessoaId,
@@ -621,6 +623,11 @@ public class AcceleroSyncService {
                     appointment.getId(), e.getMessage(), e);
             return false;
         }
+    }
+
+    /** Horas que a catraca fica liberada pro civil a partir do horário marcado. */
+    private long janelaHoras() {
+        return configuracoes.janelaCatracaHoras();
     }
 
     private OffsetDateTime parseDataHora(String texto) {

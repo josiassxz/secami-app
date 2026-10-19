@@ -13,7 +13,7 @@ import java.time.OffsetDateTime;
 
 /**
  * Remove do Accelero o acesso dinâmico liberado pro civil a cada agendamento
- * (ver AcceleroSyncService), depois que a janela (20min antes até 2h depois
+ * (ver AcceleroSyncService), depois que a janela (20min antes até N horas depois
  * do início) expira — mesmo sem cancelamento, já que a maioria dos
  * agendamentos simplesmente acontece e passa. Sem isso o vínculo fica
  * esquecido no Accelero indefinidamente.

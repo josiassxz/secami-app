@@ -23,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * Acesso dinâmico no Accelero por agendamento (Civil): liberado 20min antes
- * do horário marcado até 2h depois do início, ao agendar; revogado ao
+ * do horário marcado até N horas depois do início, ao agendar; revogado ao
  * cancelar. Militar não dispara nada aqui (já tem acesso vitalício desde a
  * aprovação).
  *
@@ -46,7 +46,7 @@ class AcceleroSchedulingIntegrationTest extends SchedulingTestSupport {
     }
 
     @Test
-    void agendarComoCivilLiberaAcessoDe20MinAntesAte2hDepoisDoInicio() throws Exception {
+    void agendarComoCivilLiberaAcessoDe20MinAntesAteAJanelaConfigurada() throws Exception {
         Student s = civilPronto("456");
         UUID userId = newAlunoUser("civil.entrada");
         s.setUserId(userId);
@@ -65,8 +65,36 @@ class AcceleroSchedulingIntegrationTest extends SchedulingTestSupport {
         verify(acceleroClient).adicionarCategoria(eq("456"), eq(ACESSO), inicioCap.capture(), fimCap.capture());
 
         assertThat(inicioCap.getValue()).contains("09:40"); // 20min antes de 10:00
-        assertThat(fimCap.getValue()).contains("12:00"); // 2h depois do início marcado (10:00), não do slotEnd
+        assertThat(fimCap.getValue()).contains("15:00"); // 5h (padrão) depois do início marcado (10:00), não do slotEnd
         verify(acceleroClient).desassociarIdentificador("456", "id-1", 1); // ressincroniza depois da categoria
+    }
+
+    /** O admin muda o tempo de acesso na tela (Config. Horários) e o próximo agendamento já usa. */
+    @Test
+    void janelaDaCatracaConfiguradaPeloAdminValeProProximoAgendamento() throws Exception {
+        String admin = loginAs("admin");
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/admin/configuracoes/catraca")
+                        .header("Authorization", "Bearer " + admin)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content("{\"janelaHoras\":0}"))
+                .andExpect(status().isUnprocessableEntity());
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/admin/configuracoes/catraca")
+                        .header("Authorization", "Bearer " + admin)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON).content("{\"janelaHoras\":3}"))
+                .andExpect(status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.janelaHoras").value(3));
+
+        Student s = civilPronto("457");
+        UUID userId = newAlunoUser("civil.janela3");
+        s.setUserId(userId);
+        studentRepository.save(s);
+        slotAberto("10:00");
+        when(acceleroClient.listarCategorias("457")).thenReturn(List.of());
+
+        bookAsStudent(loginAs("civil.janela3"), amanha(), "10:00").andExpect(status().isOk());
+
+        ArgumentCaptor<String> fimCap = ArgumentCaptor.forClass(String.class);
+        verify(acceleroClient).adicionarCategoria(eq("457"), eq(ACESSO), anyString(), fimCap.capture());
+        assertThat(fimCap.getValue()).contains("13:00"); // 3h depois de 10:00
     }
 
     @Test

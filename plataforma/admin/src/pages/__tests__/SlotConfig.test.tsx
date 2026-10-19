@@ -23,6 +23,9 @@ function setupApi(onDelete: () => Promise<unknown> = async () => undefined) {
       deletes.push(path);
       return onDelete();
     }
+    if (path === "/admin/configuracoes/catraca") {
+      return opts?.method === "PUT" ? JSON.parse(opts.body) : { janelaHoras: 5 };
+    }
     return SLOTS;
   });
   return deletes;
@@ -71,5 +74,33 @@ describe("Config. Horários - excluir", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Excluir horário 12:00–13:00" }));
     fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Excluir" }));
     await waitFor(() => expect(toastMock).toHaveBeenCalledWith("error", msg));
+  });
+});
+
+describe("Config. Horários - tempo de acesso na catraca", () => {
+  it("mostra o tempo atual e salva o novo valor", async () => {
+    setupApi();
+    renderWithProviders(<SlotConfig />);
+    const campo = (await screen.findByLabelText("Horas")) as HTMLInputElement;
+    await waitFor(() => expect(campo.value).toBe("5"));
+    const salvar = screen.getByRole("button", { name: "Salvar" });
+    expect(salvar).toBeDisabled();
+
+    fireEvent.change(campo, { target: { value: "2" } });
+    fireEvent.click(salvar);
+
+    await waitFor(() =>
+      expect(apiMock).toHaveBeenCalledWith("/admin/configuracoes/catraca", { method: "PUT", body: JSON.stringify({ janelaHoras: 2 }) })
+    );
+    await waitFor(() => expect(toastMock).toHaveBeenCalledWith("success", "Tempo de acesso na catraca: 2 horas."));
+  });
+
+  it("não deixa salvar fora de 1 a 12 horas", async () => {
+    setupApi();
+    renderWithProviders(<SlotConfig />);
+    const campo = await screen.findByLabelText("Horas");
+    fireEvent.change(campo, { target: { value: "20" } });
+    expect(screen.getByText("Informe de 1 a 12 horas.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Salvar" })).toBeDisabled();
   });
 });

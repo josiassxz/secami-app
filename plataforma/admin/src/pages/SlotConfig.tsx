@@ -7,9 +7,59 @@ import { PageHeader } from "@/components/PageHeader";
 import { Modal } from "@/components/Modal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge, Button, Card, Input, Label, Table, TableSkeleton, TBody, TD, TH, THead, TR } from "@/components/ui";
-import { AlertCircle, Pencil, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, DoorOpen, Pencil, Plus, Trash2 } from "lucide-react";
 
 const empty = { slotStart: "", slotEnd: "", maxCapacity: 40, civilRestricted: false, blocked: false, blockReason: "" };
+
+/** Quanto tempo a catraca fica liberada pro civil a partir do horário marcado. */
+function JanelaCatraca() {
+  const qc = useQueryClient();
+  const atual = useQuery({
+    queryKey: ["config-catraca"],
+    queryFn: () => api<{ janelaHoras: number }>(`/admin/configuracoes/catraca`),
+  });
+  const [horas, setHoras] = useState<string | null>(null);
+  const valor = horas ?? (atual.data ? String(atual.data.janelaHoras) : "");
+  const salvar = useMutation({
+    mutationFn: (janelaHoras: number) =>
+      api<{ janelaHoras: number }>(`/admin/configuracoes/catraca`, { method: "PUT", body: JSON.stringify({ janelaHoras }) }),
+    onSuccess: (r) => {
+      qc.setQueryData(["config-catraca"], r);
+      setHoras(null);
+      toast("success", `Tempo de acesso na catraca: ${r.janelaHoras} hora${r.janelaHoras === 1 ? "" : "s"}.`);
+    },
+    onError: (e) => toast("error", mensagemDeErro(e, "Não foi possível salvar o tempo de acesso.")),
+  });
+  const n = Number(valor);
+  const valido = Number.isInteger(n) && n >= 1 && n <= 12;
+  const mudou = atual.data != null && valido && n !== atual.data.janelaHoras;
+
+  return (
+    <Card className="mb-6 p-4">
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <DoorOpen className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+          <div className="min-w-0">
+            <p className="font-semibold text-content">Tempo de acesso na catraca (civis)</p>
+            <p className="text-sm text-content-soft">
+              A catraca libera 20 minutos antes do horário agendado e fica liberada por este tempo a partir do
+              horário marcado. Vale para os próximos agendamentos. Militares, VIPs e instrutores têm acesso sempre.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-end gap-2">
+          <div>
+            <Label htmlFor="janela-catraca">Horas</Label>
+            <Input id="janela-catraca" type="number" min={1} max={12} className="w-24" value={valor}
+              disabled={atual.isLoading} onChange={(e) => setHoras(e.target.value)} />
+          </div>
+          <Button loading={salvar.isPending} disabled={!mudou} onClick={() => salvar.mutate(n)}>Salvar</Button>
+        </div>
+      </div>
+      {valor !== "" && !valido && <p className="mt-2 text-sm text-danger">Informe de 1 a 12 horas.</p>}
+    </Card>
+  );
+}
 
 export default function SlotConfig() {
   const qc = useQueryClient();
@@ -55,6 +105,7 @@ export default function SlotConfig() {
         subtitle={data ? `${data.length} janela${data.length === 1 ? "" : "s"} configurada${data.length === 1 ? "" : "s"}` : "Janelas de agendamento, capacidade e restrições"}
         actions={<Button onClick={openNew}><Plus className="h-4 w-4" /> Novo horário</Button>}
       />
+      <JanelaCatraca />
       <Card className="overflow-hidden">
         {isLoading ? (
           <TableSkeleton rows={6} />

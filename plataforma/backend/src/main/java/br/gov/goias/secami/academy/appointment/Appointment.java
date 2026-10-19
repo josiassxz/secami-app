@@ -80,7 +80,7 @@ public class Appointment {
     @Column(name = "accelero_acesso_vinculo_id")
     private String acceleroAcessoVinculoId;
 
-    /** Fim da janela de acesso liberada no Accelero (início marcado + 2h) —
+    /** Fim da janela de acesso liberada no Accelero (início marcado + janela configurada) —
      *  usado pelo job que remove o vínculo acima depois que ela passa. */
     @Column(name = "accelero_acesso_expira_em")
     private OffsetDateTime acceleroAcessoExpiraEm;
