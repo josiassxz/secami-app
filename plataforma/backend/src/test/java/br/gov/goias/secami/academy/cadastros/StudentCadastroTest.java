@@ -30,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class StudentCadastroTest extends AbstractIntegrationTest {
 
     @Autowired StudentRepository students;
+    @Autowired br.gov.goias.secami.academy.media.MediaRepository mediaRepository;
 
     // ---- criação: CPF válido / inválido / duplicado ----
 
@@ -50,26 +51,26 @@ class StudentCadastroTest extends AbstractIntegrationTest {
     }
 
     @Test
-    void criarAlunoComCpfInvalido_retorna400() throws Exception {
+    void criarAlunoComCpfInvalido_retorna422() throws Exception {
         String token = loginAs("admin");
         // dígitos verificadores incorretos (não é um CPF real).
         mockMvc.perform(authed(post("/students"), token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req("CPF Invalido", "123.456.789-00"))))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.fieldErrors[?(@.field=='cpf')]").exists());
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value("CPF inválido."));
 
         assertThat(students.findByCpf("12345678900")).isEmpty();
     }
 
     @Test
-    void criarAlunoComCpfDeDigitosRepetidos_retorna400() throws Exception {
+    void criarAlunoComCpfDeDigitosRepetidos_retorna422() throws Exception {
         String token = loginAs("admin");
         // Passa no cálculo de módulo 11 mas não é CPF real (regra extra da validação).
         mockMvc.perform(authed(post("/students"), token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req("Repetido", "111.111.111-11"))))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -92,6 +93,42 @@ class StudentCadastroTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(req("Segundo Titular", cpf))))
                 .andExpect(status().isConflict());
+    }
+
+    /** Caso real: CPF inválido que veio da base antiga travava qualquer edição. */
+    @Test
+    void editarAlunoComCpfAntigoInvalidoSemMexerNoCpf_salva() throws Exception {
+        String token = loginAs("admin");
+        String valido = CpfTestFactory.next();
+        String invalido = valido.substring(0, 10) + ((valido.charAt(10) - '0' + 1) % 10); // último dígito errado
+        Student s = saveStudent("Jose Antigo", invalido);
+        var media = new br.gov.goias.secami.academy.media.Media();
+        media.setTipo(br.gov.goias.secami.academy.media.Media.TIPO_FOTO_ALUNO);
+        media.setStorageKey("teste/" + UUID.randomUUID() + ".jpg");
+        UUID foto = mediaRepository.save(media).getId();
+        s.setPhotoId(foto);
+        students.save(s);
+
+        mockMvc.perform(authed(put("/students/" + s.getId()), token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req("Jose Antigo Corrigido", Cpf.format(invalido)))))
+                .andExpect(status().isOk());
+
+        Student salvo = students.findById(s.getId()).orElseThrow();
+        assertThat(salvo.getFullName()).isEqualTo("Jose Antigo Corrigido");
+        assertThat(salvo.getPhotoId()).isEqualTo(foto); // a tela não envia a foto: não pode apagar
+    }
+
+    @Test
+    void editarTrocandoParaCpfInvalido_recusa() throws Exception {
+        String token = loginAs("admin");
+        Student s = saveStudent("Maria Valida", CpfTestFactory.next());
+
+        mockMvc.perform(authed(put("/students/" + s.getId()), token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(req("Maria Valida", "123.456.789-00"))))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value("CPF inválido."));
     }
 
     // ---- busca por nome parcial e por CPF ----

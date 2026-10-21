@@ -143,6 +143,12 @@ public class StudentService {
         s.setFullName(req.fullName().trim());
 
         String cpf = Cpf.normalize(req.cpf());
+        // Confere o CPF só quando ele muda (ou no cadastro novo): alguns vieram
+        // inválidos da base antiga e não podem impedir a edição dos outros campos.
+        boolean cpfMudou = isNew || !java.util.Objects.equals(cpf, s.getCpf());
+        if (cpfMudou && cpf != null && !Cpf.isValid(cpf)) {
+            throw new br.gov.goias.secami.common.error.DomainExceptions.BusinessException("CPF inválido.");
+        }
         if (cpf != null) {
             students.findByCpf(cpf)
                     .filter(other -> !other.getId().equals(s.getId()))
@@ -164,7 +170,8 @@ public class StudentService {
         s.setWeightKg(req.weightKg());
         s.setHeightCm(req.heightCm());
         s.setGoal(req.goal());
-        s.setPhotoId(req.photoId());
+        // A tela de edição não envia a foto: ausente = mantém a atual.
+        if (req.photoId() != null) s.setPhotoId(req.photoId());
         s.setAtestadoNumero(req.atestadoNumero());
         s.setAtestadoData(req.atestadoData());
         if (req.situacao() != null) s.setSituacao(req.situacao());

@@ -1,7 +1,6 @@
 package br.gov.goias.secami.academy.student;
 
 import br.gov.goias.secami.common.Cpf;
-import br.gov.goias.secami.common.ValidCpf;
 import jakarta.validation.constraints.NotBlank;
 
 import java.math.BigDecimal;
@@ -43,7 +42,8 @@ public final class StudentDtos {
 
     public record UpsertRequest(
             @NotBlank(message = "Informe o nome completo.") String fullName,
-            @ValidCpf String cpf,
+            /** Validado no serviço só quando muda (há CPFs antigos inválidos que não podem travar a edição). */
+            String cpf,
             String matricula,
             String studentType,     // Civil | Militar | VIP | Instrutor
             UUID departmentId,
