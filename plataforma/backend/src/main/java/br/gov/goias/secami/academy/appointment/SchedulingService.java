@@ -55,7 +55,7 @@ public class SchedulingService {
     }
 
     private boolean isCivil(Student s) {
-        return s.getStudentType() == null || "Civil".equalsIgnoreCase(s.getStudentType());
+        return s.comoCivil();
     }
 
     private ZonedDateTime slotDateTime(LocalDate date, String slotStart) {

@@ -475,9 +475,6 @@ public class AcceleroSyncService {
                     appointment.getId());
             return;
         }
-        String pessoaId = student.getAcceleroPessoaId();
-        String categoriaId = config.getCategoriaAcessoId();
-
         // Janela sempre a partir do INÍCIO marcado, não do fim do slot: 20min
         // antes (chegar cedo) até N horas depois (treino + banho), fixo,
         // independente de quanto dura o horário reservado.
@@ -485,23 +482,7 @@ public class AcceleroSyncService {
                 LocalTime.parse(appointment.getSlotStart()), zone);
         ZonedDateTime inicio = inicioMarcado.minusMinutes(MARGEM_ANTECEDENCIA_MINUTOS);
         ZonedDateTime fim = inicioMarcado.plusHours(janelaHoras());
-
-        // adicionarCategoria não devolve o UID do vínculo criado — snapshot
-        // antes/depois pra identificar a linha nova (precisa pra poder
-        // revogar exatamente essa liberação se o agendamento for cancelado
-        // ou quando a janela expirar).
-        Set<String> vinculosAntes = client.listarCategorias(pessoaId).stream()
-                .map(CategoriaVinculada::uid).collect(Collectors.toSet());
-
-        client.adicionarCategoria(pessoaId, categoriaId,
-                inicio.format(FORMATO_ACCELERO), fim.format(FORMATO_ACCELERO));
-        ressincronizarPessoa(pessoaId);
-
-        String novoVinculo = client.listarCategorias(pessoaId).stream()
-                .filter(c -> !vinculosAntes.contains(c.uid()) && categoriaId.equals(c.pctId()))
-                .map(CategoriaVinculada::uid)
-                .findFirst()
-                .orElse(null);
+        String novoVinculo = adicionarJanela(student.getAcceleroPessoaId(), inicio, fim);
         if (novoVinculo == null) {
             log.warn("Acesso liberado no Accelero pro agendamento {}, mas não foi possível identificar "
                     + "o vínculo criado — revogação automática no cancelamento/expiração não vai funcionar "
@@ -513,6 +494,58 @@ public class AcceleroSyncService {
         appointment.setAcceleroAcessoVinculoId(novoVinculo);
         appointment.setAcceleroAcessoExpiraEm(novoVinculo == null ? null : fim.toOffsetDateTime());
         appointments.save(appointment);
+    }
+
+    /** Adiciona a categoria da academia com início/fim e devolve o UID do
+     *  vínculo criado (null se não deu pra identificar). adicionarCategoria não
+     *  devolve o UID — snapshot antes/depois pra achar a linha nova (precisa
+     *  pra revogar exatamente essa liberação depois). */
+    private String adicionarJanela(String pessoaId, ZonedDateTime inicio, ZonedDateTime fim) {
+        String categoriaId = config.getCategoriaAcessoId();
+        Set<String> vinculosAntes = client.listarCategorias(pessoaId).stream()
+                .map(CategoriaVinculada::uid).collect(Collectors.toSet());
+        client.adicionarCategoria(pessoaId, categoriaId,
+                inicio.format(FORMATO_ACCELERO), fim.format(FORMATO_ACCELERO));
+        ressincronizarPessoa(pessoaId);
+        return client.listarCategorias(pessoaId).stream()
+                .filter(c -> !vinculosAntes.contains(c.uid()) && categoriaId.equals(c.pctId()))
+                .map(CategoriaVinculada::uid)
+                .findFirst()
+                .orElse(null);
+    }
+
+    // ---------- Lutas: catraca liberada nos dias da turma ----------
+
+    /** Libera a catraca do aluno de Lutas numa janela (aula do dia). Nunca lança.
+     *  @return UID do vínculo criado, ou null se não liberou/não identificou. */
+    @Transactional
+    public String liberarJanelaLutas(Student student, ZonedDateTime inicio, ZonedDateTime fim) {
+        if (!config.isEnabled()) return null;
+        try {
+            if (student.getAcceleroPessoaId() == null && vincularPorCpf(student) == null) {
+                log.warn("Aluno de Lutas {} sem pessoa no Accelero — aula do dia não liberada.", student.getId());
+                return null;
+            }
+            String vinculo = adicionarJanela(student.getAcceleroPessoaId(), inicio, fim);
+            log.info("Lutas: catraca liberada pro aluno {} ({} a {}).", student.getId(), inicio, fim);
+            return vinculo;
+        } catch (Exception e) {
+            log.warn("Falha ao liberar a aula de Lutas no Accelero pro aluno {}: {}", student.getId(), e.getMessage());
+            return null;
+        }
+    }
+
+    /** Retira a liberação da aula depois que a janela termina. @return true se retirou. */
+    public boolean revogarJanelaLutas(Student student, String vinculoId) {
+        if (!config.isEnabled() || student.getAcceleroPessoaId() == null || vinculoId == null) return false;
+        try {
+            client.excluirCategoria(student.getAcceleroPessoaId(), vinculoId);
+            ressincronizarPessoa(student.getAcceleroPessoaId());
+            return true;
+        } catch (Exception e) {
+            log.warn("Falha ao retirar a aula de Lutas no Accelero pro aluno {}: {}", student.getId(), e.getMessage());
+            return false;
+        }
     }
 
     // ---------- relatório de entrada/saída/faltas ----------

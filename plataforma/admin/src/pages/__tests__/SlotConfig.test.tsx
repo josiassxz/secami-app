@@ -23,6 +23,11 @@ function setupApi(onDelete: () => Promise<unknown> = async () => undefined) {
       deletes.push(path);
       return onDelete();
     }
+    if (path === "/admin/configuracoes/lutas") {
+      return opts?.method === "PUT"
+        ? JSON.parse(opts.body)
+        : { masculinoDias: [2, 4, 5], femininoDias: [1, 3, 5], inicio: "12:00", fim: "13:00", folgaSaidaHoras: 2 };
+    }
     if (path === "/admin/configuracoes/catraca") {
       return opts?.method === "PUT" ? JSON.parse(opts.body) : { janelaHoras: 5 };
     }
@@ -102,5 +107,27 @@ describe("Config. Horários - tempo de acesso na catraca", () => {
     fireEvent.change(campo, { target: { value: "20" } });
     expect(screen.getByText("Informe de 1 a 12 horas.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Salvar" })).toBeDisabled();
+  });
+});
+
+describe("Config. Horários - turmas de Lutas", () => {
+  it("mostra os dias das turmas e a janela da catraca, e salva a mudança", async () => {
+    setupApi();
+    renderWithProviders(<SlotConfig />);
+    expect(await screen.findByText(/das 11:40 às 15:00/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Masculino Ter" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Feminino Ter" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByRole("button", { name: "Feminino Sex" })).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(screen.getByRole("button", { name: "Feminino Sex" }));
+    fireEvent.click(screen.getByRole("button", { name: "Salvar turmas" }));
+
+    await waitFor(() =>
+      expect(apiMock).toHaveBeenCalledWith("/admin/configuracoes/lutas", {
+        method: "PUT",
+        body: JSON.stringify({ masculinoDias: [2, 4, 5], femininoDias: [1, 3], inicio: "12:00", fim: "13:00", folgaSaidaHoras: 2 }),
+      })
+    );
+    await waitFor(() => expect(toastMock).toHaveBeenCalledWith("success", "Turmas de Lutas salvas."));
   });
 });

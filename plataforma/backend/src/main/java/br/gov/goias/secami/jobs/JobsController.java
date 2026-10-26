@@ -24,11 +24,13 @@ public class JobsController {
     private final AcceleroExpiracaoService acceleroExpiracao;
     private final AcceleroPresencaService acceleroPresenca;
     private final ObjectProvider<LdapEmailSyncService> ldapEmailSync;
+    private final LutasAcessoService lutasAcesso;
 
     public JobsController(AbsenceService absenceService, ReminderService reminderService,
                            AcceleroSyncService acceleroSync, AcceleroExpiracaoService acceleroExpiracao,
                            AcceleroPresencaService acceleroPresenca,
-                           ObjectProvider<LdapEmailSyncService> ldapEmailSync) {
+                           ObjectProvider<LdapEmailSyncService> ldapEmailSync, LutasAcessoService lutasAcesso) {
+        this.lutasAcesso = lutasAcesso;
         this.absenceService = absenceService;
         this.reminderService = reminderService;
         this.acceleroSync = acceleroSync;
@@ -69,6 +71,12 @@ public class JobsController {
 
     /** Confere no Accelero se agendamentos de hoje/ontem tiveram entrada e/ou
      *  saída real confirmada pela catraca. */
+    /** Libera/retira agora a catraca das turmas de Lutas (o job roda a cada 15 min). */
+    @PostMapping("/lutas")
+    public LutasAcessoService.Resultado lutas() {
+        return lutasAcesso.executar();
+    }
+
     @PostMapping("/confirmar-presencas")
     public Map<String, Object> confirmarPresencas() {
         int n = acceleroPresenca.confirmarPresencas();

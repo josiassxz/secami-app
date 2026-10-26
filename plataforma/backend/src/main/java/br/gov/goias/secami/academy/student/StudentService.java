@@ -139,6 +139,17 @@ public class StudentService {
         acceleroSync.aoExcluirAluno(s);
     }
 
+    /** Lutas exige a turma (MASCULINO/FEMININO); os outros perfis não têm turma. */
+    public static String turmaValida(String tipo, String turma) {
+        if (!Student.TIPO_LUTAS.equals(tipo)) return null;
+        String t = turma == null ? "" : turma.trim().toUpperCase();
+        if (!t.equals(Student.TURMA_MASCULINO) && !t.equals(Student.TURMA_FEMININO)) {
+            throw new br.gov.goias.secami.common.error.DomainExceptions.BusinessException(
+                    "Escolha a turma de Lutas: masculino ou feminino.");
+        }
+        return t;
+    }
+
     private void applyStaff(Student s, UpsertRequest req, boolean isNew) {
         s.setFullName(req.fullName().trim());
 
@@ -160,10 +171,11 @@ public class StudentService {
         if (req.studentType() != null) {
             if (!Student.TIPOS.contains(req.studentType())) {
                 throw new br.gov.goias.secami.common.error.DomainExceptions.BusinessException(
-                        "Tipo inválido — use Civil, Militar, VIP ou Instrutor.");
+                        "Tipo inválido — use Civil, Militar, VIP, Lutas ou Instrutor.");
             }
             s.setStudentType(req.studentType());
         }
+        s.setTurmaLutas(turmaValida(s.getStudentType(), req.turmaLutas()));
         s.setPhone(req.phone());
         s.setEmail(req.email());
         s.setBirthDate(req.birthDate());

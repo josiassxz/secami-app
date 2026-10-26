@@ -115,7 +115,11 @@ export default function PendingRegistrations() {
       api(`/admin/cadastros/${studentId}/aprovar`, {
         method: "POST",
         body: JSON.stringify(
-          perfil === PERFIL_INSTRUTOR ? { perfil: "instrutor" } : { perfil: "aluno", studentType: perfil }
+          perfil === PERFIL_INSTRUTOR
+            ? { perfil: "instrutor" }
+            : perfil.startsWith("Lutas:")
+              ? { perfil: "aluno", studentType: "Lutas", turmaLutas: perfil.slice("Lutas:".length) }
+              : { perfil: "aluno", studentType: perfil }
         ),
       }),
     onSuccess: (_data, { studentId }) => {
@@ -259,6 +263,8 @@ export default function PendingRegistrations() {
                           <option value="Civil">Aluno · Civil</option>
                           <option value="Militar">Aluno · Militar</option>
                           <option value="VIP">Aluno · VIP</option>
+                          <option value="Lutas:MASCULINO">Aluno · Lutas (masculino)</option>
+                          <option value="Lutas:FEMININO">Aluno · Lutas (feminino)</option>
                         </optgroup>
                         <option value={PERFIL_INSTRUTOR}>Instrutor</option>
                       </Select>

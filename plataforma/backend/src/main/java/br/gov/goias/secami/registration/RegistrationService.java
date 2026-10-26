@@ -160,18 +160,22 @@ public class RegistrationService {
      * @param perfil      {@code aluno} (padrão quando nulo/vazio) ou {@code instrutor}
      */
     @Transactional
-    public Student aprovar(UUID studentId, String studentType, String perfil) {
+    public Student aprovar(UUID studentId, String studentType, String perfil, String turmaLutas) {
         String perfilNormalizado = (perfil == null || perfil.isBlank())
                 ? RegistrationDtos.AprovarRequest.PERFIL_ALUNO : perfil.trim().toLowerCase();
         boolean instrutor = RegistrationDtos.AprovarRequest.PERFIL_INSTRUTOR.equals(perfilNormalizado);
         if (!instrutor && !RegistrationDtos.AprovarRequest.PERFIL_ALUNO.equals(perfilNormalizado)) {
             throw new BusinessException("Perfil inválido — use aluno ou instrutor.");
         }
-        if (!instrutor && !Set.of(Student.TIPO_CIVIL, Student.TIPO_MILITAR, Student.TIPO_VIP).contains(studentType)) {
-            throw new BusinessException("Categoria inválida — use Civil, Militar ou VIP.");
+        if (!instrutor && !Set.of(Student.TIPO_CIVIL, Student.TIPO_MILITAR, Student.TIPO_VIP, Student.TIPO_LUTAS)
+                .contains(studentType)) {
+            throw new BusinessException("Categoria inválida — use Civil, Militar, VIP ou Lutas.");
         }
+        String turma = instrutor ? null
+                : br.gov.goias.secami.academy.student.StudentService.turmaValida(studentType, turmaLutas);
         Student s = pendente(studentId);
         s.setStudentType(instrutor ? Student.TIPO_INSTRUTOR : studentType);
+        s.setTurmaLutas(turma);
         s.setStatusCadastro(Student.STATUS_APROVADO);
         s.setMotivoRejeicao(null);
         students.save(s);

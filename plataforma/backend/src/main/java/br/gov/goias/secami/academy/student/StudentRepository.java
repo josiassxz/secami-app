@@ -68,4 +68,7 @@ public interface StudentRepository extends JpaRepository<Student, UUID> {
     /** Alunos aprovados de um tipo (ex.: civis — os sujeitos à regra do atestado). */
     @EntityGraph(attributePaths = "department")
     java.util.List<Student> findByDeletedAtIsNullAndStatusCadastroAndStudentType(String statusCadastro, String studentType);
+
+    @EntityGraph(attributePaths = "department")
+    java.util.List<Student> findByDeletedAtIsNullAndStatusCadastroAndStudentTypeIn(String statusCadastro, java.util.Collection<String> tipos);
 }

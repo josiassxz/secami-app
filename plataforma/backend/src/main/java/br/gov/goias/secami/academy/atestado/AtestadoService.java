@@ -241,7 +241,8 @@ public class AtestadoService {
     }
 
     private List<Student> civisAprovados() {
-        return students.findByDeletedAtIsNullAndStatusCadastroAndStudentType(Student.STATUS_APROVADO, Student.TIPO_CIVIL);
+        return students.findByDeletedAtIsNullAndStatusCadastroAndStudentTypeIn(Student.STATUS_APROVADO,
+                java.util.List.of(Student.TIPO_CIVIL, Student.TIPO_LUTAS));
     }
 
     // ---------- bloqueio automático ----------

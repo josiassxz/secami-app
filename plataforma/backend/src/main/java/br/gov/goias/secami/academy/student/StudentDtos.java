@@ -19,7 +19,7 @@ public final class StudentDtos {
             UUID photoId, String atestadoNumero, LocalDate atestadoData,
             boolean active, String situacao, boolean atestadoValido, Integer diasParaVencimentoAtestado,
             LocalDate vencimentoAtestado, LocalDate cadastradoEm, boolean bloqueioAtestado,
-            UUID atestadoArquivoId) {
+            UUID atestadoArquivoId, String turmaLutas) {
 
         public static Response from(Student s, boolean maskCpf) {
             String cpf = maskCpf ? Cpf.mask(s.getCpf()) : Cpf.format(s.getCpf());
@@ -36,7 +36,7 @@ public final class StudentDtos {
                     s.isActive(), s.getSituacao(), s.atestadoValido(hoje), dias,
                     vencimento, s.getCadastradoEm(), s.isBloqueioAtestado(),
                     // PDF do atestado vigente: o do cadastro ou, depois, o último aprovado.
-                    s.getAtestadoArquivoId());
+                    s.getAtestadoArquivoId(), s.getTurmaLutas());
         }
     }
 
@@ -45,7 +45,7 @@ public final class StudentDtos {
             /** Validado no serviço só quando muda (há CPFs antigos inválidos que não podem travar a edição). */
             String cpf,
             String matricula,
-            String studentType,     // Civil | Militar | VIP | Instrutor
+            String studentType,     // Civil | Militar | VIP | Lutas | Instrutor
             UUID departmentId,
             String phone,
             String email,
@@ -57,7 +57,9 @@ public final class StudentDtos {
             String atestadoNumero,
             LocalDate atestadoData,
             Boolean active,
-            String situacao
+            String situacao,
+            /** Só pro perfil Lutas: MASCULINO ou FEMININO. */
+            String turmaLutas
     ) {}
 
     /** Aluno edita apenas o próprio perfil. */

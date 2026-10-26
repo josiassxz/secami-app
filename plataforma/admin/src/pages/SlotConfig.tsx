@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { mensagemDeErro } from "@/lib/erros";
+import { cn } from "@/lib/utils";
 import { toast } from "@/lib/toast";
 import { PageHeader } from "@/components/PageHeader";
 import { Modal } from "@/components/Modal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge, Button, Card, Input, Label, Table, TableSkeleton, TBody, TD, TH, THead, TR } from "@/components/ui";
-import { AlertCircle, DoorOpen, Pencil, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, DoorOpen, Pencil, Plus, Swords, Trash2 } from "lucide-react";
 
 const empty = { slotStart: "", slotEnd: "", maxCapacity: 40, civilRestricted: false, blocked: false, blockReason: "" };
 
@@ -61,6 +62,93 @@ function JanelaCatraca() {
   );
 }
 
+
+type ConfigLutas = { masculinoDias: number[]; femininoDias: number[]; inicio: string; fim: string; folgaSaidaHoras: number };
+const DIAS = [
+  { n: 1, rotulo: "Seg" }, { n: 2, rotulo: "Ter" }, { n: 3, rotulo: "Qua" }, { n: 4, rotulo: "Qui" },
+  { n: 5, rotulo: "Sex" }, { n: 6, rotulo: "Sáb" }, { n: 7, rotulo: "Dom" },
+];
+
+/** Turmas do perfil Lutas: dias e horário em que a catraca abre sem agendamento. */
+function TurmasLutas() {
+  const qc = useQueryClient();
+  const atual = useQuery({ queryKey: ["config-lutas"], queryFn: () => api<ConfigLutas>(`/admin/configuracoes/lutas`) });
+  const [form, setForm] = useState<ConfigLutas | null>(null);
+  const valor = form ?? atual.data ?? null;
+  const salvar = useMutation({
+    mutationFn: (c: ConfigLutas) => api<ConfigLutas>(`/admin/configuracoes/lutas`, { method: "PUT", body: JSON.stringify(c) }),
+    onSuccess: (r) => {
+      qc.setQueryData(["config-lutas"], r);
+      setForm(null);
+      toast("success", "Turmas de Lutas salvas.");
+    },
+    onError: (e) => toast("error", mensagemDeErro(e, "Não foi possível salvar as turmas de Lutas.")),
+  });
+
+  function alternar(turma: "masculinoDias" | "femininoDias", dia: number) {
+    if (!valor) return;
+    const dias = valor[turma].includes(dia) ? valor[turma].filter((d) => d !== dia) : [...valor[turma], dia].sort();
+    setForm({ ...valor, [turma]: dias });
+  }
+
+  const abre = valor ? menos20(valor.inicio) : "";
+  const fecha = valor ? maisHoras(valor.fim, valor.folgaSaidaHoras) : "";
+
+  return (
+    <Card className="mb-6 p-4">
+      <div className="flex items-start gap-3">
+        <Swords className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+        <div className="min-w-0 flex-1">
+          <p className="font-semibold text-content">Turmas de Lutas</p>
+          <p className="text-sm text-content-soft">
+            Nos dias marcados, a catraca abre para a turma no horário da aula sem precisar agendar
+            {valor ? ` (das ${abre} às ${fecha})` : ""}. Fora disso o aluno de Lutas agenda como civil.
+            A aula não ocupa vaga nos horários da academia.
+          </p>
+        </div>
+      </div>
+      {valor && (
+        <div className="mt-4 space-y-3">
+          {(["masculinoDias", "femininoDias"] as const).map((turma) => (
+            <div key={turma} className="flex flex-wrap items-center gap-2">
+              <span className="w-24 text-sm font-medium text-content">{turma === "masculinoDias" ? "Masculino" : "Feminino"}</span>
+              {DIAS.map((d) => (
+                <button key={d.n} type="button" aria-pressed={valor[turma].includes(d.n)}
+                  aria-label={`${turma === "masculinoDias" ? "Masculino" : "Feminino"} ${d.rotulo}`}
+                  onClick={() => alternar(turma, d.n)}
+                  className={cn("rounded-full px-3 py-1 text-xs font-semibold transition-colors",
+                    valor[turma].includes(d.n) ? "bg-brand text-brand-fg" : "bg-surface-alt text-content-soft hover:text-content")}>
+                  {d.rotulo}
+                </button>
+              ))}
+            </div>
+          ))}
+          <div className="flex flex-wrap items-end gap-3">
+            <div><Label htmlFor="lutas-inicio">Início da aula</Label>
+              <Input id="lutas-inicio" type="time" className="w-32" value={valor.inicio} onChange={(e) => setForm({ ...valor, inicio: e.target.value })} /></div>
+            <div><Label htmlFor="lutas-fim">Fim da aula</Label>
+              <Input id="lutas-fim" type="time" className="w-32" value={valor.fim} onChange={(e) => setForm({ ...valor, fim: e.target.value })} /></div>
+            <div><Label htmlFor="lutas-folga">Folga para sair (horas)</Label>
+              <Input id="lutas-folga" type="number" min={0} max={6} className="w-24" value={valor.folgaSaidaHoras}
+                onChange={(e) => setForm({ ...valor, folgaSaidaHoras: Number(e.target.value) })} /></div>
+            <Button loading={salvar.isPending} disabled={!form} onClick={() => form && salvar.mutate(form)}>Salvar turmas</Button>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+function menos20(hhmm: string) {
+  const [h, m] = hhmm.split(":").map(Number);
+  const t = h * 60 + m - 20;
+  return `${String(Math.floor(t / 60)).padStart(2, "0")}:${String(t % 60).padStart(2, "0")}`;
+}
+function maisHoras(hhmm: string, horas: number) {
+  const [h, m] = hhmm.split(":").map(Number);
+  return `${String((h + horas) % 24).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
 export default function SlotConfig() {
   const qc = useQueryClient();
   const [edit, setEdit] = useState<any>(null);
@@ -106,6 +194,7 @@ export default function SlotConfig() {
         actions={<Button onClick={openNew}><Plus className="h-4 w-4" /> Novo horário</Button>}
       />
       <JanelaCatraca />
+      <TurmasLutas />
       <Card className="overflow-hidden">
         {isLoading ? (
           <TableSkeleton rows={6} />

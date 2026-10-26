@@ -4,7 +4,7 @@ import { api, downloadMedia } from "@/lib/api";
 import { mensagemDeErro } from "@/lib/erros";
 import { toast } from "@/lib/toast";
 import { useAuth } from "@/lib/auth";
-import { tomDoTipo } from "@/lib/papeis";
+import { rotuloDoTipo, tomDoTipo } from "@/lib/papeis";
 import { PageHeader } from "@/components/PageHeader";
 import { Modal } from "@/components/Modal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -26,10 +26,11 @@ type Student = {
   active: boolean; situacao: string;
   atestadoValido: boolean; diasParaVencimentoAtestado?: number | null;
   atestadoArquivoId?: string | null;
+  turmaLutas?: string | null;
 };
 
 const emptyForm = {
-  fullName: "", cpf: "", matricula: "", studentType: "Civil",
+  fullName: "", cpf: "", matricula: "", studentType: "Civil", turmaLutas: "",
   departmentId: "", phone: "", email: "", birthDate: "",
   weightKg: "", heightCm: "", goal: "",
   atestadoNumero: "", atestadoData: "", situacao: "ATIVO",
@@ -163,7 +164,7 @@ export default function Students() {
       setEdit(full);
       setForm({
         fullName: full.fullName ?? "", cpf: full.cpf ?? "",
-        matricula: full.matricula ?? "", studentType: full.studentType ?? "Civil",
+        matricula: full.matricula ?? "", studentType: full.studentType ?? "Civil", turmaLutas: full.turmaLutas ?? "",
         departmentId: full.departmentId ?? "", phone: full.phone ?? "",
         email: full.email ?? "", birthDate: full.birthDate ?? "",
         weightKg: full.weightKg != null ? String(full.weightKg) : "",
@@ -185,6 +186,7 @@ export default function Students() {
       departmentId: form.departmentId || null,
       birthDate: form.birthDate || null,
       atestadoData: form.atestadoData || null,
+      turmaLutas: form.studentType === "Lutas" ? form.turmaLutas || null : null,
     };
   }
 
@@ -228,7 +230,7 @@ export default function Students() {
                       <TR key={s.id}>
                         <TD><div className="flex items-center gap-3"><Avatar name={s.fullName} /><span className="font-medium">{s.fullName}</span></div></TD>
                         <TD className="tabular-nums text-content-soft">{s.cpf}</TD>
-                        <TD><Badge tone={tomDoTipo(s.studentType)}>{s.studentType}</Badge></TD>
+                        <TD><Badge tone={tomDoTipo(s.studentType)}>{rotuloDoTipo(s.studentType, s.turmaLutas)}</Badge></TD>
                         <TD className="text-content-soft">{s.departmentName || "—"}</TD>
                         <TD><div className="flex items-center gap-1"><Badge tone={at.tone}>{at.text}</Badge>{botaoAtestado(s)}</div></TD>
                         <TD>
@@ -268,7 +270,7 @@ export default function Students() {
                           <div className="tabular-nums text-xs text-content-soft">{s.cpf}</div>
                         </div>
                       </div>
-                      <Badge tone={tomDoTipo(s.studentType)}>{s.studentType}</Badge>
+                      <Badge tone={tomDoTipo(s.studentType)}>{rotuloDoTipo(s.studentType, s.turmaLutas)}</Badge>
                     </div>
                     <div className="flex items-center justify-between gap-3 pl-11">
                       <span className="truncate text-xs text-content-soft">{s.departmentName || "Sem secretaria"}</span>
@@ -323,7 +325,7 @@ export default function Students() {
               <div><Label htmlFor="sm">Matrícula</Label><Input id="sm" value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label htmlFor="st">Tipo</Label><Select id="st" value={form.studentType} onChange={(e) => setForm({ ...form, studentType: e.target.value })}><option value="Civil">Civil</option><option value="Militar">Militar</option><option value="VIP">VIP</option><option value="Instrutor">Instrutor</option></Select>{form.studentType === "Instrutor" && (<p className="mt-1 text-xs text-content-soft">Instrutor prescreve as fichas de treino e não agenda horário.</p>)}{form.studentType === "VIP" && (<p className="mt-1 text-xs text-content-soft">VIP tem as mesmas regras do Militar: catraca sempre liberada.</p>)}</div>
+              <div><Label htmlFor="st">Tipo</Label><Select id="st" value={form.studentType} onChange={(e) => setForm({ ...form, studentType: e.target.value })}><option value="Civil">Civil</option><option value="Militar">Militar</option><option value="VIP">VIP</option><option value="Lutas">Lutas</option><option value="Instrutor">Instrutor</option></Select>{form.studentType === "Lutas" && (<div className="mt-2"><Label htmlFor="turma-lutas">Turma de Lutas</Label><Select id="turma-lutas" value={form.turmaLutas} onChange={(e) => setForm({ ...form, turmaLutas: e.target.value })}><option value="" disabled>Escolha a turma</option><option value="MASCULINO">Masculino</option><option value="FEMININO">Feminino</option></Select><p className="mt-1 text-xs text-content-soft">Nos dias da turma a catraca abre no horário da aula sem agendar; fora disso agenda como civil.</p></div>)}{form.studentType === "Instrutor" && (<p className="mt-1 text-xs text-content-soft">Instrutor prescreve as fichas de treino e não agenda horário.</p>)}{form.studentType === "VIP" && (<p className="mt-1 text-xs text-content-soft">VIP tem as mesmas regras do Militar: catraca sempre liberada.</p>)}</div>
               <div><Label htmlFor="sb">Data de nascimento</Label><Input id="sb" type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} /></div>
             </div>
           </div>

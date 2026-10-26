@@ -267,6 +267,31 @@ class RegistrationIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
+    void aprovarComoLutas_exigeATurma() throws Exception {
+        String cpf = CpfTestFactory.next();
+        mockMvc.perform(cadastroRequest(dadosValidos("lutas." + UUID.randomUUID() + "@goias.gov.br", cpf)))
+                .andExpect(status().isCreated());
+        UUID id = students.findByCpf(cpf).orElseThrow().getId();
+        String tokenAdmin = loginAs("admin");
+
+        mockMvc.perform(authed(post("/admin/cadastros/" + id + "/aprovar"), tokenAdmin)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"studentType\":\"Lutas\"}"))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("turma")));
+        mockMvc.perform(authed(post("/admin/cadastros/" + id + "/aprovar"), tokenAdmin)
+                        .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                        .content("{\"studentType\":\"Lutas\",\"turmaLutas\":\"feminino\"}"))
+                .andExpect(status().isOk());
+
+        var s = students.findById(id).orElseThrow();
+        assertThat(s.getStudentType()).isEqualTo("Lutas");
+        assertThat(s.getTurmaLutas()).isEqualTo("FEMININO");
+        assertThat(s.comoCivil()).isTrue();         // fora da aula agenda como civil
+        assertThat(s.sujeitoAoAtestado()).isTrue(); // regra do atestado vale
+    }
+
+    @Test
     void aprovarComCategoriaInvalida_retorna422() throws Exception {
         String email = "categoria.invalida." + UUID.randomUUID() + "@goias.gov.br";
         mockMvc.perform(cadastroRequest(dadosValidos(email, CpfTestFactory.next())))

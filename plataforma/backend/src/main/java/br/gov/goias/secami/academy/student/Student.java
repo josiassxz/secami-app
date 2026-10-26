@@ -45,14 +45,23 @@ public class Student {
     public static final String TIPO_MILITAR = "Militar";
     /** Mesmas regras do Militar (catraca sempre liberada, fora da regra do atestado). */
     public static final String TIPO_VIP = "VIP";
+    /** Civil que, nos dias da turma, tem a catraca liberada no horário da aula
+     *  sem agendar (ver LutasAcessoService); fora disso agenda como civil. */
+    public static final String TIPO_LUTAS = "Lutas";
+    public static final String TURMA_MASCULINO = "MASCULINO";
+    public static final String TURMA_FEMININO = "FEMININO";
     /** Perfil de instrutor (prescreve fichas de treino) — não é aluno: não
      *  agenda horário; o login dele tem o papel 'professor' em vez de 'aluno'. */
     public static final String TIPO_INSTRUTOR = "Instrutor";
     public static final java.util.Set<String> TIPOS =
-            java.util.Set.of(TIPO_CIVIL, TIPO_MILITAR, TIPO_VIP, TIPO_INSTRUTOR);
+            java.util.Set.of(TIPO_CIVIL, TIPO_MILITAR, TIPO_VIP, TIPO_LUTAS, TIPO_INSTRUTOR);
 
     @Column(name = "student_type", nullable = false)
-    private String studentType = TIPO_CIVIL;  // Civil | Militar | VIP | Instrutor
+    private String studentType = TIPO_CIVIL;  // Civil | Militar | VIP | Lutas | Instrutor
+
+    /** Só pro perfil Lutas: MASCULINO ou FEMININO. */
+    @Column(name = "turma_lutas")
+    private String turmaLutas;
 
     public boolean isInstrutor() {
         return TIPO_INSTRUTOR.equals(studentType);
@@ -181,7 +190,12 @@ public class Student {
     /** A regra do atestado (validade de 1 ano, aviso e bloqueio) só vale pra
      *  aluno civil — militar e instrutor ficam de fora. */
     public boolean sujeitoAoAtestado() {
-        return studentType == null || TIPO_CIVIL.equals(studentType);
+        return comoCivil();
+    }
+
+    /** Civil e Lutas agendam como civil (capacidade, horários restritos, catraca por agendamento). */
+    public boolean comoCivil() {
+        return studentType == null || TIPO_CIVIL.equals(studentType) || TIPO_LUTAS.equals(studentType);
     }
 
     /** Data de onde conta a validade: a do atestado; sem ela, a do cadastro original. */

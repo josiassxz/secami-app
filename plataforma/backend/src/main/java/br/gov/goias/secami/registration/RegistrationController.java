@@ -65,7 +65,7 @@ public class RegistrationController {
     @PostMapping("/admin/cadastros/{id}/aprovar")
     @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
     public PendenteResponse aprovar(@PathVariable UUID id, @Valid @RequestBody AprovarRequest req) {
-        return PendenteResponse.from(service.aprovar(id, req.studentType(), req.perfil()));
+        return PendenteResponse.from(service.aprovar(id, req.studentType(), req.perfil(), req.turmaLutas()));
     }
 
     @PostMapping("/admin/cadastros/{id}/rejeitar")

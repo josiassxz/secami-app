@@ -133,6 +133,7 @@ const badgeStyles: Record<string, string> = {
   confirmado: "bg-success/15 text-success",
   faltou: "bg-danger/15 text-danger",
   vip: "bg-gold-container text-content",
+  lutas: "bg-surface-alt text-content ring-1 ring-line",
   cancelado: "bg-surface-alt text-content-soft",
   info: "bg-info/15 text-info",
   warning: "bg-warning/15 text-warning",

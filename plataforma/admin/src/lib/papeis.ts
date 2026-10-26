@@ -16,5 +16,12 @@ export function rotuloPapel(papel: string): string {
 export function tomDoTipo(tipo: string): string {
   if (tipo === "Instrutor") return "success";
   if (tipo === "VIP") return "vip";
+  if (tipo === "Lutas") return "lutas";
   return tipo === "Militar" ? "warning" : "info";
+}
+
+/** Rótulo do tipo na listagem: Lutas mostra a turma ("Lutas · Fem"). */
+export function rotuloDoTipo(tipo: string, turmaLutas?: string | null): string {
+  if (tipo !== "Lutas" || !turmaLutas) return tipo;
+  return `Lutas · ${turmaLutas === "FEMININO" ? "Fem" : "Masc"}`;
 }

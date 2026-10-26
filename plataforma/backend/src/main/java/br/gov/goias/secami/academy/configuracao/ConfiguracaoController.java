@@ -23,6 +23,19 @@ public class ConfiguracaoController {
         return new Catraca(service.janelaCatracaHoras());
     }
 
+    @GetMapping("/admin/configuracoes/lutas")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
+    public ConfiguracaoService.Lutas lutas() {
+        return service.lutas();
+    }
+
+    /** Vale a partir da próxima liberação do dia (a de hoje, se já feita, fica como está). */
+    @PutMapping("/admin/configuracoes/lutas")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
+    public ConfiguracaoService.Lutas definirLutas(@RequestBody ConfiguracaoService.Lutas req) {
+        return service.definirLutas(req);
+    }
+
     /** Vale pros próximos agendamentos; os já liberados mantêm a janela da época. */
     @PutMapping("/admin/configuracoes/catraca")
     @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")

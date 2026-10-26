@@ -95,7 +95,7 @@ public final class RegistrationDtos {
      * o perfil ({@code aluno}, padrão, ou {@code instrutor}) e, pra aluno, a
      * categoria (Civil/Militar). Instrutor não tem categoria.
      */
-    public record AprovarRequest(String studentType, String perfil) {
+    public record AprovarRequest(String studentType, String perfil, String turmaLutas) {
 
         public static final String PERFIL_ALUNO = "aluno";
         public static final String PERFIL_INSTRUTOR = "instrutor";
@@ -105,7 +105,7 @@ public final class RegistrationDtos {
         }
 
         @com.fasterxml.jackson.annotation.JsonIgnore
-        @AssertTrue(message = "Selecione a categoria (Civil, Militar ou VIP).")
+        @AssertTrue(message = "Selecione a categoria (Civil, Militar, VIP ou Lutas).")
         public boolean isCategoriaInformada() {
             return instrutor() || (studentType != null && !studentType.isBlank());
         }
