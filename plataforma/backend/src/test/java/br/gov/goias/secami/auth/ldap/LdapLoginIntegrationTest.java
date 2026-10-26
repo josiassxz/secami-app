@@ -152,6 +152,29 @@ class LdapLoginIntegrationTest extends AbstractIntegrationTest {
         assertThat(users.findById(conta.getId()).orElseThrow().getLdapGuid()).isEqualTo(guid);
     }
 
+    /** Caso real: no AD o mail é johnathan-ps@ e o UPN johnathan.sousa@; o
+     *  contato do aluno estava com o UPN. */
+    @Test
+    void vinculaPeloUpnQuandoOMailDoAdEDiferenteDoContato() throws Exception {
+        AppUser conta = contaLocal("pessoal." + UUID.randomUUID() + "@gmail.com", true);
+        String upn = "ad.upn." + UUID.randomUUID() + "@goias.gov.br";
+        Student aluno = new Student();
+        aluno.setFullName("Johnathan Pereira de Sousa");
+        aluno.setCpf(CpfTestFactory.next());
+        aluno.setEmail(upn);
+        aluno.setUserId(conta.getId());
+        students.save(aluno);
+        UUID guid = UUID.randomUUID();
+        String sam = sam();
+        when(directory.authenticate(sam, "senha-do-governo")).thenReturn(LdapAuthResult.autenticado(
+                new LdapUser(guid, sam, "outro-mail." + UUID.randomUUID() + "@goias.gov.br",
+                        "Johnathan Pereira de Sousa", null, upn)));
+
+        login(sam, "senha-do-governo").andExpect(status().isOk());
+
+        assertThat(users.findById(conta.getId()).orElseThrow().getLdapGuid()).isEqualTo(guid);
+    }
+
     @Test
     void recusaVinculoPorEmailDeContatoQuandoOPrimeiroNomeNaoBate() throws Exception {
         AppUser conta = contaLocal("pessoal." + UUID.randomUUID() + "@gmail.com", true);

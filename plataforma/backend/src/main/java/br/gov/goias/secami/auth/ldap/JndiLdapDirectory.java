@@ -202,7 +202,7 @@ public class JndiLdapDirectory implements LdapDirectory {
         String email = primeiroNaoVazio(texto(a, "mail"), upn);
         String nome = primeiroNaoVazio(texto(a, "displayName"), texto(a, "cn"), sam);
         return new LdapUser(lerGuid(a.get("objectGUID")), sam, email, nome,
-                extrairCpf(texto(a, cfg.getCpfAttribute())));
+                extrairCpf(texto(a, cfg.getCpfAttribute())), upn);
     }
 
     private static String texto(Attributes a, String nome) throws NamingException {

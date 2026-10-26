@@ -138,10 +138,13 @@ public class LdapAuthProvider implements AuthProvider {
             Optional<AppUser> porSam = users.findBySamAccountNameIgnoreCase(ad.samAccountName());
             if (porSam.isPresent()) return porSam;
         }
-        if (ad.email() != null) {
-            Optional<AppUser> porEmail = users.findByEmailIgnoreCase(ad.email());
+        // O mail e o UPN do AD podem ser diferentes — tenta os dois.
+        for (String email : ad.emails()) {
+            Optional<AppUser> porEmail = users.findByEmailIgnoreCase(email);
             if (porEmail.isPresent()) return porEmail;
-            Optional<AppUser> porEmailDeContato = acharPorEmailDeContato(ad);
+        }
+        for (String email : ad.emails()) {
+            Optional<AppUser> porEmailDeContato = acharPorEmailDeContato(ad, email);
             if (porEmailDeContato.isPresent()) return porEmailDeContato;
         }
         return acharPorCpf(ad);
@@ -153,8 +156,8 @@ public class LdapAuthProvider implements AuthProvider {
      * depois (planilha/AD) só no contato. Mesma trava do CPF (primeiro nome tem
      * que bater), e e-mail repetido em mais de um aluno não vincula ninguém.
      */
-    private Optional<AppUser> acharPorEmailDeContato(LdapUser ad) {
-        List<Student> alunos = students.findByEmailIgnoreCaseAndDeletedAtIsNull(ad.email().trim()).stream()
+    private Optional<AppUser> acharPorEmailDeContato(LdapUser ad, String email) {
+        List<Student> alunos = students.findByEmailIgnoreCaseAndDeletedAtIsNull(email).stream()
                 .filter(s -> s.getUserId() != null)
                 .toList();
         if (alunos.size() != 1) {
