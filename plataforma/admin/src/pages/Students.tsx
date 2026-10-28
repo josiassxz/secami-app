@@ -52,6 +52,11 @@ function atestadoLabel(dias: number | null | undefined) {
   return { text: "válido", tone: "success" as const };
 }
 
+/** "Novo aluno" escondido por enquanto (28/10/2026): ele cria só a ficha, sem
+ *  conta de login, e a pessoa não consegue entrar pelo governo. Alunos novos se
+ *  cadastram pelo app. Pra voltar a mostrar, troque para true. */
+const MOSTRAR_NOVO_ALUNO = false;
+
 export default function Students() {
   const { hasRole } = useAuth();
   const qc = useQueryClient();
@@ -193,7 +198,7 @@ export default function Students() {
   return (
     <div>
       <PageHeader title="Alunos" subtitle={data ? `${total} cadastrados` : undefined}
-        actions={canEdit && (<Button onClick={openNew}><Plus className="h-4 w-4" /> Novo aluno</Button>)} />
+        actions={MOSTRAR_NOVO_ALUNO && canEdit && (<Button onClick={openNew}><Plus className="h-4 w-4" /> Novo aluno</Button>)} />
       <Card className="overflow-hidden">
         <div className="flex flex-col gap-3 border-b border-line p-4 sm:flex-row sm:items-center">
           <div className="relative w-full max-w-sm">

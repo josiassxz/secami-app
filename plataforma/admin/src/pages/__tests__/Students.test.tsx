@@ -258,77 +258,11 @@ describe("Students - paginação", () => {
 });
 
 describe("Students - novo aluno", () => {
-  it("não mostra o botão 'Novo aluno' para papéis sem permissão de edição", async () => {
-    mockAuth(["professor"]);
+  it("o botão 'Novo aluno' fica escondido por enquanto, inclusive para admin", async () => {
+    mockAuth(["admin"]);
     setupApi();
     renderWithProviders(<Students />);
     await screen.findByRole("table");
     expect(screen.queryByRole("button", { name: /Novo aluno/ })).not.toBeInTheDocument();
-  });
-
-  it("valida campos obrigatórios antes de enviar o formulário", async () => {
-    mockAuth(["admin"]);
-    setupApi({ list: page({ content: [], totalElements: 0 }) });
-    renderWithProviders(<Students />);
-    await screen.findByText("Nenhum aluno cadastrado");
-
-    fireEvent.click(screen.getByRole("button", { name: /Novo aluno/ }));
-    expect(screen.getByRole("heading", { name: "Novo aluno" })).toBeInTheDocument();
-
-    apiMock.mockClear();
-    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
-
-    expect(await screen.findByText("Informe o nome completo.")).toBeInTheDocument();
-    const createCalls = apiMock.mock.calls.filter(
-      ([p, opts]) => p === "/students" && (opts as any)?.method === "POST"
-    );
-    expect(createCalls).toHaveLength(0);
-
-    // Preenche só o nome — ainda falta o CPF.
-    fireEvent.change(screen.getByLabelText("Nome completo"), { target: { value: "Novo Aluno" } });
-    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
-    expect(await screen.findByText("Informe o CPF.")).toBeInTheDocument();
-    expect(
-      apiMock.mock.calls.filter(([p, opts]) => p === "/students" && (opts as any)?.method === "POST")
-    ).toHaveLength(0);
-  });
-
-  it("mostra o erro do backend quando a criação falha", async () => {
-    mockAuth(["admin"]);
-    setupApi({
-      list: page({ content: [], totalElements: 0 }),
-      onCreate: () => Promise.reject(new ApiError(409, "Já existe aluno com esse CPF.")),
-    });
-    renderWithProviders(<Students />);
-    await screen.findByText("Nenhum aluno cadastrado");
-
-    fireEvent.click(screen.getByRole("button", { name: /Novo aluno/ }));
-    fireEvent.change(screen.getByLabelText("Nome completo"), { target: { value: "Novo Aluno" } });
-    fireEvent.change(screen.getByLabelText("CPF"), { target: { value: "12345678900" } });
-
-    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
-
-    expect(await screen.findByText("Já existe aluno com esse CPF.")).toBeInTheDocument();
-  });
-
-  it("envia e fecha o modal quando a criação é bem-sucedida", async () => {
-    mockAuth(["admin"]);
-    setupApi({ list: page({ content: [], totalElements: 0 }) });
-    renderWithProviders(<Students />);
-    await screen.findByText("Nenhum aluno cadastrado");
-
-    fireEvent.click(screen.getByRole("button", { name: /Novo aluno/ }));
-    fireEvent.change(screen.getByLabelText("Nome completo"), { target: { value: "Novo Aluno" } });
-    fireEvent.change(screen.getByLabelText("CPF"), { target: { value: "12345678900" } });
-
-    fireEvent.click(screen.getByRole("button", { name: "Salvar" }));
-
-    await waitFor(() => {
-      expect(screen.queryByRole("heading", { name: "Novo aluno" })).not.toBeInTheDocument();
-    });
-    const createCalls = apiMock.mock.calls.filter(
-      ([p, opts]) => p === "/students" && (opts as any)?.method === "POST"
-    );
-    expect(createCalls).toHaveLength(1);
   });
 });
