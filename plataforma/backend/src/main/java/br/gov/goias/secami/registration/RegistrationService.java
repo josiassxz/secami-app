@@ -4,6 +4,7 @@ import br.gov.goias.secami.academy.department.Department;
 import br.gov.goias.secami.academy.department.DepartmentRepository;
 import br.gov.goias.secami.academy.media.Media;
 import br.gov.goias.secami.academy.media.MediaStorageService;
+import br.gov.goias.secami.academy.media.TipoAtestado;
 import br.gov.goias.secami.academy.student.Student;
 import br.gov.goias.secami.academy.student.StudentPerfilService;
 import br.gov.goias.secami.academy.student.StudentRepository;
@@ -74,11 +75,9 @@ public class RegistrationService {
             throw new BusinessException("Responda todas as perguntas do questionário PAR-Q.");
         }
         if (atestado == null || atestado.isEmpty()) {
-            throw new BusinessException("O atestado médico em PDF é obrigatório.");
+            throw new BusinessException("O atestado médico (PDF ou foto) é obrigatório.");
         }
-        if (!"application/pdf".equalsIgnoreCase(atestado.getContentType())) {
-            throw new BusinessException("O atestado médico precisa ser um arquivo PDF.");
-        }
+        TipoAtestado tipoAtestado = TipoAtestado.de(atestado);
 
         String email = req.email().trim().toLowerCase();
         String cpf = Cpf.normalize(req.cpf());
@@ -115,7 +114,7 @@ public class RegistrationService {
         user.getRoles().add(Roles.ALUNO);
         user = users.save(user);
 
-        Media atestadoMedia = storage.save(atestado, Media.TIPO_ATESTADO_MEDICO);
+        Media atestadoMedia = storage.saveAtestado(atestado, tipoAtestado);
 
         Student s = new Student();
         s.setUserId(user.getId());
@@ -212,11 +211,9 @@ public class RegistrationService {
             throw new BusinessException("Seu cadastro já foi aprovado. Entre normalmente no aplicativo.");
         }
         if (atestado == null || atestado.isEmpty()) {
-            throw new BusinessException("O atestado médico em PDF é obrigatório.");
+            throw new BusinessException("O atestado médico (PDF ou foto) é obrigatório.");
         }
-        if (!"application/pdf".equalsIgnoreCase(atestado.getContentType())) {
-            throw new BusinessException("O atestado médico precisa ser um arquivo PDF.");
-        }
+        TipoAtestado tipoAtestado = TipoAtestado.de(atestado);
         LocalDate hoje = LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo"));
         if (req.atestadoEmissaoData().isAfter(hoje)) {
             throw new BusinessException("A data de emissão não pode ser no futuro.");
@@ -224,7 +221,7 @@ public class RegistrationService {
         if (req.atestadoEmissaoData().plusYears(1).isBefore(hoje)) {
             throw new BusinessException("Este atestado tem mais de 1 ano e já está vencido. Envie um atestado recente.");
         }
-        Media media = storage.save(atestado, Media.TIPO_ATESTADO_MEDICO);
+        Media media = storage.saveAtestado(atestado, tipoAtestado);
         s.setMedicoNome(req.medicoNome().trim());
         s.setMedicoCrm(req.medicoCrm().trim());
         s.setMedicoCrmUf(req.medicoCrmUf());

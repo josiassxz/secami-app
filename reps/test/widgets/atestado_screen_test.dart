@@ -104,8 +104,8 @@ void main() {
   }
 
   Future<void> escolherPdf(WidgetTester tester) async {
-    await tester.ensureVisible(find.text('Selecionar arquivo PDF'));
-    await tester.tap(find.text('Selecionar arquivo PDF'));
+    await tester.ensureVisible(find.text('Selecionar PDF ou foto'));
+    await tester.tap(find.text('Selecionar PDF ou foto'));
     await tester.pumpAndSettle();
   }
 
@@ -141,7 +141,7 @@ void main() {
     expect(find.text('NOME DO MÉDICO'), findsOneWidget);
     expect(find.text('CRM'), findsOneWidget);
     expect(find.text('UF'), findsWidgets);
-    expect(find.text('Selecionar arquivo PDF'), findsOneWidget);
+    expect(find.text('Selecionar PDF ou foto'), findsOneWidget);
     expect(_botaoEnviar, findsOneWidget);
   });
 
@@ -158,7 +158,7 @@ void main() {
     expect(find.text('Informe o nome do médico'), findsOneWidget);
     expect(find.text('Informe o CRM'), findsOneWidget);
     expect(find.text('Selecione'), findsOneWidget);
-    expect(find.text('Anexe o atestado médico em PDF.'), findsOneWidget);
+    expect(find.text('Anexe o atestado médico (PDF ou foto).'), findsOneWidget);
     expect(api.envios, isEmpty);
   });
 
@@ -170,7 +170,7 @@ void main() {
     await tocarEnviar(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('Anexe o atestado médico em PDF.'), findsOneWidget);
+    expect(find.text('Anexe o atestado médico (PDF ou foto).'), findsOneWidget);
     expect(find.text('Informe o nome do médico'), findsNothing);
     expect(api.envios, isEmpty);
   });
@@ -185,17 +185,28 @@ void main() {
     await escolherPdf(tester);
 
     expect(find.text('O arquivo deve ter no máximo 10MB.'), findsOneWidget);
-    expect(find.text('Selecionar arquivo PDF'), findsOneWidget);
+    expect(find.text('Selecionar PDF ou foto'), findsOneWidget);
   });
 
-  testWidgets('arquivo que não é PDF é recusado', (tester) async {
+  testWidgets('arquivo que não é PDF nem foto é recusado', (tester) async {
+    viewport(tester, const Size(800, 1400));
+    proximoPdf = () => _pdf(nome: 'documento.docx');
+    await pumpTela(tester);
+
+    await escolherPdf(tester);
+
+    expect(find.text('Selecione um PDF ou uma foto (JPG ou PNG).'), findsOneWidget);
+  });
+
+  testWidgets('foto do atestado (JPG) é aceita', (tester) async {
     viewport(tester, const Size(800, 1400));
     proximoPdf = () => _pdf(nome: 'foto.jpg');
     await pumpTela(tester);
 
     await escolherPdf(tester);
 
-    expect(find.text('Selecione um arquivo em PDF.'), findsOneWidget);
+    expect(find.text('Selecione um PDF ou uma foto (JPG ou PNG).'), findsNothing);
+    expect(find.text('foto.jpg'), findsOneWidget);
   });
 
   testWidgets('envia, mostra o sucesso e recarrega a situação', (tester) async {

@@ -220,13 +220,13 @@ class _ReenvioAtestadoScreenState extends ConsumerState<ReenvioAtestadoScreen> {
                   onUfChanged: (v) => setState(() => _uf = v),
                 ),
                 const SizedBox(height: AppTheme.space20),
-                const RotuloCampoAtestado('ATESTADO MÉDICO (PDF, até 10MB)'),
+                const RotuloCampoAtestado('ATESTADO MÉDICO (PDF ou foto, até 10MB)'),
                 CampoArquivoAtestado(
                   arquivo: _arquivo,
                   erro:
                       _erroArquivo ??
                       (_tentouEnviar && _arquivo == null
-                          ? 'Anexe o atestado médico em PDF.'
+                          ? 'Anexe o atestado médico (PDF ou foto).'
                           : null),
                   onSelecionar: _enviando ? null : _selecionarArquivo,
                   onRemover: _enviando

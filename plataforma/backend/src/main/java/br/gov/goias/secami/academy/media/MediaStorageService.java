@@ -39,7 +39,18 @@ public class MediaStorageService {
     }
 
     /** Salva o arquivo em disco e cria o registro {@link Media} correspondente. */
+    /** Salva o atestado com o tipo REAL (lido do conteúdo) — ver TipoAtestado. */
+    public Media saveAtestado(MultipartFile file, TipoAtestado real) {
+        Media m = save(file, Media.TIPO_ATESTADO_MEDICO, real.extensao);
+        m.setContentType(real.contentType);
+        return repo.save(m);
+    }
+
     public Media save(MultipartFile file, String tipo) {
+        return save(file, tipo, null);
+    }
+
+    private Media save(MultipartFile file, String tipo, String extensaoForcada) {
         if (file == null || file.isEmpty()) {
             throw new BusinessException("Arquivo não enviado.");
         }
@@ -48,7 +59,8 @@ public class MediaStorageService {
                     + (maxFileSizeBytes / (1024 * 1024)) + "MB.");
         }
         String original = file.getOriginalFilename();
-        String ext = (original != null && original.contains("."))
+        String ext = extensaoForcada != null ? extensaoForcada
+                : (original != null && original.contains("."))
                 ? original.substring(original.lastIndexOf('.'))
                 : "";
         String storageKey = tipo + "/" + UUID.randomUUID() + ext;

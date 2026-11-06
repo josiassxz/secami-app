@@ -205,7 +205,7 @@ export default function Atestados() {
                   <div className="flex shrink-0 items-center gap-2">
                     <Button variant="outline" size="sm" disabled={abrindoPdf === p.id} onClick={() => verPdf(p)}>
                       {abrindoPdf === p.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
-                      Ver atestado (PDF)
+                      Ver atestado
                     </Button>
                     <Button variant="outline" size="sm" onClick={() => { setRecusar(p); setMotivo(""); setErroRecusa(null); }}>
                       Recusar

@@ -9,6 +9,25 @@ import 'package:http_parser/http_parser.dart';
 import '../../../core/config/env.dart';
 import '../../../core/network/api_client.dart';
 
+/// Atestado aceita PDF ou foto (no celular a pessoa costuma fotografar).
+const extensoesAtestado = ['pdf', 'jpg', 'jpeg', 'png'];
+
+/// Se o nome do arquivo tem uma extensão aceita para o atestado.
+bool extensaoDeAtestadoValida(String nome) {
+  final n = nome.toLowerCase();
+  return extensoesAtestado.any((e) => n.endsWith('.$e'));
+}
+
+/// Tipo declarado no envio, pela extensão (o servidor confere o conteúdo real).
+MediaType tipoDoAtestado(String nome) {
+  final n = nome.toLowerCase();
+  if (n.endsWith('.png')) return MediaType('image', 'png');
+  if (n.endsWith('.jpg') || n.endsWith('.jpeg')) {
+    return MediaType('image', 'jpeg');
+  }
+  return MediaType('application', 'pdf');
+}
+
 /// Limite do PDF do atestado (o mesmo do auto-cadastro e do backend).
 const int maxAtestadoBytes = 10 * 1024 * 1024; // 10MB
 
@@ -198,7 +217,7 @@ class AtestadoApi {
           'arquivo',
           arquivo.bytes,
           filename: arquivo.nome,
-          contentType: MediaType('application', 'pdf'),
+          contentType: tipoDoAtestado(arquivo.nome),
         ),
       ],
     );
@@ -237,7 +256,7 @@ final selecionarPdfProvider = Provider<Future<ArquivoPdf?> Function()>(
 Future<ArquivoPdf?> _selecionarPdfDoAparelho() async {
   final result = await FilePicker.pickFiles(
     type: FileType.custom,
-    allowedExtensions: ['pdf'],
+    allowedExtensions: extensoesAtestado,
     withData: true,
   );
   if (result == null || result.files.isEmpty) return null;

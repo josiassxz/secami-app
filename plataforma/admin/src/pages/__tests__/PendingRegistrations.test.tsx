@@ -248,7 +248,7 @@ describe("PendingRegistrations - atestado", () => {
     renderWithProviders(<PendingRegistrations />);
     await screen.findByText("Maria Teste da Silva");
 
-    fireEvent.click(screen.getByRole("button", { name: /Ver atestado \(PDF\)/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Ver atestado/ }));
 
     await waitFor(() => expect(downloadMediaMock).toHaveBeenCalledWith("f1"));
     await waitFor(() => expect(createObjectURL).toHaveBeenCalledWith(blob));

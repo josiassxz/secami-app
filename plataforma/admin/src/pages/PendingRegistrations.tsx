@@ -320,7 +320,7 @@ export default function PendingRegistrations() {
                       ) : (
                         <FileText className="h-4 w-4" />
                       )}
-                      Ver atestado (PDF)
+                      Ver atestado
                     </Button>
                   </div>
 

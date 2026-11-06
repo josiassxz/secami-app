@@ -48,8 +48,8 @@ Future<EscolhaPdf> escolherPdfAtestado(
     );
   }
   if (arquivo == null) return (arquivo: null, erro: null);
-  if (!arquivo.nome.toLowerCase().endsWith('.pdf')) {
-    return (arquivo: null, erro: 'Selecione um arquivo em PDF.');
+  if (!extensaoDeAtestadoValida(arquivo.nome)) {
+    return (arquivo: null, erro: 'Selecione um PDF ou uma foto (JPG ou PNG).');
   }
   if (arquivo.tamanho > maxAtestadoBytes) {
     return (arquivo: null, erro: 'O arquivo deve ter no máximo 10MB.');
@@ -226,7 +226,7 @@ class CampoArquivoAtestado extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onSelecionar,
             icon: const Icon(Icons.upload_file_outlined),
-            label: const Text('Selecionar arquivo PDF'),
+            label: const Text('Selecionar PDF ou foto'),
           )
         else
           Container(

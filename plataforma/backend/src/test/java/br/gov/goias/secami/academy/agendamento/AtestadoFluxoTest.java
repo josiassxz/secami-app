@@ -32,6 +32,7 @@ class AtestadoFluxoTest extends SchedulingTestSupport {
 
     @Autowired AtestadoService service;
     @Autowired AtestadoEnvioRepository envios;
+    @Autowired br.gov.goias.secami.academy.media.MediaRepository medias;
 
     private static final byte[] PDF = "%PDF-1.4\n%%EOF".getBytes();
 
@@ -121,6 +122,22 @@ class AtestadoFluxoTest extends SchedulingTestSupport {
         assertThat(st.get("envio").get("emissaoData").asText()).isEqualTo(hoje().minusDays(2).toString());
 
         enviar(token, hoje().toString(), PDF, "application/pdf").andExpect(status().isConflict());
+    }
+
+    /** Caso real: no celular a pessoa manda foto da câmera e o app declarava
+     *  "application/pdf" — o admin não abria. Agora vale o conteúdo real. */
+    @Test
+    void enviar_aceitaFotoEGravaOTipoReal() throws Exception {
+        Student s = civilComAtestado(hoje().minusMonths(11));
+        String token = loginAs(alunoLogado(s));
+        byte[] jpeg = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF, (byte) 0xE1, 0, 0, 'E', 'x', 'i', 'f'};
+
+        enviar(token, hoje().minusDays(1).toString(), jpeg, "application/pdf").andExpect(status().isCreated());
+
+        var envio = envios.findFirstByStudentIdOrderByEnviadoEmDesc(s.getId()).orElseThrow();
+        var media = medias.findById(envio.getArquivoId()).orElseThrow();
+        assertThat(media.getContentType()).isEqualTo("image/jpeg");
+        assertThat(media.getStorageKey()).endsWith(".jpg");
     }
 
     @Test

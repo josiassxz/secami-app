@@ -10,6 +10,8 @@ import 'package:intl/intl.dart';
 import '../../../core/theme/app_theme.dart';
 import '../data/cadastro_service.dart';
 import '../domain/cadastro_models.dart';
+import '../../academy/data/atestado_api.dart'
+    show extensaoDeAtestadoValida, extensoesAtestado;
 
 const int _maxAtestadoBytes = 10 * 1024 * 1024; // 10MB
 
@@ -149,7 +151,7 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
         if (_atestadoData == null) {
           return 'Informe a data de emissão do atestado.';
         }
-        if (_arquivo == null) return 'Anexe o atestado médico em PDF.';
+        if (_arquivo == null) return 'Anexe o atestado médico (PDF ou foto).';
         return null;
       default:
         return null;
@@ -164,7 +166,7 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
     try {
       result = await FilePicker.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf'],
+        allowedExtensions: extensoesAtestado,
         withData: true,
       );
     } on Object {
@@ -178,6 +180,12 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
     if (file.bytes == null) {
       setState(
         () => _erroArquivo = 'Não foi possível ler o arquivo selecionado.',
+      );
+      return;
+    }
+    if (!extensaoDeAtestadoValida(file.name)) {
+      setState(
+        () => _erroArquivo = 'Selecione um PDF ou uma foto (JPG ou PNG).',
       );
       return;
     }
@@ -697,7 +705,7 @@ class _CadastroScreenState extends ConsumerState<CadastroScreen> {
               onTap: _selecionarDataAtestado,
             ),
             const SizedBox(height: AppTheme.space20),
-            _campoLabel('ATESTADO MÉDICO (PDF, até 10MB)', scheme),
+            _campoLabel('ATESTADO MÉDICO (PDF ou foto, até 10MB)', scheme),
             _ArquivoField(
               arquivo: _arquivo,
               erro: _erroArquivo,
@@ -1132,7 +1140,7 @@ class _ArquivoField extends StatelessWidget {
           OutlinedButton.icon(
             onPressed: onSelecionar,
             icon: const Icon(Icons.upload_file_outlined),
-            label: const Text('Selecionar arquivo PDF'),
+            label: const Text('Selecionar PDF ou foto'),
           ),
           if (erro != null) ...[
             const SizedBox(height: AppTheme.space8),

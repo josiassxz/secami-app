@@ -7,7 +7,7 @@ import 'package:http_parser/http_parser.dart';
 
 import '../../../core/config/env.dart';
 import '../../academy/data/atestado_api.dart'
-    show ArquivoPdf, dataIso, maxAtestadoBytes;
+    show ArquivoPdf, dataIso, maxAtestadoBytes, tipoDoAtestado;
 import '../domain/cadastro_models.dart';
 import '../domain/departamento.dart';
 
@@ -102,7 +102,7 @@ class CadastroService {
           'atestado',
           bytes,
           filename: atestado.name,
-          contentType: MediaType('application', 'pdf'),
+          contentType: tipoDoAtestado(atestado.name),
         ),
       );
 

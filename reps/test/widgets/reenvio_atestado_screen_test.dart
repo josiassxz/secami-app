@@ -133,7 +133,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('GO').last);
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Selecionar arquivo PDF'));
+    await tester.tap(find.text('Selecionar PDF ou foto'));
     await tester.pumpAndSettle();
   }
 
@@ -154,7 +154,7 @@ void main() {
     expect(find.text('NOME DO MÉDICO'), findsOneWidget);
     expect(find.text('CRM'), findsOneWidget);
     expect(find.byKey(const ValueKey('atestado-medico-uf')), findsOneWidget);
-    expect(find.text('Selecionar arquivo PDF'), findsOneWidget);
+    expect(find.text('Selecionar PDF ou foto'), findsOneWidget);
     expect(_botaoEnviar, findsOneWidget);
   });
 
@@ -168,7 +168,7 @@ void main() {
     expect(find.text('Informe o nome do médico'), findsOneWidget);
     expect(find.text('Informe o CRM'), findsOneWidget);
     expect(find.text('Selecione'), findsOneWidget);
-    expect(find.text('Anexe o atestado médico em PDF.'), findsOneWidget);
+    expect(find.text('Anexe o atestado médico (PDF ou foto).'), findsOneWidget);
     expect(service.reenvios, isEmpty);
   });
 

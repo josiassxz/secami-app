@@ -113,11 +113,9 @@ public class AtestadoService {
             throw new BusinessException("O envio de atestado não se aplica ao seu perfil.");
         }
         if (arquivo == null || arquivo.isEmpty()) {
-            throw new BusinessException("Anexe o atestado médico em PDF.");
+            throw new BusinessException("Anexe o atestado médico (PDF ou foto).");
         }
-        if (!"application/pdf".equalsIgnoreCase(arquivo.getContentType())) {
-            throw new BusinessException("O atestado médico precisa ser um arquivo PDF.");
-        }
+        br.gov.goias.secami.academy.media.TipoAtestado tipoReal = br.gov.goias.secami.academy.media.TipoAtestado.de(arquivo);
         LocalDate hoje = hoje();
         if (req.emissaoData().isAfter(hoje)) {
             throw new BusinessException("A data de emissão não pode ser no futuro.");
@@ -128,7 +126,7 @@ public class AtestadoService {
         if (envios.existsByStudentIdAndStatus(s.getId(), AtestadoEnvio.PENDENTE)) {
             throw new ConflictException("Você já tem um atestado em análise. Aguarde a validação da academia.");
         }
-        Media media = storage.save(arquivo, Media.TIPO_ATESTADO_MEDICO);
+        Media media = storage.saveAtestado(arquivo, tipoReal);
         AtestadoEnvio e = new AtestadoEnvio();
         e.setStudent(s);
         e.setArquivoId(media.getId());

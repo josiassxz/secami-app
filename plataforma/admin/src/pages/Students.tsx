@@ -124,7 +124,7 @@ export default function Students() {
   function botaoAtestado(s: Student) {
     if (!s.atestadoArquivoId) return null;
     return (
-      <Button variant="ghost" size="sm" aria-label={`Ver atestado de ${s.fullName}`} title="Ver atestado (PDF)"
+      <Button variant="ghost" size="sm" aria-label={`Ver atestado de ${s.fullName}`} title="Ver atestado"
         loading={abrindoAtestado === s.id} onClick={() => verAtestado(s)}>
         <FileText className="h-4 w-4" />
       </Button>
