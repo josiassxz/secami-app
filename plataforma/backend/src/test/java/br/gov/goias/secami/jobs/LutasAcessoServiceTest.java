@@ -121,6 +121,34 @@ class LutasAcessoServiceTest extends JobsTestSupport {
     }
 
     @Test
+    void liberarPeriodo_liberaAsDuasTurmasODiaTodoAteODomingo() {
+        // Accelero simulado: cada liberação cria um vínculo novo.
+        java.util.Map<String, java.util.List<CategoriaVinculada>> vinculos = new java.util.HashMap<>();
+        java.util.concurrent.atomic.AtomicInteger seq = new java.util.concurrent.atomic.AtomicInteger();
+        when(acceleroClient.listarCategorias(anyString())).thenAnswer(inv ->
+                List.copyOf(vinculos.getOrDefault(inv.getArgument(0, String.class), List.of())));
+        org.mockito.Mockito.doAnswer(inv -> {
+            vinculos.computeIfAbsent(inv.getArgument(0, String.class), k -> new java.util.ArrayList<>())
+                    .add(new CategoriaVinculada("vinc-" + seq.incrementAndGet(), ACESSO, "ENTRADA/SAIDA ACADEMIA"));
+            return null;
+        }).when(acceleroClient).adicionarCategoria(anyString(), anyString(), anyString(), anyString());
+
+        LocalDate segunda = proxima(DayOfWeek.MONDAY, 8).toLocalDate();
+        lutas.liberarDoDia(proxima(DayOfWeek.MONDAY, 8)); // feminina já tinha a aula do dia (vinc-1)
+
+        var r = lutas.liberarPeriodo(segunda, segunda.plusDays(6));
+
+        assertThat(r.liberados()).isEqualTo(2);
+        ArgumentCaptor<String> fim = ArgumentCaptor.forClass(String.class);
+        verify(acceleroClient, times(2)).adicionarCategoria(eq("902"), eq(ACESSO), anyString(), fim.capture());
+        assertThat(fim.getAllValues().get(1)).isEqualTo(segunda.plusDays(6) + " 23:59:59");
+        verify(acceleroClient).adicionarCategoria(eq("901"), eq(ACESSO), eq(segunda + " 00:00:00"), anyString());
+        verify(acceleroClient).excluirCategoria("902", "vinc-1"); // trocou a curta pela do período
+        assertThat(acessos.findByStudentIdAndData(fem.getId(), segunda).orElseThrow().getExpiraEm())
+                .isEqualTo(segunda.plusDays(6).atTime(23, 59, 59).atZone(SP).toOffsetDateTime());
+    }
+
+    @Test
     void retiraALiberacaoDepoisQueAJanelaAcaba() {
         lutas.liberarDoDia(proxima(DayOfWeek.TUESDAY, 8));
         var a = acessos.findAll().stream().filter(x -> x.getStudent().getId().equals(masc.getId())).findFirst().orElseThrow();

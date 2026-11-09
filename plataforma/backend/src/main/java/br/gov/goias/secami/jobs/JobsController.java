@@ -77,6 +77,18 @@ public class JobsController {
         return lutasAcesso.executar();
     }
 
+    /** Libera a catraca de todos de Lutas, o dia todo, de {@code de} até {@code ate} (inclusive). */
+    @PostMapping("/lutas/liberar-periodo")
+    public LutasAcessoService.Resultado liberarLutasPeriodo(
+            @org.springframework.web.bind.annotation.RequestParam
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            java.time.LocalDate de,
+            @org.springframework.web.bind.annotation.RequestParam
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            java.time.LocalDate ate) {
+        return lutasAcesso.liberarPeriodo(de, ate);
+    }
+
     @PostMapping("/confirmar-presencas")
     public Map<String, Object> confirmarPresencas() {
         int n = acceleroPresenca.confirmarPresencas();

@@ -104,6 +104,43 @@ public class LutasAcessoService {
         return liberados;
     }
 
+    /**
+     * Liberação extra pra todos de Lutas (as duas turmas) num período — ex.:
+     * semana inteira liberada. Cria no Accelero a categoria com data de fim
+     * (acaba sozinha) e registra como a liberação do dia de início, então a
+     * rotina não duplica a de hoje e retira o vínculo quando o período acaba.
+     */
+    @Transactional
+    public Resultado liberarPeriodo(LocalDate de, LocalDate ate) {
+        if (ate.isBefore(de)) throw new IllegalArgumentException("Fim antes do início.");
+        ZonedDateTime inicio = de.atStartOfDay(zone);
+        ZonedDateTime fim = ate.atTime(23, 59, 59).atZone(zone);
+        int liberados = 0;
+        for (Student s : students.findByDeletedAtIsNullAndStatusCadastroAndStudentType(
+                Student.STATUS_APROVADO, Student.TIPO_LUTAS)) {
+            if (Student.SITUACAO_BLOQUEADO.equals(s.getSituacao()) || !s.isActive()) continue;
+            String vinculo = acceleroSync.liberarJanelaLutas(s, inicio, fim);
+            if (vinculo == null) continue;
+            acessos.findByStudentIdAndData(s.getId(), de).ifPresentOrElse(a -> {
+                // Já tinha a do dia: retira a curta e fica só a do período.
+                if (a.getAcceleroVinculoId() != null) acceleroSync.revogarJanelaLutas(s, a.getAcceleroVinculoId());
+                a.setAcceleroVinculoId(vinculo);
+                a.setExpiraEm(fim.toOffsetDateTime());
+                acessos.save(a);
+            }, () -> {
+                AcessoLutas a = new AcessoLutas();
+                a.setStudent(s);
+                a.setData(de);
+                a.setAcceleroVinculoId(vinculo);
+                a.setExpiraEm(fim.toOffsetDateTime());
+                acessos.save(a);
+            });
+            liberados++;
+        }
+        log.info("Lutas: período {} a {} liberado pra {} aluno(s).", de, ate, liberados);
+        return new Resultado(liberados, 0);
+    }
+
     int retirarVencidas() {
         int retirados = 0;
         for (AcessoLutas a : acessos.findExpiradas(OffsetDateTime.now())) {

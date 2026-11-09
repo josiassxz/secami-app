@@ -13,6 +13,8 @@ public interface AcessoLutasRepository extends JpaRepository<AcessoLutas, UUID> 
 
     boolean existsByStudentIdAndData(UUID studentId, LocalDate data);
 
+    java.util.Optional<AcessoLutas> findByStudentIdAndData(UUID studentId, LocalDate data);
+
     /** Liberações vencidas que ainda têm vínculo no Accelero pra retirar. */
     @Query("""
             select a from AcessoLutas a join fetch a.student
