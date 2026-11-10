@@ -28,6 +28,7 @@ public class CheckInService {
 
     private static final DateTimeFormatter HHMM = DateTimeFormatter.ofPattern("HH:mm");
     static final String NOTA_CATRACA = "Entrada registrada pela catraca";
+    static final String NOTA_SO_SAIDA = "Saída registrada pela catraca (entrada não registrada)";
 
     private final CheckInRepository checkins;
     private final AppointmentRepository appointments;
@@ -118,7 +119,9 @@ public class CheckInService {
     @Transactional
     public boolean registrarPresencaPelaCatraca(Appointment appt) {
         OffsetDateTime entrada = appt.getEntradaConfirmadaEm();
-        if (entrada == null || Appointment.CANCELADO.equals(appt.getStatus())) return false;
+        OffsetDateTime saida = appt.getSaidaConfirmadaEm();
+        // Presença = entrada OU saída da academia registrada pela catraca.
+        if ((entrada == null && saida == null) || Appointment.CANCELADO.equals(appt.getStatus())) return false;
         boolean mudou = false;
 
         Optional<CheckIn> existente = checkins.findFirstByStudentIdAndDateOrderByCheckInTimeAsc(
@@ -128,9 +131,10 @@ public class CheckInService {
             c.setStudent(appt.getStudent());
             c.setDate(appt.getDate());
             c.setAppointmentId(appt.getId());
-            c.setCheckInTime(hora(entrada));
-            if (appt.getSaidaConfirmadaEm() != null) c.setCheckOutTime(hora(appt.getSaidaConfirmadaEm()));
-            c.setNotes(NOTA_CATRACA);
+            // Sem entrada registrada, o check-in fica no horário agendado.
+            c.setCheckInTime(entrada != null ? hora(entrada) : appt.getSlotStart());
+            if (saida != null) c.setCheckOutTime(hora(saida));
+            c.setNotes(entrada != null ? NOTA_CATRACA : NOTA_SO_SAIDA);
             checkins.save(c);
             mudou = true;
         } else if (existente.get().getCheckOutTime() == null && appt.getSaidaConfirmadaEm() != null) {

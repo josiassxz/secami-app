@@ -115,6 +115,32 @@ class AcceleroPresencaServiceTest extends JobsTestSupport {
                 .isEqualTo(Appointment.CONFIRMADO);
     }
 
+    /** Caso real: passou sem a catraca registrar a entrada, mas a saída foi
+     *  registrada — esteve na academia, não é falta. */
+    @Test
+    void soASaidaRegistradaJaContaComoPresenca() {
+        Student s = createStudent("presenca-850", "aluno.presenca.850@dev.secami");
+        s.setAcceleroPessoaId("850");
+        studentRepository.save(s);
+        Appointment a = createAppointment(s, LocalDate.now().minusDays(1), LocalTime.of(17, 0), Appointment.FALTOU);
+        when(acceleroClient.listarLogEventos(eq("850"), anyString(), anyString(), anyInt())).thenReturn(
+                new PaginaEventos(List.of(
+                        new EventoAcesso("2026-01-01 17:43:38", "ACADEMIA", "ACADEMIA INT",
+                                "Acesso autorizado pelo servidor", 1, "1")),
+                        1));
+
+        acceleroPresenca.confirmarPresencas();
+
+        Appointment r = appointmentRepository.findById(a.getId()).orElseThrow();
+        assertThat(r.getStatus()).isEqualTo(Appointment.CONFIRMADO);
+        assertThat(r.getEntradaConfirmadaEm()).isNull();
+        assertThat(r.getSaidaConfirmadaEm()).isNotNull();
+        var checkIns = checkInRepository.findByStudentIdOrderByDateDesc(s.getId());
+        assertThat(checkIns).hasSize(1);
+        assertThat(checkIns.get(0).getCheckInTime()).isEqualTo("17:00"); // horário agendado
+        assertThat(checkIns.get(0).getCheckOutTime()).isEqualTo("17:43");
+    }
+
     @Test
     void naoContaAgendamentoSemPessoaVinculada() {
         createAppointment(createStudent("sem-pessoa", "aluno.sem.pessoa@dev.secami"),

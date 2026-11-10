@@ -50,8 +50,17 @@ public class AcceleroPresencaService {
     @Transactional
     public int confirmarPresencas() {
         LocalDate hoje = LocalDate.now(zone);
-        List<Appointment> candidatos = appointments.findCandidatosConfirmacaoPresenca(
-                List.of(hoje.minusDays(1), hoje));
+        return confirmarPresencas(List.of(hoje.minusDays(1), hoje));
+    }
+
+    /** Reprocessa datas passadas (ex.: depois de mudar a regra de presença). */
+    @Transactional
+    public int confirmarPresencas(LocalDate de, LocalDate ate) {
+        return confirmarPresencas(de.datesUntil(ate.plusDays(1)).toList());
+    }
+
+    private int confirmarPresencas(List<LocalDate> datas) {
+        List<Appointment> candidatos = appointments.findCandidatosConfirmacaoPresenca(datas);
         int count = 0;
         for (Appointment a : candidatos) {
             boolean confirmou = acceleroSync.confirmarPresenca(a);

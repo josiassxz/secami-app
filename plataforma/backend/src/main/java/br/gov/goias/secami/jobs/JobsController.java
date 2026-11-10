@@ -90,8 +90,16 @@ public class JobsController {
     }
 
     @PostMapping("/confirmar-presencas")
-    public Map<String, Object> confirmarPresencas() {
-        int n = acceleroPresenca.confirmarPresencas();
+    public Map<String, Object> confirmarPresencas(
+            @org.springframework.web.bind.annotation.RequestParam(required = false)
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            java.time.LocalDate de,
+            @org.springframework.web.bind.annotation.RequestParam(required = false)
+            @org.springframework.format.annotation.DateTimeFormat(iso = org.springframework.format.annotation.DateTimeFormat.ISO.DATE)
+            java.time.LocalDate ate) {
+        int n = de != null && ate != null
+                ? acceleroPresenca.confirmarPresencas(de, ate)
+                : acceleroPresenca.confirmarPresencas();
         return Map.of("confirmados", n);
     }
 

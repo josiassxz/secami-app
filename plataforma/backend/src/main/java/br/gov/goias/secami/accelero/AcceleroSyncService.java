@@ -636,8 +636,11 @@ public class AcceleroSyncService {
             // a saída veio 4s antes da entrada e o relatório mostrava "11:20 – 11:20".
             OffsetDateTime referencia = appointment.getEntradaConfirmadaEm() != null
                     ? appointment.getEntradaConfirmadaEm() : primeiraEntrada;
-            OffsetDateTime primeiraSaida = referencia == null ? null : saidas.stream()
-                    .filter(s -> s.isAfter(referencia))
+            // Sem entrada registrada (passou sem a catraca ler), a saída da
+            // academia na janela já prova que a pessoa esteve lá — caso real:
+            // aluna com só a saída registrada ficava com falta.
+            OffsetDateTime primeiraSaida = saidas.stream()
+                    .filter(s -> referencia == null || s.isAfter(referencia))
                     .min(OffsetDateTime::compareTo)
                     .orElse(null);
 

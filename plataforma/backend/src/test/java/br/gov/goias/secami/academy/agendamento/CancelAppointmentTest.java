@@ -73,6 +73,27 @@ class CancelAppointmentTest extends SchedulingTestSupport {
                 .andExpect(jsonPath("$.status").value(Appointment.AGENDADO));
     }
 
+    /** Caso real: aluna cancelava pelo app os horários já feitos e a presença sumia. */
+    @Test
+    void alunoNaoCancelaHorarioQueJaComecou() throws Exception {
+        Student s = alunoValido("Civil");
+        vinculadoAoUsuario(s, appUserId("aluno"));
+        String token = loginAs("aluno");
+        Appointment passado = new Appointment();
+        passado.setStudent(s);
+        passado.setDate(hoje().minusDays(1));
+        passado.setSlotStart("08:00");
+        passado.setSlotEnd("09:00");
+        passado.setStatus(Appointment.CONFIRMADO);
+        appointmentRepository.save(passado);
+
+        cancelAppointment(token, passado.getId())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.message").value("Não é possível cancelar um horário que já começou."));
+
+        assertEquals(Appointment.CONFIRMADO, appointmentRepository.findById(passado.getId()).orElseThrow().getStatus());
+    }
+
     @Test
     void alunoNaoPodeCancelarAgendamentoDeOutroAluno() throws Exception {
         Student owner = alunoValido("Civil");

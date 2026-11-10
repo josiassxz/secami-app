@@ -150,8 +150,15 @@ class MinhaAgendaScreen extends ConsumerWidget {
                 ),
               ),
               data: (appts) {
+                // Só os que ainda vão acontecer: os já começados saem da lista
+                // (cancelar um deles apagaria a presença registrada).
+                final agora = DateTime.now();
                 final ativos =
-                    appts.where((a) => a.status != 'cancelado').toList()
+                    appts
+                        .where(
+                          (a) => a.status != 'cancelado' && !a.jaComecou(agora),
+                        )
+                        .toList()
                       ..sort((a, b) => a.date.compareTo(b.date));
                 if (ativos.isEmpty) {
                   return const _EmptyHint(

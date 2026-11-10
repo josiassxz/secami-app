@@ -201,6 +201,11 @@ public class SchedulingService {
             if (ownerUser == null || !ownerUser.equals(requesterUserId)) {
                 throw new BusinessException("Você só pode cancelar os seus agendamentos.");
             }
+            // Horário que já começou não se cancela: apagaria a presença/falta
+            // registrada (caso real: aluna "limpava" a agenda cancelando os já feitos).
+            if (!slotDateTime(a.getDate(), a.getSlotStart()).isAfter(ZonedDateTime.now(zone))) {
+                throw new BusinessException("Não é possível cancelar um horário que já começou.");
+            }
         }
         a.setStatus(Appointment.CANCELADO);
         appointments.save(a);

@@ -55,7 +55,7 @@ const _slotIndisponivel = AvailableSlot(
 
 const _agendamentoAtivo = ScheduledAppointment(
   id: 'a1',
-  date: '2026-08-10',
+  date: '2099-08-10',
   slotStart: '08:00',
   slotEnd: '09:00',
   status: 'agendado',

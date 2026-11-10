@@ -46,6 +46,13 @@ class ScheduledAppointment {
   final String slotEnd;
   final String status;
 
+  /// Se o horário já começou (data + hora de início, no relógio do aparelho).
+  /// Horário já começado não se cancela — apagaria a presença/falta.
+  bool jaComecou(DateTime agora) {
+    final inicio = DateTime.tryParse('${date}T$slotStart:00');
+    return inicio != null && !inicio.isAfter(agora);
+  }
+
   factory ScheduledAppointment.fromJson(Map<String, dynamic> j) =>
       ScheduledAppointment(
         id: j['id'] as String,
