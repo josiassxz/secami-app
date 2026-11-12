@@ -61,7 +61,7 @@ class PunicaoFluxoTest extends SchedulingTestSupport {
     }
 
     private String aplicar(String token, Student s, String... itens) throws Exception {
-        return readJson(postJson(token, "/punicoes", Map.of("studentId", s.getId(), "itemIds", List.of(itens)))
+        return readJson(postJson(token, "/punicoes/aplicar", Map.of("studentId", s.getId(), "itemIds", List.of(itens)))
                 .andExpect(status().isOk())).get("id").asText();
     }
 
@@ -96,7 +96,7 @@ class PunicaoFluxoTest extends SchedulingTestSupport {
         String token = instrutorLutas();
         String flexoes = item(token, "10 flexões");
         Student civil = newStudent(Student.TIPO_CIVIL);
-        postJson(token, "/punicoes", Map.of("studentId", civil.getId(), "itemIds", List.of(flexoes)))
+        postJson(token, "/punicoes/aplicar", Map.of("studentId", civil.getId(), "itemIds", List.of(flexoes)))
                 .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$.message").value(containsString("Lutas")));
     }

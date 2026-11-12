@@ -366,7 +366,7 @@ function AplicarPunicao({ open, onClose, aluno }: { open: boolean; onClose: () =
 
   const salvar = useMutation({
     mutationFn: (body: { studentId: string; itemIds: string[]; observacao?: string }) =>
-      api<Punicao>(`/punicoes`, { method: "POST", body: JSON.stringify(body) }),
+      api<Punicao>(`/punicoes/aplicar`, { method: "POST", body: JSON.stringify(body) }),
     onSuccess: () => {
       atualizar(aluno.studentId);
       onClose();

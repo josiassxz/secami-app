@@ -61,7 +61,9 @@ public class PunicaoController {
         return service.historico(studentId);
     }
 
-    @PostMapping("/punicoes")
+    // "/punicoes" sozinho é a tela do admin (o nginx serve a página nesse caminho
+    // e devolvia 405 pro POST) — aplicar fica em /punicoes/aplicar.
+    @PostMapping({"/punicoes/aplicar", "/punicoes"})
     @PreAuthorize("hasAnyRole('ADMIN','LUTAS')")
     public PunicaoDto aplicar(@RequestBody AplicarRequest req) {
         return service.aplicar(req, currentUser.id());

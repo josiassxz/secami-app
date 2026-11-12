@@ -62,7 +62,7 @@ function setupApi({ cumprir, onDelete }: Opts = {}) {
     if (path === "/punicoes/itens?todos=true") return ITENS;
     if (path === "/punicoes/itens" && method === "POST") return { id: "n1", ...JSON.parse(opts.body), ativo: true };
     if (path.startsWith("/punicoes/itens/") && method === "PUT") return { id: "x", ...JSON.parse(opts.body) };
-    if (path === "/punicoes" && method === "POST") return punicao({ id: "novo" });
+    if (path === "/punicoes/aplicar" && method === "POST") return punicao({ id: "novo" });
     if (path.endsWith("/cumprir")) return cumprir ? cumprir() : [];
     if (method === "DELETE") return onDelete ? onDelete() : undefined;
     if (path === "/admin/configuracoes/punicoes") return { porCiclo: 2, diasParaConcluir: 30 };
@@ -134,7 +134,7 @@ describe("Punições - alunos", () => {
     // Sem item marcado não envia.
     fireEvent.click(within(d).getByRole("button", { name: "Aplicar" }));
     expect(within(d).getByText("Escolha pelo menos uma punição.")).toBeInTheDocument();
-    expect(callsTo("/punicoes", "POST")).toHaveLength(0);
+    expect(callsTo("/punicoes/aplicar", "POST")).toHaveLength(0);
 
     // Item inativo não aparece pra aplicar.
     expect(within(d).queryByLabelText("Polichinelos")).not.toBeInTheDocument();
@@ -144,7 +144,7 @@ describe("Punições - alunos", () => {
     fireEvent.click(within(d).getByRole("button", { name: "Aplicar" }));
 
     await waitFor(() =>
-      expect(apiMock).toHaveBeenCalledWith("/punicoes", {
+      expect(apiMock).toHaveBeenCalledWith("/punicoes/aplicar", {
         method: "POST",
         body: JSON.stringify({ studentId: "a1", itemIds: ["i1", "i2"], observacao: "Faltou sem avisar" }),
       })
@@ -163,7 +163,7 @@ describe("Punições - alunos", () => {
     fireEvent.click(await within(d).findByLabelText("10 flexões"));
     fireEvent.click(within(d).getByRole("button", { name: "Aplicar" }));
     await waitFor(() =>
-      expect(apiMock).toHaveBeenCalledWith("/punicoes", {
+      expect(apiMock).toHaveBeenCalledWith("/punicoes/aplicar", {
         method: "POST",
         body: JSON.stringify({ studentId: "a1", itemIds: ["i1"] }),
       })
