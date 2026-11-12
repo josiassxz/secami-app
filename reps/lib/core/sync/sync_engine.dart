@@ -124,6 +124,7 @@ class SyncEngine {
   // dynamic: aceita tanto SupabaseClient (legado/testes) quanto
   // RestSyncTransport (SECAMI) — ver comentário de runOnce() acima.
   Future<void> _runOnce(dynamic client) async {
+    _backendAceitaIdLocal = client is RestSyncTransport;
     if (_running) {
       // Já tem sync rodando: espera ele terminar em vez de virar no-op. Sem
       // isso, um toque manual ("Sincronizar agora") coincidindo com o tick
@@ -390,17 +391,37 @@ class SyncEngine {
   ///   subiria verbatim como exercise_id, virava uuid invalido e derrubava o
   ///   sync inteiro em erro/retry.
   /// - uuid custom -> ele mesmo.
+  ///
+  /// Backend SECAMI (REST): exercise_id é TEXTO no servidor (aceita
+  /// `seed:slug`/"extdb:..." como estão). Lá nada fica só local: sem isso,
+  /// séries/cargas e rotinas com exercícios da biblioteca do app nunca subiam
+  /// (o catálogo do servidor não tem os slugs) e sumiam ao trocar de aparelho
+  /// ou limpar o navegador.
   String? _exIdToDb(String localId) {
     final eid = ExerciseId.parse(localId);
+    if (_backendAceitaIdLocal) {
+      return eid.isSeed ? (_slugToUuid[eid.value] ?? localId) : localId;
+    }
     if (eid.isExtdb) return null;
     if (!eid.isSeed) return localId;
     return _slugToUuid[eid.value];
   }
 
+  /// Ver [_exIdToDb]: true quando o ciclo atual fala com o backend REST.
+  bool _backendAceitaIdLocal = false;
+
   /// So para testes: expoe a traducao de id usada no PUSH. `null` = nao sobe
   /// (fica local), que e o que impede o sync de quebrar com ids `extdb:`.
   @visibleForTesting
-  String? debugExIdToDb(String localId) => _exIdToDb(localId);
+  String? debugExIdToDb(String localId, {bool backendRest = false}) {
+    final antes = _backendAceitaIdLocal;
+    _backendAceitaIdLocal = backendRest;
+    try {
+      return _exIdToDb(localId);
+    } finally {
+      _backendAceitaIdLocal = antes;
+    }
+  }
 
   /// Traduz exercise_id do banco -> id local para PULL.
   /// - uuid de exercicio global -> `seed:slug`.

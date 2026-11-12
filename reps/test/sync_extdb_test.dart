@@ -33,4 +33,30 @@ void main() {
   test('uuid de exercicio custom sobe como ele mesmo', () {
     expect(engine.debugExIdToDb('e3f1c2a0-custom'), 'e3f1c2a0-custom');
   });
+
+  group('backend SECAMI (REST, exercise_id texto)', () {
+    test(
+      'seed não mapeado sobe como "seed:slug" (carga não fica só local)',
+      () {
+        expect(
+          engine.debugExIdToDb('seed:supino-reto', backendRest: true),
+          'seed:supino-reto',
+        );
+      },
+    );
+
+    test('extdb sobe como está', () {
+      expect(
+        engine.debugExIdToDb('extdb:agachamento-bulgaro', backendRest: true),
+        'extdb:agachamento-bulgaro',
+      );
+    });
+
+    test('uuid do catálogo sobe como ele mesmo', () {
+      expect(
+        engine.debugExIdToDb('e3f1c2a0-custom', backendRest: true),
+        'e3f1c2a0-custom',
+      );
+    });
+  });
 }
