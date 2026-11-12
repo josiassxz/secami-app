@@ -72,6 +72,29 @@ public class ConfiguracaoService {
         return lutas();
     }
 
+    /** Punições (Lutas): quantas cumpridas fecham um ciclo e em quantos dias uma
+     *  cumprida que não fechou ciclo é encerrada sozinha. */
+    public record Punicoes(Integer porCiclo, Integer diasParaConcluir) {}
+
+    @Transactional(readOnly = true)
+    public Punicoes punicoes() {
+        return new Punicoes(Integer.parseInt(valor("punicoes_por_ciclo", "2")),
+                Integer.parseInt(valor("punicoes_dias_concluir", "30")));
+    }
+
+    @Transactional
+    public Punicoes definirPunicoes(Punicoes p) {
+        if (p == null || p.porCiclo() == null || p.porCiclo() < 1 || p.porCiclo() > 10) {
+            throw new BusinessException("Punições por ciclo: de 1 a 10.");
+        }
+        if (p.diasParaConcluir() == null || p.diasParaConcluir() < 1 || p.diasParaConcluir() > 365) {
+            throw new BusinessException("Dias para encerrar: de 1 a 365.");
+        }
+        gravar("punicoes_por_ciclo", String.valueOf(p.porCiclo()));
+        gravar("punicoes_dias_concluir", String.valueOf(p.diasParaConcluir()));
+        return punicoes();
+    }
+
     private String valor(String chave, String padrao) {
         return repo.findById(chave).map(Configuracao::getValor).orElse(padrao);
     }

@@ -266,3 +266,69 @@ describe("Students - novo aluno", () => {
     expect(screen.queryByRole("button", { name: /Novo aluno/ })).not.toBeInTheDocument();
   });
 });
+
+describe("Students - instrutor de lutas", () => {
+  const FULL = {
+    id: "s1", fullName: "Ana Souza", cpf: "123.***.**9-00", studentType: "Instrutor",
+    situacao: "ATIVO", instrutorLutas: true,
+  };
+
+  function setupEdit(full: Record<string, unknown>) {
+    const puts: any[] = [];
+    apiMock.mockImplementation((path: string, options: any = {}) => {
+      if (options?.method === "PUT" && path === "/students/s1") {
+        puts.push(JSON.parse(options.body));
+        return Promise.resolve({});
+      }
+      if (path === "/students/s1") return Promise.resolve(full);
+      if (path.startsWith("/students")) return Promise.resolve(page());
+      if (path.startsWith("/departments")) return Promise.resolve(DEPARTMENTS);
+      return Promise.resolve(undefined);
+    });
+    return puts;
+  }
+
+  it("carrega a marcação do instrutor e envia o valor alterado", async () => {
+    mockAuth(["admin"]);
+    const puts = setupEdit(FULL);
+    renderWithProviders(<Students />);
+    const table = await screen.findByRole("table");
+    fireEvent.click(within(table).getByRole("button", { name: "Editar Ana Souza" }));
+
+    const caixa = (await screen.findByLabelText("Instrutor de lutas (aplica punições)")) as HTMLInputElement;
+    expect(caixa.checked).toBe(true);
+    fireEvent.click(caixa);
+    expect(caixa.checked).toBe(false);
+
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Salvar" }));
+    await waitFor(() => expect(puts).toHaveLength(1));
+    expect(puts[0].instrutorLutas).toBe(false);
+    expect(puts[0].studentType).toBe("Instrutor");
+  });
+
+  it("marca o instrutor como de lutas", async () => {
+    mockAuth(["admin"]);
+    const puts = setupEdit({ ...FULL, instrutorLutas: false });
+    renderWithProviders(<Students />);
+    const table = await screen.findByRole("table");
+    fireEvent.click(within(table).getByRole("button", { name: "Editar Ana Souza" }));
+    fireEvent.click(await screen.findByLabelText("Instrutor de lutas (aplica punições)"));
+    fireEvent.click(within(screen.getByRole("dialog")).getByRole("button", { name: "Salvar" }));
+    await waitFor(() => expect(puts).toHaveLength(1));
+    expect(puts[0].instrutorLutas).toBe(true);
+  });
+
+  it("não mostra a opção para outros tipos e envia false", async () => {
+    mockAuth(["admin"]);
+    // Mesmo que o backend devolva true por algum motivo, aluno que não é instrutor não aplica punição.
+    const puts = setupEdit({ ...FULL, studentType: "Civil" });
+    renderWithProviders(<Students />);
+    const table = await screen.findByRole("table");
+    fireEvent.click(within(table).getByRole("button", { name: "Editar Ana Souza" }));
+    const d = await screen.findByRole("dialog");
+    expect(within(d).queryByLabelText("Instrutor de lutas (aplica punições)")).not.toBeInTheDocument();
+    fireEvent.click(within(d).getByRole("button", { name: "Salvar" }));
+    await waitFor(() => expect(puts).toHaveLength(1));
+    expect(puts[0].instrutorLutas).toBe(false);
+  });
+});

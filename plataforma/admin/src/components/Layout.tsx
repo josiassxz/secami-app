@@ -21,6 +21,7 @@ import {
   Megaphone,
   BarChart3,
   FileCheck2,
+  Gavel,
   LogOut,
   Sun,
   Moon,
@@ -79,6 +80,7 @@ const GROUPS: NavGroup[] = [
       { to: "/exercicios", label: "Exercícios", icon: Dumbbell, roles: ["admin", "professor"] },
       { to: "/fichas", label: "Fichas de Treino", icon: ClipboardList, roles: ["admin", "professor"] },
       { to: "/coaching", label: "Coaching", icon: UserCog, roles: ["admin", "professor"] },
+      { to: "/punicoes", label: "Punições", icon: Gavel, roles: ["admin", "lutas"] },
     ],
   },
   {

@@ -7,6 +7,7 @@ import '../data/academy_providers.dart';
 import '../data/atestado_api.dart';
 import '../../../core/network/erro_amigavel.dart';
 import 'atestado_widgets.dart';
+import 'punicoes_widgets.dart';
 
 /// Perfil do aluno: dados pessoais, peso/altura/objetivo editáveis, status
 /// do atestado (com atalho pra enviar um novo). Upload de foto fica para uma
@@ -162,6 +163,9 @@ class _MeuPerfilScreenState extends ConsumerState<MeuPerfilScreen> {
                 atestadoCard,
                 const SizedBox(height: AppTheme.space24),
               ],
+              // Só pro aluno de Lutas (ou quem tiver punição em aberto); a
+              // seção traz o próprio espaçamento de baixo.
+              MinhasPunicoesSection(lutas: studentType == tipoAlunoLutas),
               Text(
                 'DADOS PESSOAIS',
                 style: context.uppercaseLabel(

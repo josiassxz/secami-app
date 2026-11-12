@@ -23,6 +23,18 @@ public class ConfiguracaoController {
         return new Catraca(service.janelaCatracaHoras());
     }
 
+    @GetMapping("/admin/configuracoes/punicoes")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
+    public ConfiguracaoService.Punicoes punicoes() {
+        return service.punicoes();
+    }
+
+    @PutMapping("/admin/configuracoes/punicoes")
+    @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
+    public ConfiguracaoService.Punicoes definirPunicoes(@RequestBody ConfiguracaoService.Punicoes req) {
+        return service.definirPunicoes(req);
+    }
+
     @GetMapping("/admin/configuracoes/lutas")
     @PreAuthorize("hasAnyRole('ADMIN','GERENTE')")
     public ConfiguracaoService.Lutas lutas() {

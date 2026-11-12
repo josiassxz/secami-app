@@ -137,6 +137,92 @@ class NoticeDto {
   );
 }
 
+/// Situação de uma punição de Lutas.
+enum StatusPunicao { pendente, cumprida, concluida, desconhecido }
+
+/// Item de uma punição (ex.: "10 flexões", "1 Coca-Cola").
+class ItemPunicao {
+  const ItemPunicao({required this.itemId, required this.nome});
+
+  final String itemId;
+  final String nome;
+
+  factory ItemPunicao.fromJson(Map<String, dynamic> j) => ItemPunicao(
+    itemId: (j['itemId'] as String?) ?? '',
+    nome: ((j['nome'] as String?) ?? '').trim(),
+  );
+}
+
+/// Punição aplicada por um instrutor de Lutas ao aluno (`GET /me/punicoes`).
+class Punicao {
+  const Punicao({
+    required this.id,
+    required this.itens,
+    required this.status,
+    this.studentId = '',
+    this.studentName = '',
+    this.observacao,
+    this.aplicadaEm,
+    this.aplicadaPorNome,
+    this.cumpridaEm,
+    this.cumpridaPorNome,
+    this.concluidaEm,
+  });
+
+  final String id;
+  final String studentId;
+  final String studentName;
+  final List<ItemPunicao> itens;
+  final String? observacao;
+  final StatusPunicao status;
+  final DateTime? aplicadaEm;
+  final String? aplicadaPorNome;
+  final DateTime? cumpridaEm;
+  final String? cumpridaPorNome;
+  final DateTime? concluidaEm;
+
+  /// "10 flexões + 1 Coca-Cola".
+  String get descricao =>
+      itens.map((i) => i.nome).where((n) => n.isNotEmpty).join(' + ');
+
+  factory Punicao.fromJson(Map<String, dynamic> j) => Punicao(
+    id: (j['id'] as String?) ?? '',
+    studentId: (j['studentId'] as String?) ?? '',
+    studentName: (j['studentName'] as String?) ?? '',
+    itens: ((j['itens'] as List?) ?? const [])
+        .whereType<Map<dynamic, dynamic>>()
+        .map((e) => ItemPunicao.fromJson(Map<String, dynamic>.from(e)))
+        .toList(),
+    observacao: _textoOuNulo(j['observacao']),
+    status: switch ((j['status'] as String?)?.toUpperCase()) {
+      'PENDENTE' => StatusPunicao.pendente,
+      'CUMPRIDA' => StatusPunicao.cumprida,
+      'CONCLUIDA' => StatusPunicao.concluida,
+      _ => StatusPunicao.desconhecido,
+    },
+    aplicadaEm: _instante(j['aplicadaEm']),
+    aplicadaPorNome: _textoOuNulo(j['aplicadaPorNome']),
+    cumpridaEm: _instante(j['cumpridaEm']),
+    cumpridaPorNome: _textoOuNulo(j['cumpridaPorNome']),
+    concluidaEm: _instante(j['concluidaEm']),
+  );
+}
+
+String? _textoOuNulo(Object? v) {
+  if (v is! String) return null;
+  final t = v.trim();
+  return t.isEmpty ? null : t;
+}
+
+/// ISO do servidor no fuso do aparelho.
+DateTime? _instante(Object? v) {
+  final t = _textoOuNulo(v);
+  if (t == null) return null;
+  final d = DateTime.tryParse(t);
+  if (d == null) return null;
+  return d.isUtc ? d.toLocal() : d;
+}
+
 /// Acesso REST as funcionalidades de academia do aluno (SPEC §10.4).
 class AcademyApi {
   AcademyApi(this._api);
@@ -186,6 +272,17 @@ class AcademyApi {
 
   Future<Map<String, dynamic>> myProfile() async =>
       await _api.get('/me/student') as Map<String, dynamic>;
+
+  /// Punições em aberto (pendentes e cumpridas) do aluno de Lutas, da mais
+  /// antiga pra mais nova. Quem não é de Lutas recebe lista vazia.
+  Future<List<Punicao>> meusPunicoes() async {
+    final data = await _api.get('/me/punicoes');
+    if (data is! List) return const [];
+    return data
+        .whereType<Map<dynamic, dynamic>>()
+        .map((e) => Punicao.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
+  }
 
   Future<void> updateMyProfile(Map<String, dynamic> patch) =>
       _api.put('/me/student', body: patch);

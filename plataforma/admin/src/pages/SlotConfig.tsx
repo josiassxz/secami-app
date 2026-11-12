@@ -8,7 +8,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Modal } from "@/components/Modal";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Badge, Button, Card, Input, Label, Table, TableSkeleton, TBody, TD, TH, THead, TR } from "@/components/ui";
-import { AlertCircle, DoorOpen, Pencil, Plus, Swords, Trash2 } from "lucide-react";
+import { AlertCircle, DoorOpen, Gavel, Pencil, Plus, Swords, Trash2 } from "lucide-react";
 
 const empty = { slotStart: "", slotEnd: "", maxCapacity: 40, civilRestricted: false, blocked: false, blockReason: "" };
 
@@ -139,6 +139,73 @@ function TurmasLutas() {
   );
 }
 
+type ConfigPunicoes = { porCiclo: number; diasParaConcluir: number };
+
+/** Punições dos alunos de Lutas: quantas cumpridas fecham um ciclo e em quantos
+ *  dias uma cumprida avulsa se encerra sozinha. */
+function PunicoesLutas() {
+  const qc = useQueryClient();
+  const atual = useQuery({
+    queryKey: ["config-punicoes"],
+    queryFn: () => api<ConfigPunicoes>(`/admin/configuracoes/punicoes`),
+  });
+  const base = atual.data && typeof atual.data.porCiclo === "number" ? atual.data : null;
+  const [porCiclo, setPorCiclo] = useState<string | null>(null);
+  const [dias, setDias] = useState<string | null>(null);
+  const vCiclo = porCiclo ?? (base ? String(base.porCiclo) : "");
+  const vDias = dias ?? (base ? String(base.diasParaConcluir) : "");
+  const salvar = useMutation({
+    mutationFn: (c: ConfigPunicoes) =>
+      api<ConfigPunicoes>(`/admin/configuracoes/punicoes`, { method: "PUT", body: JSON.stringify(c) }),
+    onSuccess: (r) => {
+      qc.setQueryData(["config-punicoes"], r);
+      setPorCiclo(null);
+      setDias(null);
+      toast("success", "Regras de punições salvas.");
+    },
+    onError: (e) => toast("error", mensagemDeErro(e, "Não foi possível salvar as regras de punições.")),
+  });
+  const nCiclo = Number(vCiclo);
+  const nDias = Number(vDias);
+  const cicloValido = Number.isInteger(nCiclo) && nCiclo >= 1 && nCiclo <= 10;
+  const diasValido = Number.isInteger(nDias) && nDias >= 1 && nDias <= 365;
+  const mudou = base != null && cicloValido && diasValido &&
+    (nCiclo !== base.porCiclo || nDias !== base.diasParaConcluir);
+
+  return (
+    <Card className="mb-6 p-4">
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <Gavel className="mt-0.5 h-5 w-5 shrink-0 text-brand" />
+          <div className="min-w-0">
+            <p className="font-semibold text-content">Punições (Lutas)</p>
+            <p className="text-sm text-content-soft">
+              Quando o aluno de Lutas junta este número de punições cumpridas, elas são encerradas. Uma cumprida
+              que não fecha ciclo se encerra sozinha depois dos dias informados.
+            </p>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-end gap-2">
+          <div>
+            <Label htmlFor="punicoes-ciclo">Punições por ciclo</Label>
+            <Input id="punicoes-ciclo" type="number" min={1} max={10} className="w-24" value={vCiclo}
+              disabled={atual.isLoading} onChange={(e) => setPorCiclo(e.target.value)} />
+          </div>
+          <div>
+            <Label htmlFor="punicoes-dias">Dias para encerrar cumprida sozinha</Label>
+            <Input id="punicoes-dias" type="number" min={1} max={365} className="w-24" value={vDias}
+              disabled={atual.isLoading} onChange={(e) => setDias(e.target.value)} />
+          </div>
+          <Button loading={salvar.isPending} disabled={!mudou}
+            onClick={() => salvar.mutate({ porCiclo: nCiclo, diasParaConcluir: nDias })}>Salvar punições</Button>
+        </div>
+      </div>
+      {vCiclo !== "" && !cicloValido && <p className="mt-2 text-sm text-danger">Punições por ciclo: de 1 a 10.</p>}
+      {vDias !== "" && !diasValido && <p className="mt-2 text-sm text-danger">Dias para encerrar: de 1 a 365.</p>}
+    </Card>
+  );
+}
+
 function menos20(hhmm: string) {
   const [h, m] = hhmm.split(":").map(Number);
   const t = h * 60 + m - 20;
@@ -195,6 +262,7 @@ export default function SlotConfig() {
       />
       <JanelaCatraca />
       <TurmasLutas />
+      <PunicoesLutas />
       <Card className="overflow-hidden">
         {isLoading ? (
           <TableSkeleton rows={6} />

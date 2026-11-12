@@ -75,6 +75,7 @@ public class StudentService {
     public Student update(UUID id, UpsertRequest req) {
         Student s = get(id);
         boolean eraInstrutor = s.isInstrutor();
+        boolean eraInstrutorLutas = s.isInstrutorLutas();
         boolean tinhaAcessoPermanente = s.temAcessoPermanente();
         // O e-mail de contato liga o login pelo governo à conta: trocado pelo
         // admin, só vale se existir no AD (e for da mesma pessoa). Conferido
@@ -96,7 +97,7 @@ public class StudentService {
         Student salvo = students.save(s);
         // Só mexe nos papéis do login quando o perfil muda de fato (aluno ↔
         // instrutor) — editar outros campos nunca altera papel de ninguém.
-        if (eraInstrutor != salvo.isInstrutor()) {
+        if (eraInstrutor != salvo.isInstrutor() || eraInstrutorLutas != salvo.isInstrutorLutas()) {
             perfis.sincronizarPapeis(salvo);
         }
         // Catraca: Civil ↔ Militar/Instrutor muda de "por agendamento" pra
@@ -176,6 +177,9 @@ public class StudentService {
             s.setStudentType(req.studentType());
         }
         s.setTurmaLutas(turmaValida(s.getStudentType(), req.turmaLutas()));
+        // Instrutor de lutas só faz sentido pro Instrutor; ausente = mantém.
+        if (!s.isInstrutor()) s.setInstrutorLutas(false);
+        else if (req.instrutorLutas() != null) s.setInstrutorLutas(req.instrutorLutas());
         s.setPhone(req.phone());
         s.setEmail(req.email());
         s.setBirthDate(req.birthDate());

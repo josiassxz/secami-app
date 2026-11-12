@@ -11,8 +11,10 @@ public final class Roles {
     /** Perfil "Instrutor" na interface (app e admin): prescreve fichas de treino. */
     public static final String PROFESSOR = "professor";
     public static final String ALUNO = "aluno";
+    /** Instrutor de lutas: aplica punições aos alunos do perfil Lutas (soma ao "professor"). */
+    public static final String LUTAS = "lutas";
 
-    public static final Set<String> ALL = Set.of(ADMIN, GERENTE, RECEPCAO, PROFESSOR, ALUNO);
+    public static final Set<String> ALL = Set.of(ADMIN, GERENTE, RECEPCAO, PROFESSOR, ALUNO, LUTAS);
 
     private Roles() {}
 }

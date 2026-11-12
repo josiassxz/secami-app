@@ -63,6 +63,10 @@ public class Student {
     @Column(name = "turma_lutas")
     private String turmaLutas;
 
+    /** Só pro Instrutor: instrutor de lutas (aplica punições; papel "lutas" no login). */
+    @Column(name = "instrutor_lutas", nullable = false)
+    private boolean instrutorLutas;
+
     public boolean isInstrutor() {
         return TIPO_INSTRUTOR.equals(studentType);
     }

@@ -5,6 +5,7 @@ const ROTULOS: Record<string, string> = {
   gerente: "Gerente",
   recepcao: "Recepção",
   professor: "Instrutor",
+  lutas: "Instrutor de lutas",
   aluno: "Aluno",
 };
 

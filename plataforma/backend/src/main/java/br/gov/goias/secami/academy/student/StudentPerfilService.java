@@ -37,6 +37,12 @@ public class StudentPerfilService {
                 mudou = user.getRoles().remove(Roles.PROFESSOR);
                 mudou |= user.getRoles().add(Roles.ALUNO);
             }
+            // Instrutor de lutas: papel "lutas" (punições) junto do "professor".
+            if (student.isInstrutor() && student.isInstrutorLutas()) {
+                mudou |= user.getRoles().add(Roles.LUTAS);
+            } else {
+                mudou |= user.getRoles().remove(Roles.LUTAS);
+            }
             if (mudou) users.save(user);
         });
     }

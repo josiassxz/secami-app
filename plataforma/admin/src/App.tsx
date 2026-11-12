@@ -17,9 +17,13 @@ import Notices from "@/pages/Notices";
 import Reports from "@/pages/Reports";
 import PendingRegistrations from "@/pages/PendingRegistrations";
 import Atestados from "@/pages/Atestados";
+import Punicoes from "@/pages/Punicoes";
 
 export default function App() {
-  const { user, loading } = useAuth();
+  const { user, loading, hasRole } = useAuth();
+  // Instrutor de lutas sem outro papel de equipe só usa a tela de Punições:
+  // cai direto nela em vez do Painel (cujos dados ele não tem acesso).
+  const soLutas = hasRole("lutas") && !hasRole("admin", "gerente", "recepcao", "professor");
 
   if (loading) {
     return (
@@ -34,7 +38,7 @@ export default function App() {
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       {user ? (
         <Route element={<Layout />}>
-          <Route path="/" element={<Dashboard />} />
+          <Route path="/" element={soLutas ? <Navigate to="/punicoes" replace /> : <Dashboard />} />
           <Route path="/alunos" element={<Students />} />
           <Route path="/cadastros-pendentes" element={<PendingRegistrations />} />
           <Route path="/atestados" element={<Atestados />} />
@@ -43,6 +47,7 @@ export default function App() {
           <Route path="/exercicios" element={<Exercises />} />
           <Route path="/fichas" element={<WorkoutPlans />} />
           <Route path="/coaching" element={<Coaching />} />
+          <Route path="/punicoes" element={<Punicoes />} />
           <Route path="/horarios" element={<SlotConfig />} />
           <Route path="/datas-bloqueadas" element={<BlockedDates />} />
           <Route path="/secretarias" element={<Departments />} />

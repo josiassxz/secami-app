@@ -27,6 +27,7 @@ type Student = {
   atestadoValido: boolean; diasParaVencimentoAtestado?: number | null;
   atestadoArquivoId?: string | null;
   turmaLutas?: string | null;
+  instrutorLutas?: boolean;
 };
 
 const emptyForm = {
@@ -34,6 +35,7 @@ const emptyForm = {
   departmentId: "", phone: "", email: "", birthDate: "",
   weightKg: "", heightCm: "", goal: "",
   atestadoNumero: "", atestadoData: "", situacao: "ATIVO",
+  instrutorLutas: false,
 };
 
 const PAGE_SIZE = 15;
@@ -176,6 +178,7 @@ export default function Students() {
         heightCm: full.heightCm != null ? String(full.heightCm) : "",
         goal: full.goal ?? "", atestadoNumero: full.atestadoNumero ?? "",
         atestadoData: full.atestadoData ?? "", situacao: full.situacao ?? "ATIVO",
+        instrutorLutas: !!full.instrutorLutas,
       });
       setErr(null); setOpen(true);
     } catch (e) {
@@ -192,6 +195,8 @@ export default function Students() {
       birthDate: form.birthDate || null,
       atestadoData: form.atestadoData || null,
       turmaLutas: form.studentType === "Lutas" ? form.turmaLutas || null : null,
+      // Só instrutor pode ser instrutor de lutas (aplica punições aos alunos de Lutas).
+      instrutorLutas: form.studentType === "Instrutor" ? form.instrutorLutas : false,
     };
   }
 
@@ -330,7 +335,7 @@ export default function Students() {
               <div><Label htmlFor="sm">Matrícula</Label><Input id="sm" value={form.matricula} onChange={(e) => setForm({ ...form, matricula: e.target.value })} /></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div><Label htmlFor="st">Tipo</Label><Select id="st" value={form.studentType} onChange={(e) => setForm({ ...form, studentType: e.target.value })}><option value="Civil">Civil</option><option value="Militar">Militar</option><option value="VIP">VIP</option><option value="Lutas">Lutas</option><option value="Instrutor">Instrutor</option></Select>{form.studentType === "Lutas" && (<div className="mt-2"><Label htmlFor="turma-lutas">Turma de Lutas</Label><Select id="turma-lutas" value={form.turmaLutas} onChange={(e) => setForm({ ...form, turmaLutas: e.target.value })}><option value="" disabled>Escolha a turma</option><option value="MASCULINO">Masculino</option><option value="FEMININO">Feminino</option></Select><p className="mt-1 text-xs text-content-soft">Nos dias da turma a catraca abre no horário da aula sem agendar; fora disso agenda como civil.</p></div>)}{form.studentType === "Instrutor" && (<p className="mt-1 text-xs text-content-soft">Instrutor prescreve as fichas de treino e não agenda horário.</p>)}{form.studentType === "VIP" && (<p className="mt-1 text-xs text-content-soft">VIP tem as mesmas regras do Militar: catraca sempre liberada.</p>)}</div>
+              <div><Label htmlFor="st">Tipo</Label><Select id="st" value={form.studentType} onChange={(e) => setForm({ ...form, studentType: e.target.value })}><option value="Civil">Civil</option><option value="Militar">Militar</option><option value="VIP">VIP</option><option value="Lutas">Lutas</option><option value="Instrutor">Instrutor</option></Select>{form.studentType === "Lutas" && (<div className="mt-2"><Label htmlFor="turma-lutas">Turma de Lutas</Label><Select id="turma-lutas" value={form.turmaLutas} onChange={(e) => setForm({ ...form, turmaLutas: e.target.value })}><option value="" disabled>Escolha a turma</option><option value="MASCULINO">Masculino</option><option value="FEMININO">Feminino</option></Select><p className="mt-1 text-xs text-content-soft">Nos dias da turma a catraca abre no horário da aula sem agendar; fora disso agenda como civil.</p></div>)}{form.studentType === "Instrutor" && (<><p className="mt-1 text-xs text-content-soft">Instrutor prescreve as fichas de treino e não agenda horário.</p><label className="mt-2 flex cursor-pointer items-center gap-2.5 rounded-md border border-line px-3 py-2 text-sm text-content transition-colors duration-fast ease-standard hover:bg-surface-alt"><input type="checkbox" className="h-4 w-4 cursor-pointer rounded border-line-input accent-brand" checked={form.instrutorLutas} onChange={(e) => setForm({ ...form, instrutorLutas: e.target.checked })} />Instrutor de lutas (aplica punições)</label></>)}{form.studentType === "VIP" && (<p className="mt-1 text-xs text-content-soft">VIP tem as mesmas regras do Militar: catraca sempre liberada.</p>)}</div>
               <div><Label htmlFor="sb">Data de nascimento</Label><Input id="sb" type="date" value={form.birthDate} onChange={(e) => setForm({ ...form, birthDate: e.target.value })} /></div>
             </div>
           </div>

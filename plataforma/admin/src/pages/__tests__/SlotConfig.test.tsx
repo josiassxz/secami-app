@@ -28,6 +28,9 @@ function setupApi(onDelete: () => Promise<unknown> = async () => undefined) {
         ? JSON.parse(opts.body)
         : { masculinoDias: [2, 4, 5], femininoDias: [1, 3, 5], inicio: "12:00", fim: "13:00", folgaSaidaHoras: 2 };
     }
+    if (path === "/admin/configuracoes/punicoes") {
+      return opts?.method === "PUT" ? JSON.parse(opts.body) : { porCiclo: 2, diasParaConcluir: 30 };
+    }
     if (path === "/admin/configuracoes/catraca") {
       return opts?.method === "PUT" ? JSON.parse(opts.body) : { janelaHoras: 5 };
     }
@@ -129,5 +132,45 @@ describe("Config. Horários - turmas de Lutas", () => {
       })
     );
     await waitFor(() => expect(toastMock).toHaveBeenCalledWith("success", "Turmas de Lutas salvas."));
+  });
+});
+
+describe("Config. Horários - punições (Lutas)", () => {
+  it("mostra os valores atuais e salva os novos", async () => {
+    setupApi();
+    renderWithProviders(<SlotConfig />);
+    const ciclo = (await screen.findByLabelText("Punições por ciclo")) as HTMLInputElement;
+    const dias = screen.getByLabelText("Dias para encerrar cumprida sozinha") as HTMLInputElement;
+    await waitFor(() => expect(ciclo.value).toBe("2"));
+    expect(dias.value).toBe("30");
+    const salvar = screen.getByRole("button", { name: "Salvar punições" });
+    expect(salvar).toBeDisabled();
+
+    fireEvent.change(ciclo, { target: { value: "3" } });
+    fireEvent.change(dias, { target: { value: "45" } });
+    fireEvent.click(salvar);
+
+    await waitFor(() =>
+      expect(apiMock).toHaveBeenCalledWith("/admin/configuracoes/punicoes", {
+        method: "PUT",
+        body: JSON.stringify({ porCiclo: 3, diasParaConcluir: 45 }),
+      })
+    );
+    await waitFor(() => expect(toastMock).toHaveBeenCalledWith("success", "Regras de punições salvas."));
+  });
+
+  it("não deixa salvar fora dos limites", async () => {
+    setupApi();
+    renderWithProviders(<SlotConfig />);
+    const ciclo = (await screen.findByLabelText("Punições por ciclo")) as HTMLInputElement;
+    await waitFor(() => expect(ciclo.value).toBe("2"));
+    fireEvent.change(ciclo, { target: { value: "11" } });
+    expect(screen.getByText("Punições por ciclo: de 1 a 10.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Salvar punições" })).toBeDisabled();
+
+    fireEvent.change(ciclo, { target: { value: "2" } });
+    fireEvent.change(screen.getByLabelText("Dias para encerrar cumprida sozinha"), { target: { value: "400" } });
+    expect(screen.getByText("Dias para encerrar: de 1 a 365.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Salvar punições" })).toBeDisabled();
   });
 });
